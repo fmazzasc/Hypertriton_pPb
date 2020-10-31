@@ -17,7 +17,7 @@
 #include "helpers//GenTable2.h"
 #include "helpers/Table2.h"
 
-void GenerateTableFromMC(bool reject = true, string ptShape = "bol")
+void GenerateTableFromMC(bool reject = true, string ptShape = "mtexp")
 {
   gRandom->SetSeed(1995);
 
