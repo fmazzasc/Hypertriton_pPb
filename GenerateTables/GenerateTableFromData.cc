@@ -20,20 +20,21 @@ void GenerateTableFromData(bool likeSign = false)
   string dataDir = "../Trees/";
   string tableDir = "../Tables/";
 
-  string lsString = likeSign ? "LS.root" : ".root";
+  string lsString = likeSign ? "_LS.root" : ".root";
 
   string inFileName16 = "HyperTritonTree_16qt";
   string inFileArg16 = dataDir + inFileName16 + lsString;
 
   string inFileName13 = "HyperTritonTree_13bc";
-  string inFileArg13 = dataDir + "/" + inFileName15 + lsString;
+  string inFileArg13 = dataDir  + inFileName13 + lsString;
 
   string outFileName = "DataTable_pPb";
-  string outFileArg = tableDir + "/" + outFileName + lsString;
+  string outFileArg = tableDir  + outFileName + lsString;
 
   TChain inputChain("_default/fTreeV0");
   inputChain.AddFile(inFileArg16.data());
-  inputChain.AddFile(inFileArg13.data());
+  if (!likeSign)
+    inputChain.AddFile(inFileArg13.data());
 
   TTreeReader fReader(&inputChain);
   TTreeReaderArray<RHyperTritonHe3pi> RHyperVec = {fReader, "RHyperTriton"};
@@ -42,10 +43,8 @@ void GenerateTableFromData(bool likeSign = false)
   TFile outFile(outFileArg.data(), "RECREATE");
   Table2 tree("DataTable", "Data Table");
 
-
   while (fReader.Next())
   {
-
     for (auto &RHyper : RHyperVec)
       tree.Fill(RHyper, *RColl);
   }
@@ -54,5 +53,6 @@ void GenerateTableFromData(bool likeSign = false)
   tree.Write();
   outFile.Close();
 
-  cout << "\nDerived tree from Data generated!\n" << endl;
+  std::cout << "\nDerived tree from Data generated!\n"
+            << std::endl;
 }
