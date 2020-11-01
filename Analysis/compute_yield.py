@@ -15,9 +15,9 @@ print("-------------------------------------")
 print("Pre-selection efficiency: ", presel_eff)
 
 ## FIT INVARIANT MASS SPECTRA
-df = pd.read_parquet("../Utils/selected_df_data.parquet.gzip")
-score_cuts_array = np.load("../Utils/score_eff_syst_arr.npy")
-bdt_eff_array = np.load("../Utils/bdt_eff_syst_arr.npy")
+df = pd.read_parquet("../Utils/ReducedDataFrames/selected_df_data.parquet.gzip")
+score_cuts_array = np.load("../Utils/Efficiencies/score_eff_syst_arr.npy")
+bdt_eff_array = np.load("../Utils/Efficiencies/bdt_eff_syst_arr.npy")
 selected_bdt_eff = 0.72
 signal_list = []
 error_list = []
