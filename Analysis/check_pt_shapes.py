@@ -5,6 +5,7 @@ import matplotlib
 import matplotlib.pyplot as plt 
 from matplotlib.lines import Line2D
 import pandas as pd
+matplotlib.use("pdf")
 
 plt.style.use(mpl.style.ALICE)
 ptexp = uproot.open("../Tables/SignalTable_17d_ptexp.root")["SignalTable"].pandas.df(["pt"])
@@ -28,4 +29,13 @@ plt.xlabel(r"$\it{p}_{\mathrm{T}}$ $(\mathrm{GeV}/\it{c})$")
 plt.ylabel("Counts")
 plt.xlim(0,10)
 plt.savefig("../Results/pt_shapes.png")
-plt.show()
+
+###Compute Syst due to pT shape
+ptexp_gen = uproot.open("../Tables/SignalTable_17d_ptexp.root")["GenTable"].pandas.df(["pt","rapidity"]).query("abs(rapidity)<0.5")["pt"]
+mtexp_gen = uproot.open("../Tables/SignalTable_17d_mtexp.root")["GenTable"].pandas.df(["pt","rapidity"]).query("abs(rapidity)<0.5")["pt"]
+bol_gen = uproot.open("../Tables/SignalTable_17d_bol.root")["GenTable"].pandas.df(["pt","rapidity"]).query("abs(rapidity)<0.5")["pt"]
+
+eff = np.array([len(ptexp)/len(ptexp_gen), len(mtexp)/len(mtexp_gen), len(bol)/len(bol_gen)])
+
+print("Maximum difference: ", np.max(eff) - np.min(eff))
+print("pT shape syst: ", 100*(np.max(eff) - np.min(eff)), "%")

@@ -219,10 +219,12 @@ def ndarray2roo(ndarray, var):
     return array_roo
 
 
-def significance_error(signal, background):
-    signal_error = np.sqrt(signal + 1e-10)
-    background_error = np.sqrt(background + 1e-10)
+def significance_error(signal, background, signal_error=None, background_error=None):
 
+    if not signal_error:
+        signal_error = np.sqrt(signal + 1e-10)
+    if not background_error:
+        background_error = np.sqrt(background + 1e-10)
     sb = signal + background + 1e-10
     sb_sqrt = np.sqrt(sb)
 
@@ -291,8 +293,6 @@ def unbinned_mass_fit(data, eff, bkg_model, output_dir, cent_class, pt_range, ct
     # plot the fit
     frame = mass.frame(bins)
     frame.SetTitle("")
-    # frame.SetTitleSize(25)
-    #frame.SetTitleSize(25, "Y")
 
     roo_data.plotOn(frame)
     fit_function.plotOn(frame, ROOT.RooFit.LineColor(ROOT.kBlue))
@@ -312,11 +312,16 @@ def unbinned_mass_fit(data, eff, bkg_model, output_dir, cent_class, pt_range, ct
                   (nsigma * sigma), mu + (nsigma * sigma))
     signal_counts = signal.createIntegral(ROOT.RooArgSet(
         mass), ROOT.RooArgSet(mass), 'signal region').getVal() * n_sig.getVal()
+    signal_error = signal.createIntegral(ROOT.RooArgSet(
+        mass), ROOT.RooArgSet(mass), 'signal region').getVal() * n_sig.getError()
+
     background_counts = background.createIntegral(ROOT.RooArgSet(
         mass), ROOT.RooArgSet(mass), 'signal region').getVal() * n_bkg.getVal()
+    background_error = background.createIntegral(ROOT.RooArgSet(
+        mass), ROOT.RooArgSet(mass), 'signal region').getVal() * n_bkg.getError()
 
     signif = signal_counts / np.sqrt(signal_counts + background_counts + 1e-10)
-    signif_error = significance_error(signal_counts, background_counts)
+    signif_error = significance_error(signal_counts, background_counts, signal_error, background_error)
 
     pinfo = ROOT.TPaveText(0.537, 0.474, 0.937, 0.875, 'NDC')
     pinfo.SetBorderSize(0)
@@ -343,8 +348,8 @@ def unbinned_mass_fit(data, eff, bkg_model, output_dir, cent_class, pt_range, ct
         string_list.append('#chi^{2} / NDF = ' + f'{frame.chiSquare(6 if bkg_model=="pol2" else 5):.2f}')
 
     string_list.append(f'Significance ({nsigma:.0f}#sigma) = {signif:.1f} #pm {signif_error:.1f}')
-    string_list.append(f'S ({nsigma:.0f}#sigma) = {signal_counts:.1f} #pm {np.sqrt(signal_counts):.1f}')
-    string_list.append(f'B ({nsigma:.0f}#sigma) = {background_counts:.1f} #pm {np.sqrt(signal_counts):.1f}')
+    string_list.append(f'S ({nsigma:.0f}#sigma) = {signal_counts:.1f} #pm {signal_error:.1f}')
+    string_list.append(f'B ({nsigma:.0f}#sigma) = {background_counts:.1f} #pm {background_error:.1f}')
 
     if background_counts > 0:
         ratio = signal_counts / background_counts
@@ -360,7 +365,7 @@ def unbinned_mass_fit(data, eff, bkg_model, output_dir, cent_class, pt_range, ct
     cv = ROOT.TCanvas(f"cv_{round(eff,2)}")
     frame.Draw()
     cv.Write()
-    return signal_counts, np.sqrt(signal_counts), signif, signif_error, mu, mu_error, sigma, sigma_error
+    return signal_counts, signal_error, signif, signif_error, mu, mu_error, sigma, sigma_error
 
 
 def computeAverage(Vals):

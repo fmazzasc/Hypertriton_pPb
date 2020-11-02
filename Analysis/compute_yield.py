@@ -47,6 +47,8 @@ corrected_error = error_array/n_events/branching_ratio/presel_eff/bdt_eff_array
 Yield = np.float64(corrected_counts[bdt_eff_array==selected_bdt_eff]  / 2)
 stat_error = np.float64(corrected_error[bdt_eff_array==selected_bdt_eff] / 2)
 syst_error = np.std(corrected_counts) / 2
+pt_shape_syst = 0.0628*Yield
+syst_error+=pt_shape_syst
 print("-------------------------------------")
 print(f"Yield [(matter + antimatter) / 2] = {Yield:.2e} +- {stat_error:.2e} (stat.) +- {syst_error:.2e} (syst.)")
 
@@ -106,7 +108,9 @@ s3_3body.SetMarkerColor(kAzureC)
 s3_3body.SetTitle("3-body coalescence")
 
 cv = TCanvas("cv")
-cv.DrawFrame(9,0.01,2200,1.0,";#LTd#it{N}_{ch}/d#it{#eta}#GT_{|#it{#eta}|<0.5};S_{3}")
+cv.SetBottomMargin(0.14)
+frame=cv.DrawFrame(9,0.01,2200,1.0,";#LTd#it{N}_{ch}/d#it{#eta}#GT_{|#it{#eta}|<0.5};S_{3}")
+frame.GetXaxis().SetTitleOffset(1.25)
 cv.SetLogx()
 # cv.SetLogy()
 s3_csm.Draw("L")
@@ -124,6 +128,7 @@ pbpb_stat.SetLineColor(kGreyC)
 pbpb_stat.SetMarkerColor(kGreyC)
 pbpb_stat.SetMarkerStyle(20)
 pbpb_stat.Draw("Pz")
+
 
 pbpb_syst = TGraphErrors(1,x,y,ex,eys)
 pbpb_syst.SetTitle("ALICE Pb-Pb #sqrt{#it{s}_{NN}}=2.76 TeV")
@@ -146,12 +151,13 @@ ppb_syst.SetMarkerColor(kRedC)
 ppb_syst.SetFillStyle(0)
 ppb_syst.SetMarkerStyle(20)
 ppb_syst.Draw("P2")
+
 leg = TLegend(0.15,0.75,0.7,0.85)
 leg.SetMargin(0.14)
 leg.AddEntry(ppb_syst,"","pf")
 leg.AddEntry(pbpb_syst,"","pf")
 leg.SetEntrySeparation(0.2)
-legT = TLegend(0.55,0.15,0.88,0.35)
+legT = TLegend(0.55,0.18,0.88,0.38)
 legT.SetMargin(0.14)
 legT.AddEntry(s3_csm)
 legT.AddEntry(s3_2body)
@@ -160,7 +166,6 @@ leg.SetFillStyle(0)
 legT.SetFillStyle(0)
 leg.Draw()
 legT.Draw()
-
 
 cv.Draw()
 
