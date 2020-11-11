@@ -160,7 +160,7 @@ def fit_hist(
         st.SetOptStat(0)
 
     cv.Write()
-    cv.Draw()
+    
     return (signal, errsignal, signif, errsignif, mu, muErr, sigma, sigmaErr)
 
 
@@ -361,7 +361,10 @@ def unbinned_mass_fit(data, eff, bkg_model, output_dir, cent_class, pt_range, ct
     frame.addObject(pinfo)
 
     output_dir.cd()
-
+    binning = 1000*((3.04-2.96)/bins)
+    stry= f"Events/({binning:.2f}"
+    stry += "MeV/#it{c}^{2})"
+    frame.SetYTitle(stry)
     cv = ROOT.TCanvas(f"cv_{round(eff,2)}")
     frame.Draw()
     cv.Write()
@@ -442,9 +445,9 @@ def significance_scan(eff_cut, cut_array, dataH, eff_presel, working_point=None,
     if(working_point==None):
         plt.legend(loc="lower center")
     else:
-        plt.plot([working_point, working_point],[-1,5],linestyle = "--", color = "r", label = "Working Point")
-        plt.plot([working_point - syst_range, working_point  - syst_range],[-1,5],linestyle = "--", color = "g", label = "Systematic variation range")
-        plt.plot([working_point + syst_range, working_point  + syst_range],[-1,5],linestyle = "--", color = "g")
+        plt.plot([working_point, working_point],[-1,5.3],linestyle = "--", color = "r", label = "Working Point")
+        plt.plot([working_point - syst_range, working_point  - syst_range],[-1,5.3],linestyle = "--", color = "g", label = "Systematic variation range")
+        plt.plot([working_point + syst_range, working_point  + syst_range],[-1,5.3],linestyle = "--", color = "g")
 
         handles, labels = fig.gca().get_legend_handles_labels()
         order = [0,3,1,2]
@@ -453,5 +456,5 @@ def significance_scan(eff_cut, cut_array, dataH, eff_presel, working_point=None,
     plt.xlabel("BDT Efficiency")
     plt.ylabel("Significance x BDT Efficiency");
     plt.xlim(0.5,0.98)
-    plt.ylim(0.3,4.75)
+    plt.ylim(0.3, 5.3)
     return fig

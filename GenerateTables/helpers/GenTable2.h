@@ -29,7 +29,8 @@ class GenTable2 {
   float Phi;
   float Ct;
   float Centrality;
-  bool Matter;    
+  bool Matter;
+  float fZ;  
 };
 
 GenTable2::GenTable2(std::string name, std::string title) {
@@ -41,10 +42,12 @@ GenTable2::GenTable2(std::string name, std::string title) {
   tree->Branch("ct", &Ct);
   tree->Branch("centrality", &Centrality);
   tree->Branch("matter", &Matter);
+  tree->Branch("fZ", &fZ);
 };
 
 void GenTable2::Fill(const SHyperTritonHe3pi& SHyper, const RCollision& RColl) {
   Centrality = RColl.fCent;
+  fZ = RColl.fZ;
   Matter = SHyper.fPdgCode > 0;
   const double len = Hypote(SHyper.fDecayX, SHyper.fDecayY, SHyper.fDecayZ);
 

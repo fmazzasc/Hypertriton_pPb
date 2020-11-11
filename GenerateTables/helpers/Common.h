@@ -10,7 +10,7 @@
 #include <TLorentzVector.h>
 
 constexpr double kHyperMass{2.99131};
-
+constexpr float kHe3Mass{2.80839160743};
 constexpr float kDeuMass{1.87561};
 constexpr float kPMass{0.938272};
 constexpr float kPiMass{0.13957};

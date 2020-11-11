@@ -2,14 +2,19 @@
 import ROOT
 from ROOT import TCanvas, TColor, TGraphErrors, TLegend
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt;
 import pandas as pd
 import uproot
 import helpers as hp
+import mplhep
+matplotlib.use("pdf")
+matplotlib.style.use(mplhep.style.ALICE)
 
 ##COMPUTE PRESELECTION-EFFICIENCY
 df_rec = uproot.open("../Tables/SignalTable_17d_mtexp.root")["SignalTable"].pandas.df()
 df_sim = uproot.open("../Tables/SignalTable_17d_mtexp.root")["GenTable"].pandas.df()
+
 presel_eff = len(df_rec)/len(df_sim.query("abs(rapidity)<0.5"))
 print("-------------------------------------")
 print("Pre-selection efficiency: ", presel_eff)
@@ -22,13 +27,16 @@ selected_bdt_eff = 0.72
 signal_list = []
 error_list = []
 
+# df = df.query("centrality<=40")
+
 ff = ROOT.TFile("../Results/inv_mass_fits.root", "recreate")
 ff.cd()
 
 for eff,cut in zip(bdt_eff_array, score_cuts_array):
     cut_string = f"model_output>{cut}"
     data = np.array(df.query(cut_string)["m"])
-    res = hp.unbinned_mass_fit(data, eff, 'pol0', ff, [0,90], [0,10], [0,35], split="", bins = 38)
+
+    res = hp.unbinned_mass_fit(data, eff, 'pol0', ff, [0,90], [0,10], [0,35], split="", bins = 34)
     signal_list.append(res[0])
     error_list.append(res[1])
 
@@ -38,7 +46,8 @@ signal_array = np.array(signal_list)
 error_array = np.array(error_list)
 
 ###COMPUTE YIELD
-n_events = np.sum(uproot.open("../Utils/AnalysisResults_pPb.root")["AliAnalysisTaskHyperTriton2He3piML_default_summary"][11])
+n_events = 7.38470e+08 + 1.254483e+8
+print(n_events)
 branching_ratio = 0.25
 corrected_counts = signal_array/n_events/branching_ratio/presel_eff/bdt_eff_array
 corrected_error = error_array/n_events/branching_ratio/presel_eff/bdt_eff_array
@@ -82,6 +91,7 @@ s3 = np.array([Yield * protonAv[0] / (He3Av[0] * lambdaAv[0])], dtype=np.float64
 s3stat = np.array([s3[0] * hp.myHypot(stat_error / Yield, He3Av[1] / He3Av[0], protonAv[1] / protonAv[0], lambdaAv[1] / lambdaAv[0])], dtype=np.float64)
 s3syst = np.array([s3[0] * hp.myHypot(syst_error / Yield, He3Av[2] / He3Av[0], protonAv[2] / protonAv[0], lambdaAv[2] / lambdaAv[0])], dtype=np.float64)
 
+print(s3, s3syst, s3stat)
 
 kBlueC  = TColor.GetColor("#2077b4");
 kRedC  = TColor.GetColor("#d62827");
@@ -170,3 +180,4 @@ legT.Draw()
 cv.Draw()
 
 cv.SaveAs("../Results/s3.pdf")
+cv.SaveAs("../Results/s3.png")

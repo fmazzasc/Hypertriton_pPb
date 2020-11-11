@@ -44,6 +44,8 @@ if training:
 
         signalH = TreeHandler(path_to_data + 'SignalTable_17d_mtexp.root', "SignalTable")
         bkgH = TreeHandler(path_to_data + 'DataTable_pPb_LS.root', "DataTable")
+        bkgH.get_data_frame().drop_duplicates(inplace=True)
+
         if bkg_fraction!=None:
                 bkgH.shuffle_data_frame(size=bkg_fraction*len(signalH), inplace=True)
 
@@ -65,9 +67,9 @@ if training:
         print("Data loaded. Training and testing ....")
 
         params_range = {
-        "max_depth": (8,18),
+        "max_depth": (6,18),
         "learning_rate": (0.07,0.15),
-        "n_estimators": (150,250),
+        "n_estimators": (150,300),
         "gamma": (0.3,0.5),
         "min_child_weight": (3,8),
         "subsample": (0.5,1),
@@ -76,7 +78,7 @@ if training:
 
         model_hdl = ModelHandler(xgb.XGBClassifier(), training_columns)
         if optmize:
-                model_hdl.optimize_params_bayes(train_test_data,params_range,'roc_auc',njobs=-1)
+                model_hdl.optimize_params_bayes(train_test_data,params_range,'roc_auc',njobs=-1, init_points=10, n_iter=10)
 
         y_pred_test = model_hdl.train_test_model(train_test_data, True, True)
 
@@ -104,7 +106,9 @@ if application:
         print("Starting application: ..")
         dataH = TreeHandler(path_to_data + 'DataTable_pPb.root', "DataTable")
         signalH = TreeHandler(path_to_data + 'SignalTable_17d_mtexp.root', "SignalTable")
-        lsH = TreeHandler(path_to_data + 'DataTable_pPb.root', "DataTable")
+        lsH = TreeHandler(path_to_data + 'DataTable_pPb_LS.root', "DataTable")
+        lsH.get_data_frame().drop_duplicates(inplace=True)
+
         simH = TreeHandler(path_to_data + 'SignalTable_17d_mtexp.root', "GenTable").get_subset("rapidity<0.5 and rapidity>-0.5")
 
         presel_eff = len(signalH)/len(simH)

@@ -16,10 +16,10 @@ old_bw = pd.read_parquet("../Tables/SignalTable_old_bw.parquet", columns=["HypCa
 fig = plt.figure()
 ax = fig.add_subplot(111)
 
-ax.hist(ptexp, bins=500, alpha=0.3, label=r"$\it{p}_{\mathrm{T}}$ exponential", histtype="step")
-ax.hist(mtexp, bins=500, alpha=0.3, label=r"$\it{m}_{\mathrm{T}}$ exponential", histtype="step")
-ax.hist(bol, bins=500, alpha=0.3, label= "Boltzmann", histtype="step")
-ax.hist(old_bw, bins=500, alpha=0.3, label= "Pb-Pb cent reweighted BW", histtype="step")
+ax.hist(ptexp, bins=500, label=r"$\it{p}_{\mathrm{T}}$ exponential", histtype="step", color="orange")
+ax.hist(mtexp, bins=500, label=r"$\it{m}_{\mathrm{T}}$ exponential", histtype="step", color="red")
+ax.hist(bol, bins=500, label= "Boltzmann", histtype="step", color="blue")
+# ax.hist(old_bw, bins=500, label= "Pb-Pb cent reweighted BW", histtype="step")
 
 handles, labels = ax.get_legend_handles_labels()
 new_handles = [Line2D([], [], c=h.get_edgecolor()) for h in handles]

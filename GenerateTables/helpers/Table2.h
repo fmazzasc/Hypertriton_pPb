@@ -41,6 +41,7 @@ private:
   float TPCnSigmaPi;
   float Lrec;
   float centrality;
+  float fZ;
   float V0radius;
   float PiProngPvDCAXY;
   float He3ProngPvDCAXY;
@@ -77,6 +78,7 @@ Table2::Table2(std::string name, std::string title)
   tree->Branch("TPCnSigmaPi", &TPCnSigmaPi);
   tree->Branch("Lrec", &Lrec);
   tree->Branch("centrality", &centrality);
+  tree->Branch("fZ", &fZ);  
   tree->Branch("V0radius", &V0radius);
   tree->Branch("Rapidity", &Rapidity);
   tree->Branch("PseudoRapidityHe3", &PseudoRapidityHe3);
@@ -91,7 +93,8 @@ Table2::Table2(std::string name, std::string title)
 void Table2::Fill(const RHyperTritonHe3pi &RHyper, const RCollision &RColl)
 {
   centrality = RColl.fCent;
-  double eHe3 = Hypote(RHyper.fPxHe3, RHyper.fPyHe3, RHyper.fPzHe3, AliPID::ParticleMass(AliPID::kHe3));
+  fZ = RColl.fZ;
+  double eHe3 = Hypote(RHyper.fPxHe3, RHyper.fPyHe3, RHyper.fPzHe3, kHe3Mass);
   double ePi = Hypote(RHyper.fPxPi, RHyper.fPyPi, RHyper.fPzPi, AliPID::ParticleMass(AliPID::kPion));
 
   TLorentzVector he3Vector, piVector, hyperVector;
