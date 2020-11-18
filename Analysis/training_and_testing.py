@@ -28,7 +28,11 @@ application = params['APPLICATION']
 significance_scan = params["SIGNIFICANCE_SCAN"]
 working_point = params['EFF_WORKING_POINT']
 variation_range = params['SYST_VARIATION_RANGE']
-
+data_table_name = params['DATA_TABLE']
+bkg_table_name = params['BKG_TABLE']
+signal_table_name = params['SIGNAL_TABLE']
+MODEL_PARAMS = params['XGBOOST_PARAMS']
+HYPERPARAMS = params['HYPERPARAMS']
 
 path_to_data = "../Tables/"
 results_ml_path = "../Results/PlotsML"
@@ -37,17 +41,19 @@ utils_path = "../Utils"
 efficiencies_path = "../Utils/Efficiencies"
 selected_df_path = "../Utils/ReducedDataFrames"
 
+
 print("---------------------------------------------")
 print("Data loading...")
 
 if training:
 
-        signalH = TreeHandler(path_to_data + 'SignalTable_17d_mtexp.root', "SignalTable")
-        bkgH = TreeHandler(path_to_data + 'DataTable_pPb_LS.root', "DataTable")
+        signalH = TreeHandler(path_to_data + signal_table_name, "SignalTable")
+        bkgH = TreeHandler(path_to_data + bkg_table_name, "DataTable")
         bkgH.get_data_frame().drop_duplicates(inplace=True)
+        
 
         if bkg_fraction!=None:
-                bkgH.shuffle_data_frame(size=bkg_fraction*len(signalH), inplace=True)
+                bkgH.shuffle_data_frame(size=bkg_fraction*len(signalH), inplace=True, random_state=52)
 
         train_test_data = au.train_test_generator([signalH, bkgH], [1,0], test_size=0.5, random_state=42)
 
@@ -67,9 +73,9 @@ if training:
         print("Data loaded. Training and testing ....")
 
         params_range = {
-        "max_depth": (6,18),
+        "max_depth": (8, 18),
         "learning_rate": (0.07,0.15),
-        "n_estimators": (150,300),
+        "n_estimators": (150, 250),
         "gamma": (0.3,0.5),
         "min_child_weight": (3,8),
         "subsample": (0.5,1),
@@ -77,6 +83,8 @@ if training:
         }
 
         model_hdl = ModelHandler(xgb.XGBClassifier(), training_columns)
+        model_hdl.set_model_params(MODEL_PARAMS)
+        model_hdl.set_model_params(HYPERPARAMS)
         if optmize:
                 model_hdl.optimize_params_bayes(train_test_data,params_range,'roc_auc',njobs=-1, init_points=10, n_iter=10)
 
@@ -104,12 +112,11 @@ if application:
 
         print("---------------------------------------------")
         print("Starting application: ..")
-        dataH = TreeHandler(path_to_data + 'DataTable_pPb.root', "DataTable")
-        signalH = TreeHandler(path_to_data + 'SignalTable_17d_mtexp.root', "SignalTable")
-        lsH = TreeHandler(path_to_data + 'DataTable_pPb_LS.root', "DataTable")
+        dataH = TreeHandler(path_to_data + data_table_name, "DataTable")
+        signalH = TreeHandler(path_to_data + signal_table_name, "SignalTable")
+        lsH = TreeHandler(path_to_data + bkg_table_name, "DataTable")
         lsH.get_data_frame().drop_duplicates(inplace=True)
-
-        simH = TreeHandler(path_to_data + 'SignalTable_17d_mtexp.root', "GenTable").get_subset("rapidity<0.5 and rapidity>-0.5")
+        simH = TreeHandler(path_to_data + signal_table_name, "GenTable").get_subset("rapidity<0.5 and rapidity>-0.5")
 
         presel_eff = len(signalH)/len(simH)
         bdt_eff_arr = np.load(efficiencies_path + "/efficiency_arr.npy")
@@ -125,9 +132,7 @@ if application:
 
         if significance_scan:
                 sign_plot.savefig(results_ml_path + "/significance_scan.png")
-        
-        # syst_interval_eff = np.round(np.linspace(working_point - variation_range, working_point + variation_range, 1 + 2*int(variation_range/0.01)), 2)
-        
+                
         syst_mask = np.logical_and(bdt_eff_arr >= working_point - variation_range, bdt_eff_arr <= working_point + variation_range)
         bdt_eff_syst_arr = bdt_eff_arr[syst_mask]
         score_eff_syst_arr = score_eff_arr[syst_mask]

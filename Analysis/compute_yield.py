@@ -34,7 +34,7 @@ ff.cd()
 
 for eff,cut in zip(bdt_eff_array, score_cuts_array):
     cut_string = f"model_output>{cut}"
-    data = np.array(df.query(cut_string)["m"])
+    data = np.array(df.query(cut_string + " and 2.96<m<3.04")["m"])
 
     res = hp.unbinned_mass_fit(data, eff, 'pol0', ff, [0,90], [0,10], [0,35], split="", bins = 34)
     signal_list.append(res[0])

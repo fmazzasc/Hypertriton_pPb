@@ -22,13 +22,13 @@ void GenerateTableFromData(bool likeSign = false)
 
   string lsString = likeSign ? "_LS.root" : ".root";
 
-  string inFileName16 = "HyperTritonTree_16qt";
+  string inFileName16 = "HyperTritonTree_16qt_old";
   string inFileArg16 = dataDir + inFileName16 + lsString;
 
-  string inFileName13 = "HyperTritonTree_13bc";
+  string inFileName13 = "HyperTritonTree_13bc_old";
   string inFileArg13 = dataDir  + inFileName13 + lsString;
 
-  string outFileName = "DataTable_pPb";
+  string outFileName = "DataTable_pPb_old";
   string outFileArg = tableDir  + outFileName + lsString;
 
   TChain inputChain("_default/fTreeV0");

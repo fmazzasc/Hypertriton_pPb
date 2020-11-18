@@ -276,19 +276,18 @@ def unbinned_mass_fit(data, eff, bkg_model, output_dir, cent_class, pt_range, ct
         background = ROOT.RooExponential('bkg', 'expo for bkg', mass, slope)
 
     # define signal and background normalization
-    n_sig = ROOT.RooRealVar('nsig', 'n1 const', 0., 10000)
-    n_bkg = ROOT.RooRealVar('nbkg', 'n2 const', 0., 10000)
+    n1 = ROOT.RooRealVar('n1', 'n1 const', 0., 1, 'GeV')
 
     # define the fit funciton -> signal component + background component
-    fit_function = ROOT.RooAddPdf('model', 'N_sig*sig + N_bkg*bkg',
-                                  ROOT.RooArgList(signal, background), ROOT.RooArgList(n_sig, n_bkg))
+    fit_function = ROOT.RooAddPdf('model', 'signal + background',
+                                  ROOT.RooArgList(signal, background), ROOT.RooArgList(n1))
 
     # convert data to RooData
     roo_data = ndarray2roo(data, mass)
 
     # fit data
     fit_function.fitTo(roo_data, ROOT.RooFit.Range(
-        2.96, 3.04), ROOT.RooFit.Extended(ROOT.kTRUE))
+        2.96, 3.04))
 
     # plot the fit
     frame = mass.frame(bins)
@@ -310,15 +309,23 @@ def unbinned_mass_fit(data, eff, bkg_model, output_dir, cent_class, pt_range, ct
     # compute significance
     mass.setRange('signal region',  mu -
                   (nsigma * sigma), mu + (nsigma * sigma))
+    
+    n_sig = len(data)*n1.getVal()
+    n_bkg = len(data) - n_sig
+
+    rel_err = n1.getError()/n1.getVal()
+
     signal_counts = signal.createIntegral(ROOT.RooArgSet(
-        mass), ROOT.RooArgSet(mass), 'signal region').getVal() * n_sig.getVal()
+        mass), ROOT.RooArgSet(mass), 'signal region').getVal() * n_sig
     signal_error = signal.createIntegral(ROOT.RooArgSet(
-        mass), ROOT.RooArgSet(mass), 'signal region').getVal() * n_sig.getError()
+        mass), ROOT.RooArgSet(mass), 'signal region').getVal() * n_sig *rel_err
+    
 
     background_counts = background.createIntegral(ROOT.RooArgSet(
-        mass), ROOT.RooArgSet(mass), 'signal region').getVal() * n_bkg.getVal()
+        mass), ROOT.RooArgSet(mass), 'signal region').getVal() * n_bkg
     background_error = background.createIntegral(ROOT.RooArgSet(
-        mass), ROOT.RooArgSet(mass), 'signal region').getVal() * n_bkg.getError()
+        mass), ROOT.RooArgSet(mass), 'signal region').getVal() * n_bkg *rel_err
+
 
     signif = signal_counts / np.sqrt(signal_counts + background_counts + 1e-10)
     signif_error = significance_error(signal_counts, background_counts, signal_error, background_error)
@@ -345,13 +352,14 @@ def unbinned_mass_fit(data, eff, bkg_model, output_dir, cent_class, pt_range, ct
     string_list.append(f'#sigma = {sigma*1000:.2f} #pm {sigma_error*1000:.2f} ' + 'MeV/#it{c}^{2}')
 
     if roo_data.sumEntries() > 0:
-        string_list.append('#chi^{2} / NDF = ' + f'{frame.chiSquare(6 if bkg_model=="pol2" else 5):.2f}')
+        string_list.append('#chi^{2} / NDF = ' + f'{frame.chiSquare(4):.2f}')
 
     string_list.append(f'Significance ({nsigma:.0f}#sigma) = {signif:.1f} #pm {signif_error:.1f}')
     string_list.append(f'S ({nsigma:.0f}#sigma) = {signal_counts:.1f} #pm {signal_error:.1f}')
     string_list.append(f'B ({nsigma:.0f}#sigma) = {background_counts:.1f} #pm {background_error:.1f}')
 
     if background_counts > 0:
+
         ratio = signal_counts / background_counts
         string_list.append(f'S/B ({nsigma:.0f}#sigma) = {ratio:.2f}')
 
