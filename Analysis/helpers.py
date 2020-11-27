@@ -1,6 +1,8 @@
 import ROOT
+from ROOT import RooFit as rf
 import numpy as np
 import matplotlib.pyplot as plt
+import pickle
 
 
 def fit_hist(
@@ -286,7 +288,7 @@ def unbinned_mass_fit(data, eff, bkg_model, output_dir, cent_class, pt_range, ct
     roo_data = ndarray2roo(data, mass)
 
     # fit data
-    fit_function.fitTo(roo_data, ROOT.RooFit.Range(
+    fit_function.fitTo(roo_data, rf.Range(
         2.96, 3.04))
 
     # plot the fit
@@ -294,10 +296,10 @@ def unbinned_mass_fit(data, eff, bkg_model, output_dir, cent_class, pt_range, ct
     frame.SetTitle("")
 
     roo_data.plotOn(frame)
-    fit_function.plotOn(frame, ROOT.RooFit.LineColor(ROOT.kBlue))
-    #fit_function.plotOn(frame, ROOT.RooFit.Components('signal'), ROOT.RooFit.LineStyle(ROOT.kDotted), ROOT.RooFit.LineColor(ROOT.kRed))
-    fit_function.plotOn(frame, ROOT.RooFit.Components(
-        'bkg'), ROOT.RooFit.LineStyle(ROOT.kDashed), ROOT.RooFit.LineColor(ROOT.kRed))
+    fit_function.plotOn(frame, rf.LineColor(ROOT.kBlue))
+    #fit_function.plotOn(frame, rf.Components('signal'), rf.LineStyle(ROOT.kDotted), rf.LineColor(ROOT.kRed))
+    fit_function.plotOn(frame, rf.Components(
+        'bkg'), rf.LineStyle(ROOT.kDashed), rf.LineColor(ROOT.kRed))
 
     # add info to plot
     nsigma = 3
@@ -462,7 +464,53 @@ def significance_scan(eff_cut, cut_array, dataH, eff_presel, working_point=None,
         plt.legend([handles[idx] for idx in order],[labels[idx] for idx in order])
 
     plt.xlabel("BDT Efficiency")
-    plt.ylabel("Significance x BDT Efficiency");
+    plt.ylabel("Significance x BDT Efficiency")
     plt.xlim(0.5,0.98)
     plt.ylim(0.3, 5.3)
     return fig
+
+
+
+
+def plotData(variable, data_hist, model, has_bkg, title, left_limit, right_limit, frame_name):
+    fit_results = model.fitTo(data_hist, rf.Extended(), rf.Verbose(
+        False), rf.PrintEvalErrors(-1), rf.PrintLevel(-1), rf.Range(left_limit, right_limit), rf.Save())
+    frame = variable.frame(left_limit, right_limit)
+    frame.SetTitle(title)
+    frame.SetName(frame_name)
+    data_hist.plotOn(frame, rf.Name('data'), rf.DrawOption('pz'))
+    model.plotOn(frame, rf.Components('signal'), rf.Name('signalArea'), rf.FillStyle(
+        3002), rf.FillColor(ROOT.kGreen-2), rf.DrawOption('B'), rf.VLines(), rf.Precision(1.E-6))
+    if has_bkg > 0:
+        model.plotOn(frame, rf.Components('bkg0'), rf.Name('bkg0Area'), rf.FillStyle(
+            3002), rf.FillColor(ROOT.kRed), rf.DrawOption('B'), rf.VLines(), rf.Precision(1.E-6))
+        if has_bkg > 1:
+            model.plotOn(frame, rf.Components('bkg1'), rf.Name('bkg1Area'), rf.FillStyle(
+                3002), rf.FillColor(ROOT.kAzure+1), rf.DrawOption('B'), rf.VLines(), rf.Precision(1.E-6))
+            if has_bkg > 2:
+                model.plotOn(frame, rf.Components('bkg2'), rf.Name('bkg2Area'), rf.FillStyle(
+                    3002), rf.FillColor(ROOT.kViolet-2), rf.DrawOption('B'), rf.VLines(), rf.Precision(1.E-6))
+    model.plotOn(frame, rf.Components('signal'), rf.LineStyle(
+        ROOT.kDashed), rf.LineColor(ROOT.kGreen-2), rf.Name('signal'))
+    if has_bkg > 0:
+        model.plotOn(frame, rf.Components('bkg0'), rf.LineStyle(
+            ROOT.kDashed), rf.LineColor(ROOT.kRed), rf.Name('bkg0'))
+        if has_bkg > 1:
+            model.plotOn(frame, rf.Components('bkg1'), rf.LineStyle(
+                ROOT.kDashed), rf.LineColor(ROOT.kAzure+1), rf.Name('bkg1'))
+            if has_bkg > 2:
+                model.plotOn(frame, rf.Components('bkg2'), rf.LineStyle(
+                    ROOT.kDashed), rf.LineColor(ROOT.kViolet-2), rf.Name('bkg2'))
+    model.plotOn(frame, rf.DrawOption(
+        ''), rf.LineColor(ROOT.kBlue), rf.Name('model'))
+    chi2 = frame.chiSquare('model', 'data')
+    return frame, chi2, fit_results
+
+def shiftNsigmaHe3(mom_arr):
+    interp = pickle.load(open("../Utils/CalibNsigmaHe3/interpolator.pkl", 'rb'))
+    shift_array = np.zeros(len(mom_arr))
+    shift_array[mom_arr<=0.4] = interp(0.4)
+    shift_array[mom_arr>=1.1] = interp(1.1)
+    shift_array[np.logical_and(mom_arr>0.4, mom_arr< 1.1)] = interp(mom_arr[np.logical_and(mom_arr>0.4, mom_arr< 1.1)])
+    return shift_array
+    
