@@ -2,9 +2,7 @@ import os
 import sys
 import pickle
 
-import matplotlib
 import matplotlib.pyplot as plt
-import mplhep
 import numpy as np
 import ROOT
 import uproot
@@ -14,8 +12,6 @@ from scipy.interpolate import UnivariateSpline
 sys.path.append("../")
 import helpers as hp
 
-matplotlib.use("pdf")
-matplotlib.style.use(mplhep.style.ALICE)
 
 ROOT.ROOT.EnableImplicitMT()
 ROOT.RooMsgService.instance().setSilentMode(True)
