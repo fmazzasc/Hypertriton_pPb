@@ -49,11 +49,7 @@ if training:
 
         signalH = TreeHandler(path_to_data + signal_table_name, "SignalTable")
         bkgH = TreeHandler(path_to_data + bkg_table_name, "DataTable")
-        bkgH.get_data_frame().drop_duplicates(inplace=True)
-        # print("before: ", bkgH.get_data_frame()["TPCnSigmaHe3"][1:20])
-        # bkgH.get_data_frame()["TPCnSigmaHe3"] = bkgH["TPCnSigmaHe3"] - hp.shiftNsigmaHe3(bkgH["TPCmomHe3"])
-        # print("after: ", bkgH.get_data_frame()["TPCnSigmaHe3"][1:20])
-        
+        bkgH.get_data_frame().drop_duplicates(inplace=True)        
 
         if bkg_fraction!=None:
                 bkgH.shuffle_data_frame(size=bkg_fraction*len(signalH), inplace=True, random_state=52)
@@ -119,9 +115,6 @@ if application:
         signalH = TreeHandler(path_to_data + signal_table_name, "SignalTable")
         lsH = TreeHandler(path_to_data + bkg_table_name, "DataTable")
         lsH.get_data_frame().drop_duplicates(inplace=True)
-
-        dataH.get_data_frame()["TPCnSigmaHe3"] = dataH["TPCnSigmaHe3"] - hp.shiftNsigmaHe3(dataH["TPCmomHe3"])
-        # lsH.get_data_frame()["TPCnSigmaHe3"] = lsH["TPCnSigmaHe3"] - hp.shiftNsigmaHe3(lsH["TPCmomHe3"])
 
         simH = TreeHandler(path_to_data + signal_table_name, "GenTable").get_subset("rapidity<0.5 and rapidity>-0.5")
 

@@ -1,15 +1,15 @@
-
-import ROOT
-from ROOT import TCanvas, TColor, TGraphErrors, TLegend
 import numpy as np
 import matplotlib
-import matplotlib.pyplot as plt;
+import matplotlib.pyplot as plt
 import pandas as pd
 import uproot
 import helpers as hp
 import mplhep
+import ROOT
 matplotlib.use("pdf")
 matplotlib.style.use(mplhep.style.ALICE)
+
+
 
 ##COMPUTE PRESELECTION-EFFICIENCY
 df_rec = uproot.open("../Tables/SignalTable_17d_mtexp.root")["SignalTable"].pandas.df()
@@ -27,7 +27,6 @@ selected_bdt_eff = 0.72
 signal_list = []
 error_list = []
 
-# df = df.query("centrality<=40")
 
 ff = ROOT.TFile("../Results/inv_mass_fits.root", "recreate")
 ff.cd()
@@ -93,31 +92,31 @@ s3syst = np.array([s3[0] * hp.myHypot(syst_error / Yield, He3Av[2] / He3Av[0], p
 
 print(s3, s3syst, s3stat)
 
-kBlueC  = TColor.GetColor("#2077b4");
-kRedC  = TColor.GetColor("#d62827");
-kGreenC  = TColor.GetColor("#2ba02b");
-kOrangeC  = TColor.GetColor("#ff7f0f");
-kVioletC  = TColor.GetColor("#9467bd");
-kPinkC  = TColor.GetColor("#e377c1");
-kGreyC  = TColor.GetColor("#7f7f7f");
-kBrownC  = TColor.GetColor("#8c564c");
-kAzureC  = TColor.GetColor("#18becf");
-kGreenBC  = TColor.GetColor("#bcbd21");
+kBlueC  = ROOT.TColor.GetColor("#2077b4");
+kRedC  = ROOT.TColor.GetColor("#d62827");
+kGreenC  = ROOT.TColor.GetColor("#2ba02b");
+kOrangeC  = ROOT.TColor.GetColor("#ff7f0f");
+kVioletC  = ROOT.TColor.GetColor("#9467bd");
+kPinkC  = ROOT.TColor.GetColor("#e377c1");
+kGreyC  = ROOT.TColor.GetColor("#7f7f7f");
+kBrownC  = ROOT.TColor.GetColor("#8c564c");
+kAzureC  = ROOT.TColor.GetColor("#18becf");
+kGreenBC  = ROOT.TColor.GetColor("#bcbd21");
 
-s3_csm = TGraphErrors("../Utils/FullCSM-S3.dat","%lg %*s %*s %*s %*s %*s %*s %*s %*s %*s %lg")
+s3_csm = ROOT.TGraphErrors("../Utils/ProdModels/FullCSM-S3.dat","%lg %*s %*s %*s %*s %*s %*s %*s %*s %*s %lg")
 s3_csm.SetLineColor(kOrangeC)
 s3_csm.SetLineWidth(1)
 s3_csm.SetTitle("Full canonical SHM")
-s3_2body = TGraphErrors("../Utils/s3_2body.csv","%lg %lg %*s","\t,")
+s3_2body = ROOT.TGraphErrors("../Utils/ProdModels/s3_2body.csv","%lg %lg %*s","\t,")
 s3_2body.SetLineColor(kBlueC)
 s3_2body.SetMarkerColor(kBlueC)
 s3_2body.SetTitle("2-body coalescence")
-s3_3body = TGraphErrors("../Utils/s3_3body.csv","%lg %lg %*s","\t,")
+s3_3body = ROOT.TGraphErrors("../Utils/ProdModels/s3_3body.csv","%lg %lg %*s","\t,")
 s3_3body.SetLineColor(kAzureC)
 s3_3body.SetMarkerColor(kAzureC)
 s3_3body.SetTitle("3-body coalescence")
 
-cv = TCanvas("cv")
+cv = ROOT.TCanvas("cv")
 cv.SetBottomMargin(0.14)
 frame=cv.DrawFrame(9,0.01,2200,1.0,";#LTd#it{N}_{ch}/d#it{#eta}#GT_{|#it{#eta}|<0.5};S_{3}")
 frame.GetXaxis().SetTitleOffset(1.25)
@@ -133,14 +132,14 @@ y = np.array([0.6], dtype=np.float64)
 ey = np.array([0.13], dtype=np.float64)
 eys = np.array([0.21], dtype=np.float64)
 zero = np.array([0], dtype=np.float64)
-pbpb_stat = TGraphErrors(1,x,y,zero,ey)
+pbpb_stat = ROOT.TGraphErrors(1,x,y,zero,ey)
 pbpb_stat.SetLineColor(kGreyC)
 pbpb_stat.SetMarkerColor(kGreyC)
 pbpb_stat.SetMarkerStyle(20)
 pbpb_stat.Draw("Pz")
 
 
-pbpb_syst = TGraphErrors(1,x,y,ex,eys)
+pbpb_syst = ROOT.TGraphErrors(1,x,y,ex,eys)
 pbpb_syst.SetTitle("ALICE Pb-Pb #sqrt{#it{s}_{NN}}=2.76 TeV")
 pbpb_syst.SetLineColor(kGreyC)
 pbpb_syst.SetMarkerColor(kGreyC)
@@ -149,12 +148,12 @@ pbpb_syst.SetMarkerStyle(20)
 pbpb_syst.Draw("P2")
 
 
-ppb_stat = TGraphErrors(1,x_pPb,s3,zero,s3stat)
+ppb_stat = ROOT.TGraphErrors(1,x_pPb,s3,zero,s3stat)
 ppb_stat.SetLineColor(kRedC)
 ppb_stat.SetMarkerColor(kRedC)
 ppb_stat.SetMarkerStyle(20)
 ppb_stat.Draw("Pz")
-ppb_syst = TGraphErrors(1,x_pPb,s3,xe_pPb,s3syst)
+ppb_syst = ROOT.TGraphErrors(1,x_pPb,s3,xe_pPb,s3syst)
 ppb_syst.SetTitle("ALICE Internal p-Pb #sqrt{#it{s}_{NN}}=5.02 TeV")
 ppb_syst.SetLineColor(kRedC)
 ppb_syst.SetMarkerColor(kRedC)
@@ -162,12 +161,12 @@ ppb_syst.SetFillStyle(0)
 ppb_syst.SetMarkerStyle(20)
 ppb_syst.Draw("P2")
 
-leg = TLegend(0.15,0.75,0.7,0.85)
+leg = ROOT.TLegend(0.15,0.75,0.7,0.85)
 leg.SetMargin(0.14)
 leg.AddEntry(ppb_syst,"","pf")
 leg.AddEntry(pbpb_syst,"","pf")
 leg.SetEntrySeparation(0.2)
-legT = TLegend(0.55,0.18,0.88,0.38)
+legT = ROOT.TLegend(0.55,0.18,0.88,0.38)
 legT.SetMargin(0.14)
 legT.AddEntry(s3_csm)
 legT.AddEntry(s3_2body)

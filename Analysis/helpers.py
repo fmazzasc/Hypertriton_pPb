@@ -505,12 +505,4 @@ def plotData(variable, data_hist, model, has_bkg, title, left_limit, right_limit
         ''), rf.LineColor(ROOT.kBlue), rf.Name('model'))
     chi2 = frame.chiSquare('model', 'data')
     return frame, chi2, fit_results
-
-def shiftNsigmaHe3(mom_arr):
-    interp = pickle.load(open("../Utils/CalibNsigmaHe3/interpolator.pkl", 'rb'))
-    shift_array = np.zeros(len(mom_arr))
-    shift_array[mom_arr<=0.4] = interp(0.4)
-    shift_array[mom_arr>=1.1] = interp(1.1)
-    shift_array[np.logical_and(mom_arr>0.4, mom_arr< 1.1)] = interp(mom_arr[np.logical_and(mom_arr>0.4, mom_arr< 1.1)])
-    return shift_array
     
