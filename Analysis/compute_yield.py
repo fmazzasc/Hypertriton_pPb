@@ -56,7 +56,8 @@ Yield = np.float64(corrected_counts[bdt_eff_array==selected_bdt_eff]  / 2)
 stat_error = np.float64(corrected_error[bdt_eff_array==selected_bdt_eff] / 2)
 syst_error = np.std(corrected_counts) / 2
 pt_shape_syst = 0.0628*Yield
-syst_error+=pt_shape_syst
+abs_syst = 0.0577*Yield
+syst_error += pt_shape_syst + abs_syst 
 print("-------------------------------------")
 print(f"Yield [(matter + antimatter) / 2] = {Yield:.2e} +- {stat_error:.2e} (stat.) +- {syst_error:.2e} (syst.)")
 
