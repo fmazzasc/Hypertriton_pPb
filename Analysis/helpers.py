@@ -257,9 +257,9 @@ def unbinned_mass_fit(data, eff, bkg_model, output_dir, cent_class, pt_range, ct
     # define background parameters
     slope = ROOT.RooRealVar('slope', 'exponential slope', -100., 100.)
 
-    c0 = ROOT.RooRealVar('c0', 'constant c0', 1.)
-    c1 = ROOT.RooRealVar('c1', 'constant c1', 1.)
-    c2 = ROOT.RooRealVar('c2', 'constant c2', 1.)
+    c0 = ROOT.RooRealVar('c0', 'constant c0', -10,10)
+    c1 = ROOT.RooRealVar('c1', 'constant c1', -10,10)
+    c2 = ROOT.RooRealVar('c2', 'constant c2', -10,10)
 
     # define background component depending on background model required
     if bkg_model == 'pol0':

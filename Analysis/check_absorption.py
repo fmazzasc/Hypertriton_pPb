@@ -46,3 +46,5 @@ n_abs_array = n_abs_array / len(gen_ct)
     
 print("Correction: ", round(n_abs_array[0], 4))
 print("Absorption syst: ", round(100*(np.max(n_abs_array) - np.min(n_abs_array)), 2), "%")
+
+print(n_abs_array)

@@ -47,17 +47,18 @@ print("Data loading...")
 
 if training:
 
-        signalH = TreeHandler(path_to_data + signal_table_name, "SignalTable")
-        bkgH = TreeHandler(path_to_data + bkg_table_name, "DataTable")
+        signalH = TreeHandler(path_to_data + signal_table_name, "SignalTable").apply_preselections('2<pt<8 and ct<45', inplace=False)
+        bkgH = TreeHandler(path_to_data + bkg_table_name, "DataTable").apply_preselections('2<pt<8 and ct<45', inplace=False)
         bkgH.get_data_frame().drop_duplicates(inplace=True)        
 
         if bkg_fraction!=None:
                 bkgH.shuffle_data_frame(size=bkg_fraction*len(signalH), inplace=True, random_state=52)
 
         train_test_data = au.train_test_generator([signalH, bkgH], [1,0], test_size=0.5, random_state=42)
+        signal_testH = train_test_data[2][train_test_data[3]==1].to_parquet('../Tables/PbPb/test_set.parquet')
 
 
-        training_columns = ['TPCnSigmaHe3','ct','V0CosPA','ProngsDCA','He3ProngPvDCA','PiProngPvDCA','He3ProngPvDCAXY','PiProngPvDCAXY','NpidClustersHe3','TPCnSigmaPi']
+        training_columns = ['TPCnSigmaHe3','pt','V0CosPA','ProngsDCA','He3ProngPvDCA','PiProngPvDCA','He3ProngPvDCAXY','PiProngPvDCAXY','NpidClustersHe3','TPCnSigmaPi']
 
         if not os.path.exists(results_ml_path):
                 os.makedirs(results_ml_path)
@@ -111,9 +112,9 @@ if application:
 
         print("---------------------------------------------")
         print("Starting application: ..")
-        dataH = TreeHandler(path_to_data + data_table_name, "DataTable")
-        signalH = TreeHandler(path_to_data + signal_table_name, "SignalTable")
-        lsH = TreeHandler(path_to_data + bkg_table_name, "DataTable")
+        dataH = TreeHandler(path_to_data + data_table_name, "DataTable").apply_preselections('2<pt<8 and ct<45', inplace=False)
+        signalH = TreeHandler(path_to_data + signal_table_name, "SignalTable").apply_preselections('2<pt<8 and ct<45', inplace=False)
+        lsH = TreeHandler(path_to_data + bkg_table_name, "DataTable").apply_preselections('2<pt<8 and ct<45', inplace=False)
         lsH.get_data_frame().drop_duplicates(inplace=True)
 
         simH = TreeHandler(path_to_data + signal_table_name, "GenTable").get_subset("rapidity<0.5 and rapidity>-0.5")
