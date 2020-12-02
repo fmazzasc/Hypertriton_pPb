@@ -239,7 +239,7 @@ def significance_error(signal, background, signal_error=None, background_error=N
     return np.sqrt(s_propag * s_propag + b_propag * b_propag)
 
 
-def unbinned_mass_fit(data, eff, bkg_model, output_dir, cent_class, pt_range, ct_range, split, bins=38):
+def unbinned_mass_fit(data, eff, bkg_model, output_dir, cent_class, pt_range, ct_range, split, cent_string = '', bins=38):
 
     # define working variable
     mass = ROOT.RooRealVar('m', 'm_{^{3}He+#pi}', 2.96, 3.04, 'GeV/c^{2}')
@@ -375,27 +375,28 @@ def unbinned_mass_fit(data, eff, bkg_model, output_dir, cent_class, pt_range, ct
     stry= f"Events/({binning:.2f}"
     stry += "MeV/#it{c}^{2})"
     frame.SetYTitle(stry)
-    cv = ROOT.TCanvas(f"cv_{round(eff,2)}")
+    cv = ROOT.TCanvas(f"cv_{round(eff,2)}_{cent_string}")
     frame.Draw()
     cv.Write()
     return signal_counts, signal_error, signif, signif_error, mu, mu_error, sigma, sigma_error
 
 
-def computeAverage(Vals):
-    Mean = 0
-    Stat = 0
-    Sys1 = 0
-    Sys2 = 0
-    weight = 0
-    for Bin in Vals:
-        w = Bin["bin"][1] - Bin["bin"][0]
-        weight = weight + w
-        Mean = Mean + (Bin["measure"][0] * w)
-        Stat = np.hypot(Stat, Bin["measure"][1] * w)
-        Sys1 = Sys1 + (Bin["measure"][2] * w)
-        Sys2 = Sys2 + (Bin["measure"][3] * w)
-    return [Mean / weight, Stat / weight, Sys1 / weight, Sys2 / weight]
-
+def computeAverage(Vals, breakVal = 100):
+  Mean = 0
+  Stat = 0
+  Sys1 = 0
+  Sys2 = 0
+  weight = 0
+  for Bin in Vals:
+      w = Bin["bin"][1] - Bin["bin"][0]
+      if Bin["bin"][0] >= breakVal:
+            break
+      weight = weight + w
+      Mean = Mean + (Bin["measure"][0] * w)
+      Stat = np.hypot(Stat, Bin["measure"][1] * w)
+      Sys1 = Sys1 + (Bin["measure"][2] * w)
+      Sys2 = Sys2 + (Bin["measure"][3] * w)
+  return [Mean / weight, Stat / weight, Sys1 / weight, Sys2 / weight]
 
 def myHypot(x, y, z, w):
     return np.sqrt(x**2 + y**2 + z**2 + w**2)

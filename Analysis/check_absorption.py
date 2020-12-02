@@ -43,6 +43,6 @@ for i in range(len(ct_bins) - 1):
         n_abs_array[j] += np.sum(ct_abs_prob < abs_array_list[j][i])
 
 n_abs_array = n_abs_array / len(gen_ct)
-    
+print(n_abs_array)
 print("Correction: ", round(n_abs_array[0], 4))
 print("Absorption syst: ", round(100*(np.max(n_abs_array) - np.min(n_abs_array)), 2), "%")

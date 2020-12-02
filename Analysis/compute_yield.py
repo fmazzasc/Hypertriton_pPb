@@ -1,3 +1,4 @@
+import argparse
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
@@ -6,8 +7,23 @@ import uproot
 import helpers as hp
 import mplhep
 import ROOT
+
 matplotlib.use("pdf")
 matplotlib.style.use(mplhep.style.ALICE)
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-c", '--cent040', help='Plot only 0-40% point', action = 'store_true')
+parser.add_argument("-b", '--both', help='Plot both points', action = 'store_true')
+args = parser.parse_args()
+
+only040 = args.cent040
+onlyInt = not only040
+if args.both:
+    onlyO40 = False
+    onlyInt = False
+
+
 
 
 
@@ -26,6 +42,8 @@ bdt_eff_array = np.load("../Utils/Efficiencies/bdt_eff_syst_arr.npy")
 selected_bdt_eff = 0.72
 signal_list = []
 error_list = []
+signal_list040 = []
+error_list040 = []
 
 
 ff = ROOT.TFile("../Results/inv_mass_fits.root", "recreate")
@@ -33,33 +51,50 @@ ff.cd()
 
 for eff,cut in zip(bdt_eff_array, score_cuts_array):
     cut_string = f"model_output>{cut}"
-    data = np.array(df.query(cut_string + " and 2.96<m<3.04")["m"])
-
+    data = np.array(df.query(cut_string + " and 2.96<m<3.04 ")["m"])
+    data040 = np.array(df.query(cut_string + " and 2.96<m<3.04 and centrality<=40 and abs(fZ) < 10")["m"])
     res = hp.unbinned_mass_fit(data, eff, 'pol0', ff, [0,90], [0,10], [0,35], split="", bins = 34)
+    res040 = hp.unbinned_mass_fit(data040, eff, 'pol0', ff, [0,40], [0,10], [0,35], split="", cent_string='040', bins = 34)
     signal_list.append(res[0])
     error_list.append(res[1])
+    signal_list040.append(res040[0])
+    error_list040.append(res040[1])
 
 ff.Close()
     
 signal_array = np.array(signal_list)
 error_array = np.array(error_list)
+signal_array040 = np.array(signal_list040)
+error_array040 = np.array(error_list040)
+
+signal_array_list = [signal_array, signal_array040]
+error_array_list = [error_array, error_array040]
 
 ###COMPUTE YIELD
 n_events = 7.38470e+08 + 1.254483e+8
-print(n_events)
+n_events040 = np.sum(uproot.open('../Utils/AnalysisResults_pPb.root')['AliAnalysisTaskHyperTriton2He3piML_default_summary;1'][11].values[:40-1])
+n_events_list = [n_events, n_events040]
+string_list = ['', 'in 0-40%']
 branching_ratio = 0.25
-corrected_counts = signal_array/n_events/branching_ratio/presel_eff/bdt_eff_array
-corrected_error = error_array/n_events/branching_ratio/presel_eff/bdt_eff_array
 
+yield_list = []
+stat_list = []
+syst_list = []
 
-Yield = np.float64(corrected_counts[bdt_eff_array==selected_bdt_eff]  / 2)
-stat_error = np.float64(corrected_error[bdt_eff_array==selected_bdt_eff] / 2)
-syst_error = np.std(corrected_counts) / 2
-pt_shape_syst = 0.0628*Yield
-abs_syst = 0.0577*Yield
-syst_error += pt_shape_syst + abs_syst 
-print("-------------------------------------")
-print(f"Yield [(matter + antimatter) / 2] = {Yield:.2e} +- {stat_error:.2e} (stat.) +- {syst_error:.2e} (syst.)")
+for sig_arr, err_arr, n_ev, string in zip(signal_array_list, error_array_list, n_events_list, string_list):
+    corrected_counts = sig_arr/n_ev/branching_ratio/presel_eff/bdt_eff_array
+    corrected_error = err_arr/n_ev/branching_ratio/presel_eff/bdt_eff_array
+    Yield = np.float64(corrected_counts[bdt_eff_array==selected_bdt_eff]  / 2)
+    stat_error = np.float64(corrected_error[bdt_eff_array==selected_bdt_eff] / 2)
+    syst_error = np.std(corrected_counts) / 2
+    pt_shape_syst = 0.0628*Yield
+    abs_syst = 0.0577*Yield
+    syst_error += pt_shape_syst + abs_syst 
+    yield_list.append(Yield)
+    stat_list.append(stat_error)
+    syst_list.append(syst_error)
+    print("-------------------------------------")
+    print(f"Yield [(matter + antimatter) / 2] {string} = {Yield:.2e} +- {stat_error:.2e} (stat.) +- {syst_error:.2e} (syst.)")
 
 
 ###COMPUTE S3
@@ -80,18 +115,30 @@ lambdaVals = [{"bin": [0.0, 5.0], "measure": [1.630610e+00, 7.069538e-03, 1.4482
 
 
 protonAv = hp.computeAverage(protonVals)
+protonAv040 = hp.computeAverage(protonVals,40)
 lambdaAv = hp.computeAverage(lambdaVals)
+lambdaAv040 = hp.computeAverage(protonVals,40)
 He3Av = [1.04e-06, 5.0e-08, 1.1e-07]
+He3Av040 = [2.07e-6, 1.05e-7, 1.95e-7]
+
 
 # d$N$/d$\eta$ obtained by simple weighted average of the values published in https://arxiv.org/pdf/1910.14401.pdf
 x_pPb = np.array([17.8], dtype=np.float64)
+x_pPb040=np.array([29.4], dtype=np.float64)
 xe_pPb = np.array([0.4], dtype=np.float64)
+xe_pPb040=np.array([0.6], dtype=np.float64)
 
-s3 = np.array([Yield * protonAv[0] / (He3Av[0] * lambdaAv[0])], dtype=np.float64)
-s3stat = np.array([s3[0] * hp.myHypot(stat_error / Yield, He3Av[1] / He3Av[0], protonAv[1] / protonAv[0], lambdaAv[1] / lambdaAv[0])], dtype=np.float64)
-s3syst = np.array([s3[0] * hp.myHypot(syst_error / Yield, He3Av[2] / He3Av[0], protonAv[2] / protonAv[0], lambdaAv[2] / lambdaAv[0])], dtype=np.float64)
+s3 = np.array([yield_list[0] * protonAv[0] / (He3Av[0] * lambdaAv[0])], dtype=np.float64)
+s3stat = np.array([s3[0] * hp.myHypot(stat_list[0] / yield_list[0], He3Av[1] / He3Av[0], protonAv[1] / protonAv[0], lambdaAv[1] / lambdaAv[0])], dtype=np.float64)
+s3syst = np.array([s3[0] * hp.myHypot(syst_list[0] / yield_list[0], He3Av[2] / He3Av[0], protonAv[2] / protonAv[0], lambdaAv[2] / lambdaAv[0])], dtype=np.float64)
 
-print(s3, s3syst, s3stat)
+s3_040 = np.array([yield_list[1] * protonAv040[0] / (He3Av040[0] * lambdaAv040[0])], dtype=np.float64)
+s3stat040 = np.array([s3_040[0] * hp.myHypot(stat_list[1] / yield_list[1], He3Av040[1] / He3Av040[0], protonAv040[1] / protonAv040[0], lambdaAv040[1] / lambdaAv040[0])], dtype=np.float64)
+s3syst040 = np.array([s3_040[0] * hp.myHypot(syst_list[1] / yield_list[1], He3Av040[2] / He3Av040[0], protonAv040[2] / protonAv040[0], lambdaAv040[2] / lambdaAv040[0])], dtype=np.float64)
+
+print("-------------------------------------")
+print(f"S3 {string_list[0]} = {s3[0]:.2e} +- {s3stat[0]:.2e} (stat.) +- {s3syst[0]:.2e} (syst.)")
+print(f"S3 {string_list[1]} = {s3_040[0]:.2e} +- {s3stat040[0]:.2e} (stat.) +- {s3syst040[0]:.2e} (syst.)")
 
 kBlueC  = ROOT.TColor.GetColor("#2077b4");
 kRedC  = ROOT.TColor.GetColor("#d62827");
@@ -153,18 +200,49 @@ ppb_stat = ROOT.TGraphErrors(1,x_pPb,s3,zero,s3stat)
 ppb_stat.SetLineColor(kRedC)
 ppb_stat.SetMarkerColor(kRedC)
 ppb_stat.SetMarkerStyle(20)
-ppb_stat.Draw("Pz")
+
 ppb_syst = ROOT.TGraphErrors(1,x_pPb,s3,xe_pPb,s3syst)
-ppb_syst.SetTitle("ALICE Internal p-Pb #sqrt{#it{s}_{NN}}=5.02 TeV")
+ppb_syst.SetTitle("ALICE Internal p-Pb, #sqrt{#it{s}_{NN}}=5.02 TeV")
 ppb_syst.SetLineColor(kRedC)
 ppb_syst.SetMarkerColor(kRedC)
 ppb_syst.SetFillStyle(0)
 ppb_syst.SetMarkerStyle(20)
-ppb_syst.Draw("P2")
+
+
+ppb_stat040 = ROOT.TGraphErrors(1,x_pPb040,s3_040,zero,s3stat040)
+ppb_stat040.SetLineColor(kVioletC)
+ppb_stat040.SetMarkerColor(kVioletC)
+ppb_stat040.SetMarkerStyle(20)
+
+ppb_syst040 = ROOT.TGraphErrors(1,x_pPb040, s3_040, xe_pPb040, s3syst040)
+ppb_syst040.SetTitle("ALICE Internal p-Pb, 0-40%, #sqrt{#it{s}_{NN}}=5.02 TeV")
+ppb_syst040.SetLineColor(kVioletC)
+ppb_syst040.SetMarkerColor(kVioletC)
+ppb_syst040.SetFillStyle(0)
+ppb_syst040.SetMarkerStyle(20)
+
 
 leg = ROOT.TLegend(0.15,0.75,0.7,0.85)
 leg.SetMargin(0.14)
-leg.AddEntry(ppb_syst,"","pf")
+
+if only040:
+    ppb_stat040.Draw("Pz")
+    ppb_syst040.Draw("P2")
+    leg.AddEntry(ppb_syst040,"","pf")
+
+elif onlyInt:
+    ppb_stat.Draw("Pz")
+    ppb_syst.Draw("P2")
+    leg.AddEntry(ppb_syst,"","pf")
+
+else:
+    ppb_stat040.Draw("Pz")
+    ppb_syst040.Draw("P2")    
+    ppb_stat.Draw("Pz")
+    ppb_syst.Draw("P2")
+    leg.AddEntry(ppb_syst,"","pf")
+    leg.AddEntry(ppb_syst040,"","pf")
+
 leg.AddEntry(pbpb_syst,"","pf")
 leg.SetEntrySeparation(0.2)
 legT = ROOT.TLegend(0.55,0.18,0.88,0.38)
