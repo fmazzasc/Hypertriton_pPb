@@ -116,7 +116,7 @@ if application:
         lsH = TreeHandler(path_to_data + bkg_table_name, "DataTable")
         lsH.get_data_frame().drop_duplicates(inplace=True)
 
-        simH = TreeHandler(path_to_data + signal_table_name, "GenTable").get_subset("rapidity<0.5 and rapidity>-0.5")
+        simH = TreeHandler(path_to_data + signal_table_name, "GenTable")
 
         presel_eff = len(signalH)/len(simH)
         bdt_eff_arr = np.load(efficiencies_path + "/efficiency_arr.npy")
@@ -131,6 +131,7 @@ if application:
         sign_plot = hp.significance_scan(bdt_eff_arr, score_eff_arr, dataH, presel_eff, working_point, variation_range)
 
         if significance_scan:
+                plt.ylim((-0.3,5))
                 sign_plot.savefig(results_ml_path + "/significance_scan.png")
                 
         syst_mask = np.logical_and(bdt_eff_arr >= working_point - variation_range, bdt_eff_arr <= working_point + variation_range)

@@ -404,15 +404,15 @@ def myHypot(x, y, z, w):
 
 def significance_scan(eff_cut, cut_array, dataH, eff_presel, working_point=None, syst_range=0.05):
 
-    hyp_mass = 2.992
-    sigma = 0.0025
+    hyp_mass = 2.991
+    sigma = 0.0015
     m_min = hyp_mass - 3*sigma
     m_max = hyp_mass + 3*sigma
 
     pol_degree = 0
     bins = 36
     bin_width = (3.04-2.96)/bins
-    s_exp = 4.2*70.1*0.25*2*eff_presel
+    s_exp = 4.2*85.1*0.25*2*eff_presel
 
     significance_array = []
     significance_error_array = []
@@ -462,7 +462,7 @@ def significance_scan(eff_cut, cut_array, dataH, eff_presel, working_point=None,
 
         handles, labels = fig.gca().get_legend_handles_labels()
         order = [0,3,1,2]
-        plt.legend([handles[idx] for idx in order],[labels[idx] for idx in order])
+        plt.legend([handles[idx] for idx in order],[labels[idx] for idx in order], loc='lower left')
 
     plt.xlabel("BDT Efficiency")
     plt.ylabel("Significance x BDT Efficiency")
