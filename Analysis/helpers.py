@@ -239,7 +239,7 @@ def significance_error(signal, background, signal_error=None, background_error=N
     return np.sqrt(s_propag * s_propag + b_propag * b_propag)
 
 
-def unbinned_mass_fit(data, eff, bkg_model, output_dir, cent_class, pt_range, ct_range, split, cent_string = '', bins=38):
+def unbinned_mass_fit(data, eff, bkg_model, output_dir, bkg_dir, cent_class, pt_range, ct_range, split, cent_string = '', bins=38):
 
     # define working variable
     mass = ROOT.RooRealVar('m', 'm_{^{3}He+#pi}', 2.96, 3.04, 'GeV/c^{2}')
@@ -248,7 +248,7 @@ def unbinned_mass_fit(data, eff, bkg_model, output_dir, cent_class, pt_range, ct
     hyp_mass = ROOT.RooRealVar(
         'hyp_mass', 'hypertriton mass', 2.989, 2.993, 'GeV/c^{2}')
     width = ROOT.RooRealVar('width', 'hypertriton width',
-                            0.001, 0.002, 'GeV/c^{2}')
+                            0.001, 0.003, 'GeV/c^{2}')
 
     # define signal component
     signal = ROOT.RooGaussian(
@@ -279,6 +279,8 @@ def unbinned_mass_fit(data, eff, bkg_model, output_dir, cent_class, pt_range, ct
 
     # define signal and background normalization
     n1 = ROOT.RooRealVar('n1', 'n1 const', 0., 1, 'GeV')
+
+
 
     # define the fit funciton -> signal component + background component
     fit_function = ROOT.RooAddPdf('model', 'signal + background',
@@ -378,7 +380,12 @@ def unbinned_mass_fit(data, eff, bkg_model, output_dir, cent_class, pt_range, ct
     cv = ROOT.TCanvas(f"cv_{round(eff,2)}_{cent_string}")
     frame.Draw()
     cv.Write()
-    return signal_counts, signal_error, signif, signif_error, mu, mu_error, sigma, sigma_error
+    bkg_dir.cd()
+    background.SetName(f"bkg_pdf_{round(eff,2)}_{cent_string}")
+    background.SetTitle(f"bkg_pdf_{round(eff,2)}_{cent_string}")
+    background.Write()
+
+    return signal_counts, signal_error, signif, signif_error, mu, mu_error, sigma, sigma_error, n1
 
 
 def computeAverage(Vals, breakVal = 100):
@@ -398,7 +405,7 @@ def computeAverage(Vals, breakVal = 100):
       Sys2 = Sys2 + (Bin["measure"][3] * w)
   return [Mean / weight, Stat / weight, Sys1 / weight, Sys2 / weight]
 
-def myHypot(x, y, z, w):
+def myHypot(x, y, z=0, w=0):
     return np.sqrt(x**2 + y**2 + z**2 + w**2)
 
 

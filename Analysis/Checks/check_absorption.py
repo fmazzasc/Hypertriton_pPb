@@ -6,14 +6,14 @@ import mplhep as mpl
 matplotlib.use("pdf")
 plt.style.use(mpl.style.ALICE)
 
-gen_ct = uproot.open("../Tables/SignalTable_17d_mtexp.root")["GenTable"].array(['ct'])
+gen_ct = uproot.open("../../Tables/SignalTable_17d_mtexp.root")["GenTable"].array(['ct'])
 gen_ct = gen_ct[gen_ct < 35]
 rand_arr = np.random.rand(len(gen_ct))
 
 abs_frac_list = ["", "_1.5", "_2", "_10"]
 abs_array_list = []
 for ind in abs_frac_list:
-    abs_hist = uproot.open('../Utils/AbsorptionHe3/absorption_ct/recCtHe3' + ind + ".root")['Reconstructed ct spectrum']
+    abs_hist = uproot.open('../../Utils/AbsorptionHe3/absorption_ct/recCtHe3' + ind + ".root")['Reconstructed ct spectrum']
     abs_array_list.append(abs_hist.values)
 
 ct_bins = abs_hist.edges
@@ -29,7 +29,7 @@ legend = plt.legend(title=r'Percentage of $^{3}\overline{He}$ cross section', fo
 legend.get_title().set_fontsize('16')
 plt.xlabel(r'$\it{c}t$ (cm)')
 plt.ylabel(r'$P_{abs}$')
-plt.savefig('../Results/abs_syst.png')
+plt.savefig('../../Results/abs_syst.png')
 
 
 n_abs_array = np.zeros(4)

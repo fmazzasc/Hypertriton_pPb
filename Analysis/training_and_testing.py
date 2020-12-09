@@ -127,6 +127,7 @@ if application:
 
         dataH.apply_model_handler(model_hdl)
         lsH.apply_model_handler(model_hdl)
+        signalH.apply_model_handler(model_hdl)
 
         sign_plot = hp.significance_scan(bdt_eff_arr, score_eff_arr, dataH, presel_eff, working_point, variation_range)
 
@@ -140,6 +141,7 @@ if application:
 
         selected_dataH = dataH.get_subset(f"model_output>{score_eff_syst_arr[-1]}")
         selected_lsH = lsH.get_subset(f"model_output>{score_eff_syst_arr[-1]}")
+        selected_signalH = signalH.get_subset(f"model_output>{score_eff_syst_arr[-1]}")
 
         np.save(efficiencies_path + "/bdt_eff_syst_arr.npy", bdt_eff_syst_arr)
         np.save(efficiencies_path + "/score_eff_syst_arr.npy", score_eff_syst_arr)
@@ -148,7 +150,7 @@ if application:
                 os.makedirs(selected_df_path)
         selected_dataH.write_df_to_parquet_files(selected_df_path + "/selected_df_data")
         selected_lsH.write_df_to_parquet_files(selected_df_path + "/selected_df_ls")
-
+        selected_signalH.write_df_to_parquet_files(selected_df_path + "/selected_df_mc")
         print("---------------------------------------------")
         print("Application done.")
 

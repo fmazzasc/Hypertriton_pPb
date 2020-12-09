@@ -8,10 +8,10 @@ import pandas as pd
 matplotlib.use("pdf")
 
 plt.style.use(mpl.style.ALICE)
-ptexp = uproot.open("../Tables/SignalTable_17d_ptexp.root")["SignalTable"].pandas.df(["pt"])
-mtexp = uproot.open("../Tables/SignalTable_17d_mtexp.root")["SignalTable"].pandas.df(["pt"])
-bol = uproot.open("../Tables/SignalTable_17d_bol.root")["SignalTable"].pandas.df(["pt"])
-old_bw = pd.read_parquet("../Tables/SignalTable_old_bw.parquet", columns=["HypCandPt"])
+ptexp = uproot.open("../../Tables/SignalTable_17d_ptexp.root")["SignalTable"].pandas.df(["pt"])
+mtexp = uproot.open("../../Tables/SignalTable_17d_mtexp.root")["SignalTable"].pandas.df(["pt"])
+bol = uproot.open("../../Tables/SignalTable_17d_bol.root")["SignalTable"].pandas.df(["pt"])
+old_bw = pd.read_parquet("../../Tables/SignalTable_old_bw.parquet", columns=["HypCandPt"])
 
 fig = plt.figure()
 ax = fig.add_subplot(111)
@@ -28,12 +28,12 @@ plt.legend(handles=new_handles, labels=labels)
 plt.xlabel(r"$\it{p}_{\mathrm{T}}$ $(\mathrm{GeV}/\it{c})$")
 plt.ylabel("Counts")
 plt.xlim(0,10)
-plt.savefig("../Results/pt_shapes.png")
+plt.savefig("../../Results/pt_shapes.png")
 
 ###Compute Syst due to pT shape
-ptexp_gen = uproot.open("../Tables/SignalTable_17d_ptexp.root")["GenTable"].pandas.df(["pt","rapidity"]).query("abs(rapidity)<0.5")["pt"]
-mtexp_gen = uproot.open("../Tables/SignalTable_17d_mtexp.root")["GenTable"].pandas.df(["pt","rapidity"]).query("abs(rapidity)<0.5")["pt"]
-bol_gen = uproot.open("../Tables/SignalTable_17d_bol.root")["GenTable"].pandas.df(["pt","rapidity"]).query("abs(rapidity)<0.5")["pt"]
+ptexp_gen = uproot.open("../../Tables/SignalTable_17d_ptexp.root")["GenTable"].pandas.df(["pt","rapidity"]).query("abs(rapidity)<0.5")["pt"]
+mtexp_gen = uproot.open("../../Tables/SignalTable_17d_mtexp.root")["GenTable"].pandas.df(["pt","rapidity"]).query("abs(rapidity)<0.5")["pt"]
+bol_gen = uproot.open("../../Tables/SignalTable_17d_bol.root")["GenTable"].pandas.df(["pt","rapidity"]).query("abs(rapidity)<0.5")["pt"]
 
 eff = np.array([len(ptexp)/len(ptexp_gen), len(mtexp)/len(mtexp_gen), len(bol)/len(bol_gen)])
 
