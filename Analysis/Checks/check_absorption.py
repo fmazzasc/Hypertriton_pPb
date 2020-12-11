@@ -10,7 +10,7 @@ gen_ct = uproot.open("../../Tables/SignalTable_17d_mtexp.root")["GenTable"].arra
 gen_ct = gen_ct[gen_ct < 35]
 rand_arr = np.random.rand(len(gen_ct))
 
-abs_frac_list = ["", "_1.5", "_2", "_10"]
+abs_frac_list = ["", "_1.5", "_2"]
 abs_array_list = []
 for ind in abs_frac_list:
     abs_hist = uproot.open('../../Utils/AbsorptionHe3/absorption_ct/recCtHe3' + ind + ".root")['Reconstructed ct spectrum']
@@ -19,20 +19,20 @@ for ind in abs_frac_list:
 ct_bins = abs_hist.edges
 
 
-abs_perc_list = ['100%', '150%', '200%', '1000%']
+abs_perc_list = ['100%', '150%', '200%']
 fig = plt.figure()
 for ind, perc in enumerate(abs_perc_list):
-    plt.step(ct_bins, np.append(abs_array_list[ind], abs_array_list[ind][-1]), label = perc)
+    plt.step(ct_bins, np.insert(abs_array_list[ind], 0, abs_array_list[ind][0]), label = perc)
 
 plt.xlim((ct_bins[0],ct_bins[-1]))
-legend = plt.legend(title=r'Percentage of $^{3}\overline{He}$ cross section', fontsize=14, loc='upper right', bbox_to_anchor=(0.85, 0.94))
+legend = plt.legend(title=r'Percentage of $^{3}\overline{He}$ cross section', fontsize=14, loc='upper left')
 legend.get_title().set_fontsize('16')
 plt.xlabel(r'$\it{c}t$ (cm)')
 plt.ylabel(r'$P_{abs}$')
 plt.savefig('../../Results/abs_syst.png')
 
 
-n_abs_array = np.zeros(4)
+n_abs_array = np.zeros(3)
 
 for i in range(len(ct_bins) - 1):
     ct_mask = np.logical_and(gen_ct > ct_bins[i], gen_ct <= ct_bins[i+1])

@@ -155,7 +155,10 @@ kBrownC  = ROOT.TColor.GetColor("#8c564c");
 kAzureC  = ROOT.TColor.GetColor("#18becf");
 kGreenBC  = ROOT.TColor.GetColor("#bcbd21");
 
-hp_ratio_csm = ROOT.TGraphErrors("../../Utils/ProdModels/hyp_p_ratio.dat","%lg %*s %*s %*s %*s %lg %*s")
+# hp_ratio_csm = ROOT.TGraphErrors("../../Utils/ProdModels/hyp_p_ratio.dat","%lg %*s %*s %*s %*s %lg %*s")
+fin = ROOT.TFile('../../../Desktop/vanilla_CSM_predictions_H3L_to_P.root')
+hp_ratio_csm = fin.Get('gCSM_3HL_over_p')
+print(hp_ratio_csm)
 hp_ratio_csm.Draw()
 hp_ratio_csm.SetLineColor(kOrangeC)
 hp_ratio_csm.SetLineWidth(1)
@@ -171,7 +174,7 @@ hp_ratio_csm.SetTitle("Full canonical SHM")
 
 cv = ROOT.TCanvas("cv")
 cv.SetBottomMargin(0.14)
-frame=cv.DrawFrame(5., 1e-7, 200, hp_ratio[0]*18,";#LTd#it{N}_{ch}/d#it{#eta}#GT_{|#it{#eta}|<0.5}; hyp/p")
+frame=cv.DrawFrame(5., 1e-7, 200, hp_ratio[0]*34,";#LTd#it{N}_{ch}/d#it{#eta}#GT_{|#it{#eta}|<0.5}; _{#Lambda}^{3}H/p")
 frame.GetXaxis().SetTitleOffset(1.25)
 cv.SetLogx()
 cv.SetLogy()
@@ -210,7 +213,7 @@ ppb_syst040.SetFillStyle(0)
 ppb_syst040.SetMarkerStyle(20)
 
 
-leg = ROOT.TLegend(0.15,0.75,0.7,0.85)
+leg = ROOT.TLegend(0.55,0.4,0.88,0.5)
 leg.SetMargin(0.14)
 
 if only040:

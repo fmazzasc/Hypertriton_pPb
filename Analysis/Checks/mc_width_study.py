@@ -12,8 +12,9 @@ import helpers as hp
 
 ROOT.gROOT.SetBatch()
 
+
 pdf_fraction_list = np.load('../../Utils/pdf_fraction_040.npy')
-toy_copies = 1000
+toy_copies = 10000
 # define working variable
 mass = ROOT.RooRealVar('m', 'm_{^{3}He+#pi}', 2.96, 3.04, 'GeV/c^{2}')
 # define signal parameters
@@ -72,6 +73,7 @@ for pdf_frac, eff,cut in zip(pdf_fraction_list, bdt_eff_array, score_cuts_array)
 
     
     for toy in range(toy_copies):
+        print(toy)
         wpdf = workspace.pdf(gen_function.GetName())
         toy_data = wpdf.generate(ROOT.RooArgSet(mass), len_data)
         
@@ -81,7 +83,7 @@ for pdf_frac, eff,cut in zip(pdf_fraction_list, bdt_eff_array, score_cuts_array)
         fit_function.plotOn(frame)
         
 
-        if toy==100:
+        if toy==15:
 
             toy_data_list.append(toy_data)
             func_list.append(fit_function)
@@ -111,7 +113,6 @@ boxFcn1.SetLineStyle(2)
 boxFcn1.SetLineColor(ROOT.kRed - 3)
 
 
-
 output_file = ROOT.TFile('../../Utils/width.root', 'recreate')
 
 cv = ROOT.TCanvas(f"width_0.72")
@@ -137,8 +138,9 @@ for toy,func in zip(toy_data_list, func_list):
 
     toy.plotOn(frame)
     func.plotOn(frame, ROOT.RooFit.LineColor(ROOT.kBlue))
+    # func.paramOn(frame)
     
-    cv = ROOT.TCanvas(f"cv_{round(eff,2)}")
+    cv = ROOT.TCanvas(f"toy_example")
     frame.Draw()
     cv.Write()
 
