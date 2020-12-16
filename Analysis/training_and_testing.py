@@ -55,8 +55,6 @@ if training:
                 bkgH.shuffle_data_frame(size=bkg_fraction*len(signalH), inplace=True, random_state=52)
 
         train_test_data = au.train_test_generator([signalH, bkgH], [1,0], test_size=0.5, random_state=42)
-        train_test_data[2]['y'] = train_test_data[3]
-        train_test_data[2].query('y>0').to_parquet("test_data.parquet")
 
 
         training_columns = ['TPCnSigmaHe3','ct','V0CosPA','ProngsDCA','He3ProngPvDCA','PiProngPvDCA','He3ProngPvDCAXY','PiProngPvDCAXY','NpidClustersHe3','TPCnSigmaPi']
@@ -142,7 +140,7 @@ if application:
 
         selected_dataH = dataH.get_subset(f"model_output>{score_eff_syst_arr[-1]}")
         selected_lsH = lsH.get_subset(f"model_output>{score_eff_syst_arr[-1]}")
-        # selected_signalH = signalH.get_subset(f"model_output>{score_eff_syst_arr[-1]}")
+
 
         np.save(efficiencies_path + "/bdt_eff_syst_arr.npy", bdt_eff_syst_arr)
         np.save(efficiencies_path + "/score_eff_syst_arr.npy", score_eff_syst_arr)
@@ -151,7 +149,7 @@ if application:
                 os.makedirs(selected_df_path)
         selected_dataH.write_df_to_parquet_files(selected_df_path + "/selected_df_data")
         selected_lsH.write_df_to_parquet_files(selected_df_path + "/selected_df_ls")
-        # selected_signalH.write_df_to_parquet_files(selected_df_path + "/selected_df_mc")
+  
         print("---------------------------------------------")
         print("Application done.")
 

@@ -38,5 +38,9 @@ if not os.path.exists("Utils/ProdModels/s3_2body.csv"):
 if not os.path.exists("Utils/ProdModels/FullCSM-S3.dat"):
     os.system("scp lxplus.cern.ch:/eos/user/h/hypertriton/trees/pPbProdModels/FullCSM-S3.dat  Utils/ProdModels/.")
 
+if not os.path.exists("Utils/ProdModels/CSM_predictions_S3_T155MeV_Vc3dNdy.root"):
+    os.system("scp lxplus.cern.ch:/eos/user/h/hypertriton/trees/pPbProdModels/CSM_predictions_S3_T155MeV_Vc3dNdy.root  Utils/ProdModels/.")
+
 if not os.path.exists("Utils/AbsorptionHe3/"):
     os.system("scp -r lxplus.cern.ch:/eos/user/h/hypertriton/trees/AbsorptionHe3/  Utils/.")
+
