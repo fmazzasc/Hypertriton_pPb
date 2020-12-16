@@ -51,10 +51,15 @@ for pdf_frac, eff,cut in zip(pdf_fraction_list, bdt_eff_array, score_cuts_array)
     if eff!=0.72:
         continue
 
+
     n1.setVal(pdf_frac.getVal())
-    n1.setConstant(True)
+
+
+    # n1.setConstant(True)
 
     correction = ROOT.TH1D(f'Width_{eff}',"; Width (GeV/#it{c}^{2})", 80, 0.00, 0.008)
+    yield_width = ROOT.TH2D(f'yield_width_{eff}',"; Width (GeV/#it{c}^{2}); (Generated - Fitted)/Generated signal", 80, 0.001, 0.008, 40, -3, 3)
+    print(yield_width)
     bkg_pdf = bkg_file.Get(f'bkg_pdf/bkg_pdf_{eff}_040')
 
 
@@ -66,6 +71,10 @@ for pdf_frac, eff,cut in zip(pdf_fraction_list, bdt_eff_array, score_cuts_array)
     signal_pdf = ROOT.RooHistPdf("histpdf1", "histpdf1", ROOT.RooArgSet(mass), roo_hist, 0)
 
     gen_function = ROOT.RooAddPdf('signal+bkg(toy)', 'signal+bkg(toy)', ROOT.RooArgList(signal_pdf, bkg_pdf), ROOT.RooArgList(pdf_frac))
+
+    initial_signal = len_data*pdf_frac.getVal()
+    print('INITIAL SIGNAL: ', initial_signal)
+
 
     workspace = ROOT.RooWorkspace()
     getattr(workspace, 'import')(gen_function)
@@ -81,6 +90,7 @@ for pdf_frac, eff,cut in zip(pdf_fraction_list, bdt_eff_array, score_cuts_array)
         frame = mass.frame(36)
         toy_data.plotOn(frame)
         fit_function.plotOn(frame)
+        fitted_signal = len_data*n1.getVal()
         
 
         if toy==15:
@@ -90,10 +100,12 @@ for pdf_frac, eff,cut in zip(pdf_fraction_list, bdt_eff_array, score_cuts_array)
 
 
         if width.getVal()<0.0077:
-            correction.Fill(width.getVal())    
+            correction.Fill(width.getVal())
+            yield_width.Fill(width.getVal(), float(initial_signal - fitted_signal)/initial_signal)   
         workspace.loadSnapshot(f'pdf_{eff}')
  
     correction.SetDirectory(0)
+    yield_width.SetDirectory(0)
 
 bkg_file.Close()
 
@@ -114,9 +126,10 @@ boxFcn1.SetLineColor(ROOT.kRed - 3)
 
 
 output_file = ROOT.TFile('../../Utils/width.root', 'recreate')
-
+yield_width.Write()
 cv = ROOT.TCanvas(f"width_0.72")
 correction.SetMaximum(correction.GetMaximum() + 4)
+correction.Fit('gaus', '', '', 0.002 - 0.001 , 0.002 + 0.001)
 correction.Draw()
 boxFcn1.Draw("same")
 Fcn1.Draw('lsame')
@@ -130,6 +143,7 @@ leg1.AddEntry(correction, "Width from 1000 toys", "l")
 leg1.AddEntry(boxFcn1, "Width from data", "fl")
 leg1.Draw('same')
 cv.Write()
+
 
 for toy,func in zip(toy_data_list, func_list):
 

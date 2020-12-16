@@ -155,9 +155,9 @@ kBrownC  = ROOT.TColor.GetColor("#8c564c");
 kAzureC  = ROOT.TColor.GetColor("#18becf");
 kGreenBC  = ROOT.TColor.GetColor("#bcbd21");
 
-# hp_ratio_csm = ROOT.TGraphErrors("../../Utils/ProdModels/hyp_p_ratio.dat","%lg %*s %*s %*s %*s %lg %*s")
-fin = ROOT.TFile('../../../Desktop/vanilla_CSM_predictions_H3L_to_P.root')
-hp_ratio_csm = fin.Get('gCSM_3HL_over_p')
+hp_ratio_csm = ROOT.TGraphErrors("../../Utils/ProdModels/hyp_p_ratio.dat","%lg %*s %*s %*s %*s %lg %*s")
+# fin = ROOT.TFile('../../../Desktop/vanilla_CSM_predictions_H3L_to_P.root')
+# hp_ratio_csm = fin.Get('gCSM_3HL_over_p')
 print(hp_ratio_csm)
 hp_ratio_csm.Draw()
 hp_ratio_csm.SetLineColor(kOrangeC)

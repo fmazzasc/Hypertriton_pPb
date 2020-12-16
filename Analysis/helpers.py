@@ -257,9 +257,9 @@ def unbinned_mass_fit(data, eff, bkg_model, output_dir, bkg_dir, cent_class, pt_
     # define background parameters
     slope = ROOT.RooRealVar('slope', 'exponential slope', -100., 100.)
 
-    c0 = ROOT.RooRealVar('c0', 'constant c0', 1.)
-    c1 = ROOT.RooRealVar('c1', 'constant c1', 1.)
-    c2 = ROOT.RooRealVar('c2', 'constant c2', 1.)
+    c0 = ROOT.RooRealVar('c0', 'constant c0', -2,2)
+    c1 = ROOT.RooRealVar('c1', 'constant c1', -2, 2)
+    c2 = ROOT.RooRealVar('c2', 'constant c2', -2, 2)
 
     # define background component depending on background model required
     if bkg_model == 'pol0':
@@ -313,6 +313,9 @@ def unbinned_mass_fit(data, eff, bkg_model, output_dir, bkg_dir, cent_class, pt_
     # compute significance
     mass.setRange('signal region',  mu -
                   (nsigma * sigma), mu + (nsigma * sigma))
+    
+    range_lower = mu - (nsigma * sigma)
+    range_upper = mu + (nsigma * sigma)
     
     n_sig = len(data)*n1.getVal()
     n_bkg = len(data) - n_sig
@@ -377,15 +380,153 @@ def unbinned_mass_fit(data, eff, bkg_model, output_dir, bkg_dir, cent_class, pt_
     stry= f"Events/({binning:.2f}"
     stry += "MeV/#it{c}^{2})"
     frame.SetYTitle(stry)
-    cv = ROOT.TCanvas(f"cv_{round(eff,2)}_{cent_string}")
+    cv = ROOT.TCanvas(f"cv_gaus_{round(eff,2)}_{cent_string}")
     frame.Draw()
-    cv.Write()
-    bkg_dir.cd()
-    background.SetName(f"bkg_pdf_{round(eff,2)}_{cent_string}")
-    background.SetTitle(f"bkg_pdf_{round(eff,2)}_{cent_string}")
-    background.Write()
+    if output_dir != '':
+        cv.Write()
+    # bkg_dir.cd()
+    # background.SetName(f"bkg_pdf_{round(eff,2)}_{cent_string}")
+    # background.SetTitle(f"bkg_pdf_{round(eff,2)}_{cent_string}")
+    # background.Write()
 
-    return signal_counts, signal_error, signif, signif_error, mu, mu_error, sigma, sigma_error, n1
+    return signal_counts, signal_error, signif, signif_error, mu, mu_error, sigma, sigma_error, n1, range_lower, range_upper
+
+
+def unbinned_mass_fit_mc(data, eff, bkg_model, signal_hist, output_dir, bkg_dir, cent_class, pt_range, ct_range, split, cent_string = '', bins=38, sign_range = [2.96,3.04]):
+
+    # define working variable
+    mass = ROOT.RooRealVar('m', 'm_{^{3}He+#pi}', 2.96, 3.04, 'GeV/c^{2}')
+
+
+    # define signal component
+    hist_signal = ROOT.RooDataHist('signal_hist', 'signal_hist', ROOT.RooArgList(mass), signal_hist)
+    signal = ROOT.RooHistPdf("histpdf1", "histpdf1", ROOT.RooArgSet(mass), hist_signal, 0)
+
+
+
+    c0 = ROOT.RooRealVar('c0', 'constant c0', 1)
+    c1 = ROOT.RooRealVar('c1', 'constant c1', 1)
+    c2 = ROOT.RooRealVar('c2', 'constant c2', 1)
+
+    # define background component depending on background model required
+    if bkg_model == 'pol0':
+        background = ROOT.RooPolynomial(
+            'bkg', 'pol0 bkg', mass, ROOT.RooArgList(c0))
+
+    if bkg_model == 'pol1':
+        background = ROOT.RooPolynomial(
+            'bkg', 'pol1 bkg', mass, ROOT.RooArgList(c0, c1))
+
+    if bkg_model == 'pol2':
+        background = ROOT.RooPolynomial(
+            'bkg', 'pol2 for bkg', mass, ROOT.RooArgList(c0, c1, c2))
+
+    if bkg_model == 'expo':
+        background = ROOT.RooExponential('bkg', 'expo for bkg', mass, slope)
+
+
+    # define signal and background normalization
+    n1 = ROOT.RooRealVar('n1', 'n1 const', 0., 1, 'GeV')
+
+
+
+    # define the fit funciton -> signal component + background component
+    fit_function = ROOT.RooAddPdf('model', 'signal + background', ROOT.RooArgList(signal, background), ROOT.RooArgList(n1))
+
+    # convert data to RooData
+    roo_data = ndarray2roo(data, mass)
+
+    # fit data
+    fit_function.fitTo(roo_data, rf.Range(
+        2.96, 3.04))
+
+    # plot the fit
+    frame = mass.frame(bins)
+    frame.SetTitle("")
+
+    roo_data.plotOn(frame)
+    fit_function.plotOn(frame, rf.LineColor(ROOT.kBlue))
+    #fit_function.plotOn(frame, rf.Components('signal'), rf.LineStyle(ROOT.kDotted), rf.LineColor(ROOT.kRed))
+    fit_function.plotOn(frame, rf.Components(
+        'bkg'), rf.LineStyle(ROOT.kDashed), rf.LineColor(ROOT.kRed))
+
+    # add info to plot
+    
+    signal_counts = len(data)*n1.getVal()
+    signal_error = signal_counts*(n1.getError()/n1.getVal())
+    background_counts = len(data) - signal_counts
+    background_error = background_counts*(n1.getError()/n1.getVal())
+
+    mass.setRange('signal region',  sign_range[0], sign_range[1])
+    
+    
+    n_sig = signal_counts
+    n_bkg = background_counts
+
+    rel_err = n1.getError()/n1.getVal()
+    n_sig_err = n_sig*rel_err
+    n_bkg_err = n_bkg*rel_err
+
+    signal_counts = signal.createIntegral(ROOT.RooArgSet(
+        mass), ROOT.RooArgSet(mass), 'signal region').getVal() * n_sig
+    signal_error = signal.createIntegral(ROOT.RooArgSet(
+        mass), ROOT.RooArgSet(mass), 'signal region').getVal() * n_sig *rel_err
+    
+
+    background_counts = background.createIntegral(ROOT.RooArgSet(
+        mass), ROOT.RooArgSet(mass), 'signal region').getVal() * n_bkg
+    background_error = background.createIntegral(ROOT.RooArgSet(
+        mass), ROOT.RooArgSet(mass), 'signal region').getVal() * n_bkg *rel_err
+
+    signif = signal_counts / np.sqrt(signal_counts + background_counts + 1e-10)
+    signif_error = significance_error(signal_counts, background_counts, signal_error, background_error)
+
+    pinfo = ROOT.TPaveText(0.537, 0.474, 0.937, 0.875, 'NDC')
+    pinfo.SetBorderSize(0)
+    pinfo.SetFillStyle(0)
+    pinfo.SetTextAlign(30+3)
+    pinfo.SetTextFont(42)
+
+
+    decay_label = {
+        '': '{}^{3}_{#Lambda}H#rightarrow ^{3}He #pi^{-} + c.c.',
+        '_matter': '{}^{3}_{#Lambda}H#rightarrow ^{3}He #pi^{-}',
+        '_antimatter': '{}^{3}_{#bar{#Lambda}}#bar{H}#rightarrow ^{3}#bar{He}#pi^{+}',
+    }
+
+    string_list = []
+    string_list.append(f'Signal = {n_sig:.1f} #pm {n_sig_err:.1f}')    
+    string_list.append(f'Significance ({3:.0f}#sigma) = {signif:.1f} #pm {signif_error:.1f}')
+
+    if roo_data.sumEntries() > 0:
+        string_list.append('#chi^{2} / NDF = ' + f'{frame.chiSquare(4):.2f}')
+
+    if background_counts > 0:
+
+        ratio = signal_counts / background_counts
+        string_list.append(f'S/B ({3:.0f}#sigma) = {ratio:.2f}')
+
+    for s in string_list:
+        pinfo.AddText(s)
+
+    frame.addObject(pinfo)
+
+    output_dir.cd()
+    binning = 1000*((3.04-2.96)/bins)
+    stry= f"Events/({binning:.2f}"
+    stry += "MeV/#it{c}^{2})"
+    frame.SetYTitle(stry)
+    cv = ROOT.TCanvas(f"cv_templ_{round(eff,2)}_{cent_string}")
+    frame.Draw()
+    if output_dir != '':
+        cv.Write()
+    if bkg_dir != '':
+        bkg_dir.cd()
+        background.SetName(f"bkg_pdf_{round(eff,2)}_{cent_string}")
+        background.SetTitle(f"bkg_pdf_{round(eff,2)}_{cent_string}")
+        background.Write()
+    return n_sig, n_sig_err, n1
+
 
 
 def computeAverage(Vals, breakVal = 100):
@@ -513,4 +654,17 @@ def plotData(variable, data_hist, model, has_bkg, title, left_limit, right_limit
         ''), rf.LineColor(ROOT.kBlue), rf.Name('model'))
     chi2 = frame.chiSquare('model', 'data')
     return frame, chi2, fit_results
+    
+
+def compute_3sigma_coverage(df):
+    len_df = len(df)
+    sigma_prob = 0.95
+    up_val = np.max(df)
+    cent_val = np.mean(df)
+    var_interval = np.linspace(0, (up_val - cent_val), 1000)
+    for var in var_interval:
+        len_part = np.sum(np.logical_and(df> cent_val - var, df< cent_val + var))
+        frac=  len_part/len_df
+        if(frac>sigma_prob):
+            return cent_val, var
     

@@ -13,19 +13,6 @@ matplotlib.use("pdf")
 matplotlib.style.use(mplhep.style.ALICE)
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument("-c", '--cent040', help='Plot only 0-40% point', action = 'store_true')
-parser.add_argument("-b", '--both', help='Plot both points', action = 'store_true')
-args = parser.parse_args()
-
-only040 = args.cent040
-onlyInt = not only040
-if args.both:
-    onlyO40 = False
-    onlyInt = False
-
-
-
 
 
 ##COMPUTE PRESELECTION-EFFICIENCY
@@ -38,74 +25,87 @@ print("Pre-selection efficiency: ", presel_eff)
 
 ## FIT INVARIANT MASS SPECTRA
 df = pd.read_parquet("../Utils/ReducedDataFrames/selected_df_data.parquet.gzip")
+df_mc = pd.read_parquet("../Utils/ReducedDataFrames/selected_df_mc.parquet.gzip")
 score_cuts_array = np.load("../Utils/Efficiencies/score_eff_syst_arr.npy")
 bdt_eff_array = np.load("../Utils/Efficiencies/bdt_eff_syst_arr.npy")
 selected_bdt_eff = 0.72
-signal_list = []
-error_list = []
+n_events040 = np.sum(uproot.open('../Utils/AnalysisResults_pPb.root')['AliAnalysisTaskHyperTriton2He3piML_default_summary;1'][11].values[:40-1])
+branching_ratio = 0.25
+
 signal_list040 = []
 error_list040 = []
-
-
-
 n1_list040 = []
-n1_list = []
+
 
 ff = ROOT.TFile("../Results/inv_mass_fits.root", "recreate")
 bkg_dir = ff.mkdir('bkg_pdf')
 ff.cd()
 
+
 for eff,cut in zip(bdt_eff_array, score_cuts_array):
     cut_string = f"model_output>{cut}"
-    data = np.array(df.query(cut_string + " and 2.96<m<3.04 ")["m"])
     data040 = np.array(df.query(cut_string + " and 2.96<m<3.04 and centrality<=40 and abs(fZ) < 10")["m"])
-    res = hp.unbinned_mass_fit(data, eff, 'pol0', ff, bkg_dir, [0,90], [0,10], [0,35], split="", bins = 34)
     res040 = hp.unbinned_mass_fit(data040, eff, 'pol0', ff, bkg_dir, [0,40], [0,10], [0,35], split="", cent_string='040', bins = 34)
-    signal_list.append(res[0])
-    error_list.append(res[1])
-    signal_list040.append(res040[0])
-    error_list040.append(res040[1])
-    n1_list.append(res[-1])
-    n1_list040.append(res040[-1])
+
+    mc_data = np.array(df_mc.query(cut_string + " and 2.96<m<3.04")["m"])
+    mean_mass = np.mean(mc_data)
+    hist = ROOT.TH1D(f'histo_mc_{eff}', f'histo_mc_{eff}', 500, 2.96, 3.04)
+    for mc_entry in mc_data:
+        hist.Fill(mc_entry - mean_mass + res040[4])
+
+    res_template = hp.unbinned_mass_fit_mc(data040, eff, 'pol0', hist, ff, bkg_dir, [0,40], [0,10], [0,35], split="", cent_string='040', bins = 34, sign_range = [res040[-2], res040[-1]])
+
+    signal_list040.append(res_template[0])
+    error_list040.append(res_template[1])
+    n1_list040.append(res_template[2])
 
 
-signal_array = np.array(signal_list)
-error_array = np.array(error_list)
 signal_array040 = np.array(signal_list040)
 error_array040 = np.array(error_list040)
 
-signal_array_list = [signal_array, signal_array040]
-error_array_list = [error_array, error_array040]
 
 np.save('../Utils/pdf_fraction_040', n1_list040)
-np.save('../Utils/pdf_fraction_040', n1_list040)
 
-###COMPUTE YIELD
-n_events = 7.38470e+08 + 1.254483e+8
-n_events040 = np.sum(uproot.open('../Utils/AnalysisResults_pPb.root')['AliAnalysisTaskHyperTriton2He3piML_default_summary;1'][11].values[:40-1])
-n_events_list = [n_events, n_events040]
-string_list = ['', 'in 0-40%']
-branching_ratio = 0.25
 
-yield_list = []
-stat_list = []
-syst_list = []
 
-for sig_arr, err_arr, n_ev, string in zip(signal_array_list, error_array_list, n_events_list, string_list):
-    corrected_counts = sig_arr/n_ev/branching_ratio/presel_eff/bdt_eff_array
-    corrected_error = err_arr/n_ev/branching_ratio/presel_eff/bdt_eff_array
-    Yield = np.float64(corrected_counts[bdt_eff_array==selected_bdt_eff]  / 2)
-    stat_error = np.float64(corrected_error[bdt_eff_array==selected_bdt_eff] / 2)
-    syst_error = np.std(corrected_counts) / 2
-    pt_shape_syst = 0.0628*Yield
-    abs_syst = 0.0577*Yield
-    syst_error += pt_shape_syst + abs_syst 
-    yield_list.append(Yield)
-    stat_list.append(stat_error)
-    syst_list.append(syst_error)
-    print("-------------------------------------")
-    print(f"Yield [(matter + antimatter) / 2] {string} = {Yield:.2e} +- {stat_error:.2e} (stat.) +- {syst_error:.2e} (syst.)")
 
+
+####Barlow check
+
+histo_barlow = ROOT.TH1D('barlow_check', 'barlow_check', 9, -0.7 , 0.7)
+wp_index = bdt_eff_array == 0.72
+corrected_counts = signal_array040/n_events040/branching_ratio/presel_eff/bdt_eff_array
+corrected_error = error_array040/n_events040/branching_ratio/presel_eff/bdt_eff_array
+wp_yield = corrected_counts[wp_index]
+wp_error = corrected_error[wp_index]
+for corr_count, corr_err in zip(corrected_counts,corrected_error):
+    correl = (wp_yield - corr_count)/np.abs(wp_yield - corr_err)
+    histo_barlow.Fill(correl)
+
+aa = ROOT.TFile('../Utils/Barlow.root', 'recreate')
+histo_barlow.Write()
+aa.Close()
+    
+
+###COMPUTE YIELD############################
+
+
+corrected_counts = signal_array040/n_events040/branching_ratio/presel_eff/bdt_eff_array
+corrected_error = error_array040/n_events040/branching_ratio/presel_eff/bdt_eff_array
+Yield = np.float64(corrected_counts[bdt_eff_array==selected_bdt_eff]  / 2)
+Yield = Yield/0.98
+
+stat_error = np.float64(corrected_error[bdt_eff_array==selected_bdt_eff] / 2)
+syst_error = float(np.std(corrected_counts) / corrected_counts[bdt_eff_array==selected_bdt_eff])
+print(syst_error*Yield)
+syst_error = syst_error*Yield
+pt_shape_syst = 0.00628*Yield
+abs_syst = 0.041*Yield
+fit_syst = 0.055*Yield
+syst_error = np.sqrt(syst_error**2 + pt_shape_syst**2 + abs_syst**2 + fit_syst**2) 
+print("-------------------------------------")
+print(f"Yield [(matter + antimatter) / 2] 0-40% = {Yield:.2e} +- {stat_error:.2e} (stat.) +- {syst_error:.2e} (syst.)")
+#############################################
 
 ###COMPUTE S3
 protonVals = [{"bin":[0.0, 5.0], "measure": [2.280446e+00, 4.394273e-03, 1.585968e-01, 7.001060e-02]},
@@ -124,31 +124,24 @@ lambdaVals = [{"bin": [0.0, 5.0], "measure": [1.630610e+00, 7.069538e-03, 1.4482
 {"bin": [80.0, 100.0], "measure": [1.335216e-01, 1.353847e-03, 1.142858e-02, 6.444149e-03]}]
 
 
-protonAv = hp.computeAverage(protonVals)
+
 protonAv040 = hp.computeAverage(protonVals,40)
-lambdaAv = hp.computeAverage(lambdaVals)
 lambdaAv040 = hp.computeAverage(protonVals,40)
-He3Av = [1.04e-06, 5.0e-08, 1.1e-07]
 He3Av040 = [2.07e-6, 1.05e-7, 1.95e-7]
 
 
 # d$N$/d$\eta$ obtained by simple weighted average of the values published in https://arxiv.org/pdf/1910.14401.pdf
-x_pPb = np.array([17.8], dtype=np.float64)
+
 x_pPb040=np.array([29.4], dtype=np.float64)
-xe_pPb = np.array([0.4], dtype=np.float64)
 xe_pPb040=np.array([0.6], dtype=np.float64)
 
-s3 = np.array([yield_list[0] * protonAv[0] / (He3Av[0] * lambdaAv[0])], dtype=np.float64)
-s3stat = np.array([s3[0] * hp.myHypot(stat_list[0] / yield_list[0], He3Av[1] / He3Av[0], protonAv[1] / protonAv[0], lambdaAv[1] / lambdaAv[0])], dtype=np.float64)
-s3syst = np.array([s3[0] * hp.myHypot(syst_list[0] / yield_list[0], He3Av[2] / He3Av[0], protonAv[2] / protonAv[0], lambdaAv[2] / lambdaAv[0])], dtype=np.float64)
 
-s3_040 = np.array([yield_list[1] * protonAv040[0] / (He3Av040[0] * lambdaAv040[0])], dtype=np.float64)
-s3stat040 = np.array([s3_040[0] * hp.myHypot(stat_list[1] / yield_list[1], He3Av040[1] / He3Av040[0], protonAv040[1] / protonAv040[0], lambdaAv040[1] / lambdaAv040[0])], dtype=np.float64)
-s3syst040 = np.array([s3_040[0] * hp.myHypot(syst_list[1] / yield_list[1], He3Av040[2] / He3Av040[0], protonAv040[2] / protonAv040[0], lambdaAv040[2] / lambdaAv040[0])], dtype=np.float64)
+s3_040 = np.array([Yield * protonAv040[0] / (He3Av040[0] * lambdaAv040[0])], dtype=np.float64)
+s3stat040 = np.array([s3_040[0] * hp.myHypot(stat_error / Yield, He3Av040[1] / He3Av040[0], protonAv040[1] / protonAv040[0], lambdaAv040[1] / lambdaAv040[0])], dtype=np.float64)
+s3syst040 = np.array([s3_040[0] * hp.myHypot(syst_error / Yield, He3Av040[2] / He3Av040[0], protonAv040[2] / protonAv040[0], lambdaAv040[2] / lambdaAv040[0])], dtype=np.float64)
 
 print("-------------------------------------")
-print(f"S3 {string_list[0]} = {s3[0]:.2e} +- {s3stat[0]:.2e} (stat.) +- {s3syst[0]:.2e} (syst.)")
-print(f"S3 {string_list[1]} = {s3_040[0]:.2e} +- {s3stat040[0]:.2e} (stat.) +- {s3syst040[0]:.2e} (syst.)")
+print(f"S3 0-40% = {s3_040[0]:.2e} +- {s3stat040[0]:.2e} (stat.) +- {s3syst040[0]:.2e} (syst.)")
 
 kBlueC  = ROOT.TColor.GetColor("#2077b4");
 kRedC  = ROOT.TColor.GetColor("#d62827");
@@ -162,9 +155,19 @@ kAzureC  = ROOT.TColor.GetColor("#18becf");
 kGreenBC  = ROOT.TColor.GetColor("#bcbd21");
 
 s3_csm = ROOT.TGraphErrors("../Utils/ProdModels/FullCSM-S3.dat","%lg %*s %*s %*s %*s %*s %*s %*s %*s %*s %lg")
+fin = ROOT.TFile('../../Downloads/CSM_predictions_S3_T155MeV_Vc3dNdy.root')
+s3_csm_std = fin.Get('gCSM_S3_vs_dNchdEta')
+
+
 s3_csm.SetLineColor(kOrangeC)
 s3_csm.SetLineWidth(1)
 s3_csm.SetTitle("Full canonical SHM")
+
+s3_csm_std.SetLineColor(kGreenC)
+s3_csm_std.SetLineWidth(1)
+s3_csm_std.SetTitle("Canonical SHM with T=155MeV, Vc = 3dV/dy")
+
+
 s3_2body = ROOT.TGraphErrors("../Utils/ProdModels/s3_2body.csv","%lg %lg %*s","\t,")
 s3_2body.SetLineColor(kBlueC)
 s3_2body.SetMarkerColor(kBlueC)
@@ -181,6 +184,7 @@ frame.GetXaxis().SetTitleOffset(1.25)
 cv.SetLogx()
 # cv.SetLogy()
 s3_csm.Draw("L")
+s3_csm_std.Draw('L')
 s3_2body.Draw("L")
 s3_3body.Draw("L")
 
@@ -206,17 +210,6 @@ pbpb_syst.SetMarkerStyle(20)
 pbpb_syst.Draw("P2")
 
 
-ppb_stat = ROOT.TGraphErrors(1,x_pPb,s3,zero,s3stat)
-ppb_stat.SetLineColor(kRedC)
-ppb_stat.SetMarkerColor(kRedC)
-ppb_stat.SetMarkerStyle(20)
-
-ppb_syst = ROOT.TGraphErrors(1,x_pPb,s3,xe_pPb,s3syst)
-ppb_syst.SetTitle("ALICE Internal p-Pb, #sqrt{#it{s}_{NN}}=5.02 TeV")
-ppb_syst.SetLineColor(kRedC)
-ppb_syst.SetMarkerColor(kRedC)
-ppb_syst.SetFillStyle(0)
-ppb_syst.SetMarkerStyle(20)
 
 
 ppb_stat040 = ROOT.TGraphErrors(1,x_pPb040,s3_040,zero,s3stat040)
@@ -235,29 +228,27 @@ ppb_syst040.SetMarkerStyle(20)
 leg = ROOT.TLegend(0.15,0.75,0.7,0.85)
 leg.SetMargin(0.14)
 
-if only040:
-    ppb_stat040.Draw("Pz")
-    ppb_syst040.Draw("P2")
-    leg.AddEntry(ppb_syst040,"","pf")
 
-elif onlyInt:
-    ppb_stat.Draw("Pz")
-    ppb_syst.Draw("P2")
-    leg.AddEntry(ppb_syst,"","pf")
+ppb_stat040.Draw("Pz")
+ppb_syst040.Draw("P2")
+leg.AddEntry(ppb_syst040,"","pf")
 
-else:
-    ppb_stat040.Draw("Pz")
-    ppb_syst040.Draw("P2")    
-    ppb_stat.Draw("Pz")
-    ppb_syst.Draw("P2")
-    leg.AddEntry(ppb_syst,"","pf")
-    leg.AddEntry(ppb_syst040,"","pf")
+pinfo = ROOT.TPaveText(0.18,0.68,0.33,0.73, 'NDC')
+pinfo.SetBorderSize(0)
+pinfo.SetFillStyle(0)
+pinfo.SetTextAlign(30+3)
+pinfo.SetTextFont(42)
+pinfo.AddText('B.R. = 0.25')
+pinfo.Draw()
+
 
 leg.AddEntry(pbpb_syst,"","pf")
 leg.SetEntrySeparation(0.2)
-legT = ROOT.TLegend(0.55,0.18,0.88,0.38)
+legT = ROOT.TLegend(0.58,0.15,0.92,0.47)
+legT.SetEntrySeparation(0.2)
 legT.SetMargin(0.14)
 legT.AddEntry(s3_csm)
+legT.AddEntry(s3_csm_std)
 legT.AddEntry(s3_2body)
 legT.AddEntry(s3_3body)
 leg.SetFillStyle(0)
