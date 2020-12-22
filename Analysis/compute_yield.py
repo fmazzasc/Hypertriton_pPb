@@ -68,32 +68,13 @@ np.save('../Utils/pdf_fraction_040', n1_list040)
 
 
 
-
-
-####Barlow check
-
-histo_barlow = ROOT.TH1D('barlow_check', 'barlow_check', 9, -0.7 , 0.7)
-wp_index = bdt_eff_array == 0.72
-corrected_counts = signal_array040/n_events040/branching_ratio/presel_eff/bdt_eff_array
-corrected_error = error_array040/n_events040/branching_ratio/presel_eff/bdt_eff_array
-wp_yield = corrected_counts[wp_index]
-wp_error = corrected_error[wp_index]
-for corr_count, corr_err in zip(corrected_counts,corrected_error):
-    correl = (wp_yield - corr_count)/np.abs(wp_yield - corr_err)
-    histo_barlow.Fill(correl)
-
-aa = ROOT.TFile('../Utils/Barlow.root', 'recreate')
-histo_barlow.Write()
-aa.Close()
-    
-
 ###COMPUTE YIELD############################
 
 
 corrected_counts = signal_array040/n_events040/branching_ratio/presel_eff/bdt_eff_array
 corrected_error = error_array040/n_events040/branching_ratio/presel_eff/bdt_eff_array
 Yield = np.float64(corrected_counts[bdt_eff_array==selected_bdt_eff]  / 2)
-Yield = Yield/0.98
+Yield = Yield/0.98   #absorption correction
 
 stat_error = np.float64(corrected_error[bdt_eff_array==selected_bdt_eff] / 2)
 syst_error = float(np.std(corrected_counts) / corrected_counts[bdt_eff_array==selected_bdt_eff])
@@ -104,7 +85,7 @@ abs_syst = 0.041*Yield
 fit_syst = 0.055*Yield
 syst_error = np.sqrt(syst_error**2 + pt_shape_syst**2 + abs_syst**2 + fit_syst**2) 
 print("-------------------------------------")
-print(f"Yield [(matter + antimatter) / 2] 0-40% = {Yield:.2e} +- {stat_error:.2e} (stat.) +- {syst_error:.2e} (syst.)")
+print(f"Yield [(matter + antimatter) / 2] 0-40% = {Yield:.3e} +- {stat_error:.3e} (stat.) +- {syst_error:.3e} (syst.)")
 #############################################
 
 ###COMPUTE S3

@@ -374,8 +374,8 @@ def unbinned_mass_fit(data, eff, bkg_model, output_dir, bkg_dir, cent_class, pt_
         pinfo.AddText(s)
 
     frame.addObject(pinfo)
-
-    output_dir.cd()
+    if output_dir != '':
+        output_dir.cd()
     binning = 1000*((3.04-2.96)/bins)
     stry= f"Events/({binning:.2f}"
     stry += "MeV/#it{c}^{2})"
@@ -403,15 +403,15 @@ def unbinned_mass_fit_mc(data, eff, bkg_model, signal_hist, output_dir, bkg_dir,
     signal = ROOT.RooHistPdf("histpdf1", "histpdf1", ROOT.RooArgSet(mass), hist_signal, 0)
 
 
-
-    c0 = ROOT.RooRealVar('c0', 'constant c0', 1)
-    c1 = ROOT.RooRealVar('c1', 'constant c1', 1)
-    c2 = ROOT.RooRealVar('c2', 'constant c2', 1)
+    slope = ROOT.RooRealVar('slope', 'exponential slope', -100., 100.)
+    c0 = ROOT.RooRealVar('c0', 'constant c0', -2,2)
+    c1 = ROOT.RooRealVar('c1', 'constant c1', -2, 2)
+    c2 = ROOT.RooRealVar('c2', 'constant c2', -2, 2)
 
     # define background component depending on background model required
     if bkg_model == 'pol0':
         background = ROOT.RooPolynomial(
-            'bkg', 'pol0 bkg', mass, ROOT.RooArgList(c0))
+            'bkg', 'pol0 bkg', mass, ROOT.RooArgList())
 
     if bkg_model == 'pol1':
         background = ROOT.RooPolynomial(
@@ -510,13 +510,13 @@ def unbinned_mass_fit_mc(data, eff, bkg_model, signal_hist, output_dir, bkg_dir,
         pinfo.AddText(s)
 
     frame.addObject(pinfo)
-
-    output_dir.cd()
+    if output_dir != '':
+        output_dir.cd()
     binning = 1000*((3.04-2.96)/bins)
     stry= f"Events/({binning:.2f}"
     stry += "MeV/#it{c}^{2})"
     frame.SetYTitle(stry)
-    cv = ROOT.TCanvas(f"cv_templ_{round(eff,2)}_{cent_string}")
+    cv = ROOT.TCanvas(f"cv_templ_{round(eff,2)}_{bkg_model}_{cent_string}")
     frame.Draw()
     if output_dir != '':
         cv.Write()
