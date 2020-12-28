@@ -3,7 +3,7 @@ DATA_TABLE: "DataTable_pPb.root"
 SIGNAL_TABLE: "SignalTable_17d_mtexp.root"
 BKG_TABLE: "DataTable_pPb_LS.root"
 
-TRAINING: False
+TRAINING: True
 BACKGROUND_OVER_SIGNAL: 4
 OPTIMIZE: False
 APPLICATION: True 

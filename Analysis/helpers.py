@@ -392,7 +392,7 @@ def unbinned_mass_fit(data, eff, bkg_model, output_dir, bkg_dir, cent_class, pt_
     return signal_counts, signal_error, signif, signif_error, mu, mu_error, sigma, sigma_error, n1, range_lower, range_upper
 
 
-def unbinned_mass_fit_mc(data, eff, bkg_model, signal_hist, output_dir, bkg_dir, cent_class, pt_range, ct_range, split, cent_string = '', bins=38, sign_range = [2.96,3.04]):
+def unbinned_mass_fit_mc(data, eff, bkg_model, signal_hist, output_dir, bkg_dir, cent_class, pt_range, ct_range, split, cent_string = '', bins=38, sign_range = [2.96,3.04], ws_name = ''):
 
     # define working variable
     mass = ROOT.RooRealVar('m', 'm_{^{3}He+#pi}', 2.96, 3.04, 'GeV/c^{2}')
@@ -518,6 +518,7 @@ def unbinned_mass_fit_mc(data, eff, bkg_model, signal_hist, output_dir, bkg_dir,
     frame.SetYTitle(stry)
     cv = ROOT.TCanvas(f"cv_templ_{round(eff,2)}_{bkg_model}_{cent_string}")
     frame.Draw()
+
     if output_dir != '':
         cv.Write()
     if bkg_dir != '':
@@ -525,6 +526,22 @@ def unbinned_mass_fit_mc(data, eff, bkg_model, signal_hist, output_dir, bkg_dir,
         background.SetName(f"bkg_pdf_{round(eff,2)}_{cent_string}")
         background.SetTitle(f"bkg_pdf_{round(eff,2)}_{cent_string}")
         background.Write()
+    if ws_name != '':
+        w = ROOT.RooWorkspace(ws_name)
+        mc = ROOT.RooStats.ModelConfig("ModelConfig",w)
+        mc.SetPdf(fit_function)
+        mc.SetParametersOfInterest(ROOT.RooArgSet(n1))
+        mc.SetObservables(ROOT.RooArgSet(mass))
+        if bkg_model=='pol1':
+            w.defineSet("nuisParams","c0,c1")
+            mc.SetNuisanceParameters(w.set('nuisParams'))
+        if bkg_model=='expo':
+            w.defineSet("nuisParams","slope")
+            mc.SetNuisanceParameters(w.set('nuisParams'))
+        getattr(w,'import')(mc)
+        getattr(w,'import')(roo_data)
+        w.writeToFile(f'../Utils/{ws_name}.root', True)
+
     return n_sig, n_sig_err, n1
 
 

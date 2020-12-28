@@ -43,3 +43,6 @@ hist_orig.Write()
 hist_std.Write()
 hist_ml.Write()
 
+
+print(np.median(df_orig['pt']))
+print(np.median(df_ml['pt']))
