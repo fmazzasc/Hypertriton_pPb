@@ -239,7 +239,7 @@ def significance_error(signal, background, signal_error=None, background_error=N
     return np.sqrt(s_propag * s_propag + b_propag * b_propag)
 
 
-def unbinned_mass_fit(data, eff, bkg_model, output_dir, bkg_dir, cent_class, pt_range, ct_range, split, cent_string = '', bins=38):
+def unbinned_mass_fit(data, eff, bkg_model, output_dir, bkg_dir, cent_class, pt_range, ct_range, split, cent_string = '', bins=38, ws_name=''):
 
     # define working variable
     mass = ROOT.RooRealVar('m', 'm_{^{3}He+#pi}', 2.96, 3.04, 'GeV/c^{2}')
@@ -384,6 +384,7 @@ def unbinned_mass_fit(data, eff, bkg_model, output_dir, bkg_dir, cent_class, pt_
     frame.Draw()
     if output_dir != '':
         cv.Write()
+
     # bkg_dir.cd()
     # background.SetName(f"bkg_pdf_{round(eff,2)}_{cent_string}")
     # background.SetTitle(f"bkg_pdf_{round(eff,2)}_{cent_string}")
@@ -426,12 +427,12 @@ def unbinned_mass_fit_mc(data, eff, bkg_model, signal_hist, output_dir, bkg_dir,
 
 
     # define signal and background normalization
-    n1 = ROOT.RooRealVar('n1', 'n1 const', 0., 1, 'GeV')
-
+    n_sig = ROOT.RooRealVar('n_sig', 'n_sig', 0., 1000, 'GeV')
+    n_bkg = ROOT.RooRealVar('n_bkg', 'n_bkg', 0., 1000, 'GeV')
 
 
     # define the fit funciton -> signal component + background component
-    fit_function = ROOT.RooAddPdf('model', 'signal + background', ROOT.RooArgList(signal, background), ROOT.RooArgList(n1))
+    fit_function = ROOT.RooAddPdf('model', 'signal + background', ROOT.RooArgList(signal, background), ROOT.RooArgList(n_sig, n_bkg))
 
     # convert data to RooData
     roo_data = ndarray2roo(data, mass)
@@ -452,34 +453,27 @@ def unbinned_mass_fit_mc(data, eff, bkg_model, signal_hist, output_dir, bkg_dir,
 
     # add info to plot
     
-    signal_counts = len(data)*n1.getVal()
-    signal_error = signal_counts*(n1.getError()/n1.getVal())
-    background_counts = len(data) - signal_counts
-    background_error = background_counts*(n1.getError()/n1.getVal())
+    signal_counts = n_sig.getVal()
+    signal_error = n_sig.getError()
+    background_counts = n_bkg.getVal()
+    background_error = n_bkg.getError()
 
     mass.setRange('signal region',  sign_range[0], sign_range[1])
     
-    
-    n_sig = signal_counts
-    n_bkg = background_counts
 
-    rel_err = n1.getError()/n1.getVal()
-    n_sig_err = n_sig*rel_err
-    n_bkg_err = n_bkg*rel_err
-
-    signal_counts = signal.createIntegral(ROOT.RooArgSet(
-        mass), ROOT.RooArgSet(mass), 'signal region').getVal() * n_sig
-    signal_error = signal.createIntegral(ROOT.RooArgSet(
-        mass), ROOT.RooArgSet(mass), 'signal region').getVal() * n_sig *rel_err
+    signal_counts_red = signal.createIntegral(ROOT.RooArgSet(
+        mass), ROOT.RooArgSet(mass), 'signal region').getVal() * signal_counts
+    signal_error_red = signal.createIntegral(ROOT.RooArgSet(
+        mass), ROOT.RooArgSet(mass), 'signal region').getVal() * signal_error
     
 
-    background_counts = background.createIntegral(ROOT.RooArgSet(
-        mass), ROOT.RooArgSet(mass), 'signal region').getVal() * n_bkg
-    background_error = background.createIntegral(ROOT.RooArgSet(
-        mass), ROOT.RooArgSet(mass), 'signal region').getVal() * n_bkg *rel_err
+    background_counts_red = background.createIntegral(ROOT.RooArgSet(
+        mass), ROOT.RooArgSet(mass), 'signal region').getVal() * background_counts
+    background_error_red = background.createIntegral(ROOT.RooArgSet(
+        mass), ROOT.RooArgSet(mass), 'signal region').getVal() * background_error
 
-    signif = signal_counts / np.sqrt(signal_counts + background_counts + 1e-10)
-    signif_error = significance_error(signal_counts, background_counts, signal_error, background_error)
+    signif = signal_counts_red / np.sqrt(signal_counts_red + background_counts_red + 1e-10)
+    signif_error = significance_error(signal_counts_red, background_counts_red, signal_error_red, background_error_red)
 
     pinfo = ROOT.TPaveText(0.537, 0.474, 0.937, 0.875, 'NDC')
     pinfo.SetBorderSize(0)
@@ -495,7 +489,7 @@ def unbinned_mass_fit_mc(data, eff, bkg_model, signal_hist, output_dir, bkg_dir,
     }
 
     string_list = []
-    string_list.append(f'Signal = {n_sig:.1f} #pm {n_sig_err:.1f}')    
+    string_list.append(f'Signal = {signal_counts:.1f} #pm {signal_error:.1f}')    
     string_list.append(f'Significance ({3:.0f}#sigma) = {signif:.1f} #pm {signif_error:.1f}')
 
     if roo_data.sumEntries() > 0:
@@ -521,19 +515,19 @@ def unbinned_mass_fit_mc(data, eff, bkg_model, signal_hist, output_dir, bkg_dir,
 
     if output_dir != '':
         cv.Write()
-    if bkg_dir != '':
-        bkg_dir.cd()
-        background.SetName(f"bkg_pdf_{round(eff,2)}_{cent_string}")
-        background.SetTitle(f"bkg_pdf_{round(eff,2)}_{cent_string}")
-        background.Write()
+    # if bkg_dir != '':
+    #     bkg_dir.cd()
+    #     background.SetName(f"bkg_pdf_{round(eff,2)}_{cent_string}")
+    #     background.SetTitle(f"bkg_pdf_{round(eff,2)}_{cent_string}")
+    #     background.Write()
     if ws_name != '':
         w = ROOT.RooWorkspace(ws_name)
         mc = ROOT.RooStats.ModelConfig("ModelConfig",w)
         mc.SetPdf(fit_function)
-        mc.SetParametersOfInterest(ROOT.RooArgSet(n1))
+        mc.SetParametersOfInterest(ROOT.RooArgSet(n_sig))
         mc.SetObservables(ROOT.RooArgSet(mass))
         if bkg_model=='pol1':
-            w.defineSet("nuisParams","c0,c1")
+            w.defineSet("nuisParams","n_bkg,c0,c1")
             mc.SetNuisanceParameters(w.set('nuisParams'))
         if bkg_model=='expo':
             w.defineSet("nuisParams","slope")
@@ -542,7 +536,7 @@ def unbinned_mass_fit_mc(data, eff, bkg_model, signal_hist, output_dir, bkg_dir,
         getattr(w,'import')(roo_data)
         w.writeToFile(f'../Utils/{ws_name}.root', True)
 
-    return n_sig, n_sig_err, n1
+    return signal_counts, signal_error, signal_counts/(signal_counts + background_counts)
 
 
 

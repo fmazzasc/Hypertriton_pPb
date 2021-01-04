@@ -12,15 +12,10 @@ import ROOT
 ROOT.gROOT.SetBatch()
 
 
-matplotlib.use("pdf")
-matplotlib.style.use(mplhep.style.ALICE)
-
-
-
 
 ##COMPUTE PRESELECTION-EFFICIENCY
-df_rec = uproot.open("../Tables/SignalTable_17d_mtexp.root")["SignalTable"].pandas.df()
-df_sim = uproot.open("../Tables/SignalTable_17d_mtexp.root")["GenTable"].pandas.df()
+df_rec = uproot.open("../Tables/SignalTable_20l2_mtexp.root")["SignalTable"].pandas.df()
+df_sim = uproot.open("../Tables/SignalTable_20l2_mtexp.root")["GenTable"].pandas.df()
 
 presel_eff = len(df_rec)/len(df_sim.query("abs(rapidity)<0.5"))
 print("-------------------------------------")
@@ -55,6 +50,7 @@ for eff,cut in zip(bdt_eff_array, score_cuts_array):
     hist = ROOT.TH1D(f'histo_mc_{eff}', f'histo_mc_{eff}', 500, 2.96, 3.04)
     for mc_entry in mc_data:
         hist.Fill(mc_entry - mean_mass + res040[4])
+    
     ws_name = '' if eff != selected_bdt_eff else 'Workspace' 
     res_template = hp.unbinned_mass_fit_mc(data040, eff, 'pol1', hist, ff, bkg_dir, [0,40], [0,10], [0,35], split="", cent_string='040', bins = 34, sign_range = [res040[-2], res040[-1]], ws_name=ws_name)
 
@@ -80,7 +76,7 @@ Yield = Yield/0.98   #absorption correction
 stat_error = np.float64(corrected_error[bdt_eff_array==selected_bdt_eff] / 2)
 syst_error = float(np.std(corrected_counts) / corrected_counts[bdt_eff_array==selected_bdt_eff])
 syst_error = syst_error*Yield
-pt_shape_syst = 0.00628*Yield
+pt_shape_syst = 0.07*Yield
 abs_syst = 0.041*Yield
 fit_syst = 0.055*Yield
 syst_error = np.sqrt(syst_error**2 + pt_shape_syst**2 + abs_syst**2 + fit_syst**2)
@@ -163,7 +159,7 @@ hp_ratio_csm_van.SetTitle("Full canonical SHM")
 
 cv = ROOT.TCanvas("cv")
 cv.SetBottomMargin(0.14)
-frame=cv.DrawFrame(5., 1e-7, 200, 6e-6,";#LTd#it{N}_{ch}/d#it{#eta}#GT_{|#it{#eta}|<0.5}; _{#Lambda}^{3}H/p")
+frame=cv.DrawFrame(5., 1e-7, 200, 6e-6,";#LTd#it{N}_{ch}/d#it{#eta}#GT_{|#it{#eta}|<0.5}; {}_{#Lambda}^{3}H/p")
 frame.GetXaxis().SetTitleOffset(1.25)
 cv.SetLogx()
 cv.SetLogy()

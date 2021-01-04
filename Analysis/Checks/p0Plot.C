@@ -4,7 +4,7 @@ using namespace RooFit;
 void p0Plot()
 {
 
-  const char *infile = "Workspace.root";
+  const char *infile = "../../Utils/Workspace.root";
   const char *workspaceName = "Workspace";
   const char *modelConfigName = "ModelConfig";
   const char *dataName = "data";
@@ -30,11 +30,13 @@ void p0Plot()
   ModelConfig *sbModel = (RooStats::ModelConfig *)w->obj(modelConfigName);
   sbModel->SetName("S+B Model");
   RooRealVar *poi = (RooRealVar *)sbModel->GetParametersOfInterest()->first();
+  poi->Print();
   sbModel->SetSnapshot(*poi);
   ModelConfig *bModel = (ModelConfig *)sbModel->Clone();
   bModel->SetName("B Model");
-  poi->setVal(0);
+  poi->setVal(0.);
   bModel->SetSnapshot(*poi);
+  bModel->Print();
 
   vector<double> masses;
   vector<double> p0values;
@@ -45,7 +47,7 @@ void p0Plot()
 
   // loop on the mass values
 
-  for (double mass = massMin; mass <= massMax; mass += (massMax - massMin) / 40.0)
+  for (double mass = massMin; mass <= massMax; mass += (massMax - massMin) / 38)
   {
     cout << endl
          << endl
@@ -55,7 +57,7 @@ void p0Plot()
 
     AsymptoticCalculator *ac = new AsymptoticCalculator(*data, *sbModel, *bModel);
     ac->SetOneSidedDiscovery(true); // for one-side discovery test
-    AsymptoticCalculator::SetPrintLevel(-1);
+    AsymptoticCalculator::SetPrintLevel(1);
 
     HypoTestResult *asymCalcResult = ac->GetHypoTest();
 

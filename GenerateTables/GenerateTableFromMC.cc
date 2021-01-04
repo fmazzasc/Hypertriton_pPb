@@ -21,13 +21,17 @@ void GenerateTableFromMC(bool reject = true, string ptShape = "mtexp")
 {
   gRandom->SetSeed(1995);
 
-  string inFileName = "HyperTritonTree_17d.root";
+  string inFileName = "HyperTritonTree_20l2.root";
   string inFileArg =  "../Trees/" + inFileName;
 
-  string outFileName = "SignalTable_17d_" + ptShape + ".root";
+  string outFileName = "SignalTable_20l2_" + ptShape + ".root";
+  string bwFileName;
   string outFileArg =  "../Tables/" + outFileName;
+  if(ptShape=="bw")
+    bwFileName = "output_He3_yieldfits.root";
+  else
+    bwFileName = "FittedFunctions_He3.root";
 
-  string bwFileName = "FittedFunctions_He3.root";
   string bwFileArg = "helpers/" + bwFileName;
 
   TFile bwFile(bwFileArg.data());
@@ -40,6 +44,9 @@ void GenerateTableFromMC(bool reject = true, string ptShape = "mtexp")
     hypPtShape = (TF1 *)bwFile.Get("#it{p}_{T} exponentialfittedtoMultiplicityIntegrated");
   else if(ptShape=="bol")
     hypPtShape = (TF1 *)bwFile.Get("BoltzmannfittedtoMultiplicityIntegrated");
+  else if(ptShape=="bw")
+    hypPtShape = (TF1 *)bwFile.Get("He3/BlastWave/BlastWave0");
+
   else
   {
     std::cout << ptShape << " not found" << std::endl;

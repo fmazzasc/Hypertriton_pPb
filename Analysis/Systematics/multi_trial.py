@@ -73,11 +73,12 @@ Yield = corrected_counts / 2 / 0.98
 Yield_error = corrected_error / 2 / 0.98
 
 
+
 numpy_hist = np.histogram(Yield, bins=15)
 ghost_hist = aghast.from_numpy(numpy_hist)
 root_hist = aghast.to_root(ghost_hist, 'multi_trial')
 
-Fcn1 = ROOT.TLine(5.86e-07, root_hist.GetMinimum(), 5.86e-07, root_hist.GetMaximum() + 4)
+Fcn1 = ROOT.TLine(5.67e-07, root_hist.GetMinimum(), 5.67e-07, root_hist.GetMaximum() + 4)
 Fcn1.SetLineWidth(1)
 Fcn1.SetLineStyle(2)
 Fcn1.SetLineColor(ROOT.kRed - 3)
