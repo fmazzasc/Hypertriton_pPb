@@ -3,7 +3,7 @@ from ROOT import RooFit as rf
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
-
+import os
 
 def fit_hist(
         histo, cent_class, pt_range, ct_range, nsigma=3, model="pol0", fixsigma=-1, sigma_limits=None, mode=2, split=''):
@@ -397,11 +397,12 @@ def unbinned_mass_fit_mc(data, eff, bkg_model, signal_hist, output_dir, bkg_dir,
 
     # define working variable
     mass = ROOT.RooRealVar('m', 'm_{^{3}He+#pi}', 2.96, 3.04, 'GeV/c^{2}')
-
+    deltaMass = ROOT.RooRealVar("deltaM", '#Deltam', -0.001, 0.001, 'GeV/c^{2}')
+    shiftedMass = ROOT.RooAddition("mPrime", "m + #Deltam", ROOT.RooArgList(mass, deltaMass))
 
     # define signal component
     hist_signal = ROOT.RooDataHist('signal_hist', 'signal_hist', ROOT.RooArgList(mass), signal_hist)
-    signal = ROOT.RooHistPdf("histpdf1", "histpdf1", ROOT.RooArgSet(mass), hist_signal, 0)
+    signal = ROOT.RooHistPdf("histpdf1", "histpdf1", ROOT.RooArgList(shiftedMass), ROOT.RooArgList(mass), hist_signal, 0)
 
 
     slope = ROOT.RooRealVar('slope', 'exponential slope', -100., 100.)
@@ -534,7 +535,9 @@ def unbinned_mass_fit_mc(data, eff, bkg_model, signal_hist, output_dir, bkg_dir,
             mc.SetNuisanceParameters(w.set('nuisParams'))
         getattr(w,'import')(mc)
         getattr(w,'import')(roo_data)
-        w.writeToFile(f'../Utils/{ws_name}.root', True)
+        if not os.path.exists('../Utils/Workspaces'):
+            os.makedirs('../Utils/Workspaces')
+        w.writeToFile(f'../Utils/Workspaces/{ws_name}.root', True)
 
     return signal_counts, signal_error, signal_counts/(signal_counts + background_counts)
 

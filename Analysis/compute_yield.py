@@ -52,9 +52,9 @@ for eff,cut in zip(bdt_eff_array, score_cuts_array):
     mean_mass = np.mean(mc_data)
     hist = ROOT.TH1D(f'histo_mc_{eff}', f'histo_mc_{eff}', 500, 2.96, 3.04)
     for mc_entry in mc_data:
-        hist.Fill(mc_entry - mean_mass + res040[4])
+        hist.Fill(mc_entry)# - mean_mass + res040[4])
 
-    res_template = hp.unbinned_mass_fit_mc(data040, eff, 'pol1', hist, ff, bkg_dir, [0,40], [0,10], [0,35], split="", cent_string='040', bins = 34, sign_range = [res040[-2], res040[-1]])
+    res_template = hp.unbinned_mass_fit_mc(data040, eff, 'pol1', hist, ff, bkg_dir, [0,40], [0,10], [0,35], split="", cent_string='040', bins = 34, sign_range = [res040[-2], res040[-1]], ws_name=f"ws_pol1_{eff*100:.0f}")
 
     signal_list040.append(res_template[0])
     error_list040.append(res_template[1])
