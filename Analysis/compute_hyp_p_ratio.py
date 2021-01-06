@@ -14,8 +14,8 @@ ROOT.gROOT.SetBatch()
 
 
 ##COMPUTE PRESELECTION-EFFICIENCY
-df_rec = uproot.open("../Tables/SignalTable_20l2_mtexp.root")["SignalTable"].pandas.df()
-df_sim = uproot.open("../Tables/SignalTable_20l2_mtexp.root")["GenTable"].pandas.df()
+df_rec = uproot.open("../Tables/SignalTable_17d_mtexp.root")["SignalTable"].pandas.df()
+df_sim = uproot.open("../Tables/SignalTable_17d_mtexp.root")["GenTable"].pandas.df()
 
 presel_eff = len(df_rec)/len(df_sim.query("abs(rapidity)<0.5"))
 print("-------------------------------------")
@@ -74,8 +74,8 @@ Yield = np.float64(corrected_counts[bdt_eff_array==selected_bdt_eff]  / 2)
 Yield = Yield/0.98   #absorption correction
 
 stat_error = np.float64(corrected_error[bdt_eff_array==selected_bdt_eff] / 2)
-syst_error = float(np.std(corrected_counts) / corrected_counts[bdt_eff_array==selected_bdt_eff])
-syst_error = syst_error*Yield
+# syst_error = float(np.std(corrected_counts) / corrected_counts[bdt_eff_array==selected_bdt_eff])
+syst_error = 0.14*Yield
 pt_shape_syst = 0.07*Yield
 abs_syst = 0.041*Yield
 fit_syst = 0.055*Yield
@@ -129,12 +129,12 @@ fin = ROOT.TFile('../Utils/ProdModels/vanilla_CSM_predictions_H3L_to_P.root')
 hp_ratio_csm_van = fin.Get('gCSM_3HL_over_p')
 
 
-hp_ratio_csm_1.SetLineColor(12)
+hp_ratio_csm_1.SetLineColor(16)
 hp_ratio_csm_1.SetLineWidth(2)
 hp_ratio_csm_1.SetTitle("Canonical SHM with T=155MeV, Vc = dV/dy")
 
 
-hp_ratio_csm_3.SetLineColor(12)
+hp_ratio_csm_3.SetLineColor(16)
 hp_ratio_csm_3.SetLineWidth(2)
 hp_ratio_csm_3.SetLineStyle(2)
 hp_ratio_csm_3.SetTitle("Canonical SHM with T=155MeV, Vc = 3dV/dy")
@@ -145,16 +145,40 @@ for i in range(n) :
    grshade.SetPoint(i, hp_ratio_csm_3.GetPointX(i), hp_ratio_csm_3.GetPointY(i))
    grshade.SetPoint(n + i, hp_ratio_csm_1.GetPointX(n - i -1), hp_ratio_csm_1.GetPointY(n - i - 1))
    
-grshade.SetFillColor(16)
+grshade.SetFillColorAlpha(16, 0.571)
 # grshade.SetFillStyle(3013)
-
-
 
 
 hp_ratio_csm_van.SetLineColor(kOrangeC)
 hp_ratio_csm_van.SetLineWidth(2)
 hp_ratio_csm_van.SetTitle("Full canonical SHM")
 
+
+hp_2body = ROOT.TGraphErrors("../Utils/ProdModels/hp_ratio_2body_coal.csv","%lg %lg %lg")
+hp_2body.SetLineColor(kBlueC)
+hp_2body.SetMarkerColor(kBlueC)
+hp_2body.SetTitle("2-body coalescence")
+hp_3body = ROOT.TGraphErrors("../Utils/ProdModels/hp_ratio_3body_coal.csv","%lg %lg %lg")
+hp_3body.SetLineColor(kAzureC)
+hp_3body.SetMarkerColor(kAzureC)
+hp_3body.SetTitle("3-body coalescence")
+
+for i in range(hp_2body.GetN()):
+    hp_2body.GetY()[i] /= 1.5
+    hp_2body.GetEY()[i] /= 1.5
+
+for i in range(hp_3body.GetN()):
+    hp_3body.GetY()[i] /= 1.5
+    hp_3body.GetEY()[i] /= 1.5
+
+hp_3body.SetFillColorAlpha(kAzureC, 0.571)
+hp_2body.SetFillColorAlpha(kBlueC, 0.571)
+
+mg = ROOT.TMultiGraph()
+mg.Add(hp_2body)
+mg.Add(hp_3body)
+# mg.SetMinimum(1e-7)
+# mg.SetMaximum(6e-6)
 
 
 cv = ROOT.TCanvas("cv")
@@ -163,10 +187,20 @@ frame=cv.DrawFrame(5., 1e-7, 200, 6e-6,";#LTd#it{N}_{ch}/d#it{#eta}#GT_{|#it{#et
 frame.GetXaxis().SetTitleOffset(1.25)
 cv.SetLogx()
 cv.SetLogy()
-grshade.Draw("f")
-hp_ratio_csm_1.Draw("L")
-hp_ratio_csm_3.Draw("L")
-hp_ratio_csm_van.Draw("L")
+mg.Draw("4al same")
+grshade.Draw("f same")
+hp_ratio_csm_1.Draw("L same")
+hp_ratio_csm_3.Draw("L same")
+hp_ratio_csm_van.Draw("L same")
+mg.GetYaxis().SetRangeUser(2e-8, 6e-6)
+mg.GetXaxis().SetTitle('#LTd#it{N}_{ch}/d#it{#eta}#GT_{|#it{#eta}|<0.5}')
+mg.GetYaxis().SetTitle('{}_{#Lambda}^{3}H/p')
+
+
+
+
+
+
 
 zero = np.array([0], dtype=np.float64)
 
@@ -200,6 +234,9 @@ leg.AddEntry(ppb_syst040,"","pf")
 leg.SetEntrySeparation(0.2)
 legT = ROOT.TLegend(0.55,0.18,0.88,0.38)
 legT.SetMargin(0.14)
+
+legT.AddEntry(hp_3body)
+legT.AddEntry(hp_2body)
 legT.AddEntry(hp_ratio_csm_1)
 legT.AddEntry(hp_ratio_csm_3)
 legT.AddEntry(hp_ratio_csm_van)
@@ -208,7 +245,19 @@ legT.SetFillStyle(0)
 leg.Draw()
 legT.Draw()
 
+pinfo = ROOT.TPaveText(0.7,0.63,0.82,0.73, 'NDC')
+pinfo.SetBorderSize(0)
+pinfo.SetFillStyle(0)
+pinfo.SetTextAlign(30+3)
+pinfo.SetTextFont(42)
+pinfo.AddText('B.R. = 0.25')
+pinfo.Draw()
+
 cv.Draw()
 
 cv.SaveAs("../Results/hp_ratio.pdf")
 cv.SaveAs("../Results/hp_ratio.png")
+
+file = ROOT.TFile('hp_ratio.root', 'recreate')
+cv.Write()
+file.Close()
