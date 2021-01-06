@@ -21,10 +21,10 @@ void GenerateTableFromMC(bool reject = true, string ptShape = "mtexp")
 {
   gRandom->SetSeed(1995);
 
-  string inFileName = "HyperTritonTree_20l2.root";
+  string inFileName = "HyperTritonTree_17d.root";
   string inFileArg =  "../Trees/" + inFileName;
 
-  string outFileName = "SignalTable_20l2_" + ptShape + ".root";
+  string outFileName = "SignalTable_17d_" + ptShape + ".root";
   string bwFileName;
   string outFileArg =  "../Tables/" + outFileName;
   if(ptShape=="bw")
@@ -92,6 +92,7 @@ void GenerateTableFromMC(bool reject = true, string ptShape = "mtexp")
         auto &RHyper = RHyperVec[ind];
         table.Fill(RHyper, *RColl);
         double recpt = std::hypot(RHyper.fPxHe3 + RHyper.fPxPi, RHyper.fPyHe3 + RHyper.fPyPi);
+        
       }
     }
   }

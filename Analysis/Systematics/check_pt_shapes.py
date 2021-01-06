@@ -8,10 +8,10 @@ import pandas as pd
 matplotlib.use("pdf")
 
 plt.style.use(mpl.style.ALICE)
-ptexp = uproot.open("../../Tables/SignalTable_20l2_ptexp.root")["SignalTable"].pandas.df(["pt"])
-mtexp = uproot.open("../../Tables/SignalTable_20l2_mtexp.root")["SignalTable"].pandas.df(["pt"])
-bol = uproot.open("../../Tables/SignalTable_20l2_bol.root")["SignalTable"].pandas.df(["pt"])
-bw = uproot.open("../../Tables/SignalTable_20l2_bw.root")["SignalTable"].pandas.df(["pt"])
+ptexp = uproot.open("../../Tables/SignalTable_17d_ptexp.root")["SignalTable"].pandas.df(["pt"])
+mtexp = uproot.open("../../Tables/SignalTable_17d_mtexp.root")["SignalTable"].pandas.df(["pt"])
+bol = uproot.open("../../Tables/SignalTable_17d_bol.root")["SignalTable"].pandas.df(["pt"])
+bw = uproot.open("../../Tables/SignalTable_17d_bw.root")["SignalTable"].pandas.df(["pt"])
 
 fig = plt.figure()
 ax = fig.add_subplot(111)
@@ -31,10 +31,10 @@ plt.xlim(0,10)
 plt.savefig("../../Results/pt_shapes.png")
 
 ###Compute Syst due to pT shape
-ptexp_gen = uproot.open("../../Tables/SignalTable_20l2_ptexp.root")["GenTable"].pandas.df(["pt","rapidity"]).query("abs(rapidity)<0.5")["pt"]
-mtexp_gen = uproot.open("../../Tables/SignalTable_20l2_mtexp.root")["GenTable"].pandas.df(["pt","rapidity"]).query("abs(rapidity)<0.5")["pt"]
-bol_gen = uproot.open("../../Tables/SignalTable_20l2_bol.root")["GenTable"].pandas.df(["pt","rapidity"]).query("abs(rapidity)<0.5")["pt"]
-bw_gen = uproot.open("../../Tables/SignalTable_20l2_bw.root")["GenTable"].pandas.df(["pt","rapidity"]).query("abs(rapidity)<0.5")["pt"]
+ptexp_gen = uproot.open("../../Tables/SignalTable_17d_ptexp.root")["GenTable"].pandas.df(["pt","rapidity"]).query("abs(rapidity)<0.5")["pt"]
+mtexp_gen = uproot.open("../../Tables/SignalTable_17d_mtexp.root")["GenTable"].pandas.df(["pt","rapidity"]).query("abs(rapidity)<0.5")["pt"]
+bol_gen = uproot.open("../../Tables/SignalTable_17d_bol.root")["GenTable"].pandas.df(["pt","rapidity"]).query("abs(rapidity)<0.5")["pt"]
+bw_gen = uproot.open("../../Tables/SignalTable_17d_bw.root")["GenTable"].pandas.df(["pt","rapidity"]).query("abs(rapidity)<0.5")["pt"]
 
 
 print(len(bw))

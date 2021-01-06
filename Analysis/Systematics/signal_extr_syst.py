@@ -18,10 +18,11 @@ toy_copies = 10000
 # define working variable
 mass = ROOT.RooRealVar('m', 'm_{^{3}He+#pi}', 2.96, 3.04, 'GeV/c^{2}')
 # define signal parameters
-c0 = ROOT.RooRealVar('c0', 'constant c0', 0., 100.)
+c0 = ROOT.RooRealVar('c0', 'constant c0', -2,2)
+c1 = ROOT.RooRealVar('c1', 'constant c1', -2, 2)
 hyp_mass = ROOT.RooRealVar('hyp_mass', 'hypertriton mass', 2.989, 2.993, 'GeV/c^{2}')
 width = ROOT.RooRealVar('width', 'hypertriton width', 0., 0.008, 'GeV/c^{2}')
-bkg_pdf_fit = ROOT.RooPolynomial('bkg', 'pol0 bkg', mass, ROOT.RooArgList(c0))
+bkg_pdf_fit = ROOT.RooPolynomial('bkg', 'pol1 bkg', mass, ROOT.RooArgList(c0, c1))
 # define signal and background normalization
 n1 = ROOT.RooRealVar('n1', 'n1 const', 0., 1, 'GeV')
 
@@ -73,6 +74,7 @@ for pdf_frac, eff,cut in zip(pdf_fraction_list, bdt_eff_array, score_cuts_array)
     workspace = ROOT.RooWorkspace()
     getattr(workspace, 'import')(gen_function)
     workspace.saveSnapshot(f'pdf_{eff}','c0')
+    workspace.saveSnapshot(f'pdf_{eff}','c1')
 
     
     for toy in range(toy_copies):

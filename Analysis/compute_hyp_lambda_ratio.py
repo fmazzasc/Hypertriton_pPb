@@ -52,7 +52,7 @@ for eff,cut in zip(bdt_eff_array, score_cuts_array):
         hist.Fill(mc_entry - mean_mass + res040[4])
     
     ws_name = '' if eff != selected_bdt_eff else 'Workspace' 
-    res_template = hp.unbinned_mass_fit_mc(data040, eff, 'pol1', hist, ff, bkg_dir, [0,40], [0,10], [0,35], split="", cent_string='040', bins = 34, sign_range = [res040[-2], res040[-1]], ws_name=ws_name)
+    res_template = hp.unbinned_mass_fit_mc(data040, eff, 'pol1', hist, ff, bkg_dir, [0,40], [0,10], [0,35], split="", cent_string='040', bins = 34, sign_range = [res040[-2], res040[-1]])
 
     signal_list040.append(res_template[0])
     error_list040.append(res_template[1])
@@ -78,8 +78,7 @@ stat_error = np.float64(corrected_error[bdt_eff_array==selected_bdt_eff] / 2)
 syst_error = 0.14*Yield
 pt_shape_syst = 0.07*Yield
 abs_syst = 0.041*Yield
-fit_syst = 0.055*Yield
-syst_error = np.sqrt(syst_error**2 + pt_shape_syst**2 + abs_syst**2 + fit_syst**2)
+syst_error = np.sqrt(syst_error**2 + pt_shape_syst**2 + abs_syst**2)
 print("-------------------------------------")
 print(f"Yield [(matter + antimatter) / 2] 0-40% = {Yield:.3e} +- {stat_error:.3e} (stat.) +- {syst_error:.3e} (syst.)")
 #############################################
@@ -94,9 +93,17 @@ protonVals = [{"bin":[0.0, 5.0], "measure": [2.280446e+00, 4.394273e-03, 1.58596
 {"bin":[80.0, 100.0], "measure": [2.307767e-01, 6.969543e-04, 1.450569e-02, 6.911692e-03]}]
 
 
+lambdaVals = [{"bin": [0.0, 5.0], "measure": [1.630610e+00, 7.069538e-03, 1.448270e-01, 7.144051e-02]},
+{"bin": [5.0, 10.0], "measure": [1.303508e+00, 6.313141e-03, 1.122199e-01, 5.217514e-02]},
+{"bin": [10.0, 20.0], "measure": [1.093400e+00, 4.432728e-03, 9.410049e-02, 4.447422e-02]},
+{"bin": [20.0, 40.0], "measure": [8.332270e-01, 3.036428e-03, 6.919569e-02, 3.205334e-02]},
+{"bin": [40.0, 60.0], "measure": [5.678968e-01, 2.357040e-03, 4.722551e-02, 2.110751e-02]},
+{"bin": [60.0, 80.0], "measure": [3.355044e-01, 1.855427e-03, 2.871323e-02, 1.389226e-02]},
+{"bin": [80.0, 100.0], "measure": [1.335216e-01, 1.353847e-03, 1.142858e-02, 6.444149e-03]}]
 
 
-protonAv040 = hp.computeAverage(protonVals,40)
+
+lambdaAv040 = hp.computeAverage(lambdaVals,40)
 
 
 # d$N$/d$\eta$ obtained by simple weighted average of the values published in https://arxiv.org/pdf/1910.14401.pdf
@@ -104,12 +111,12 @@ x_pPb040=np.array([29.4], dtype=np.float64)
 xe_pPb040=np.array([0.6], dtype=np.float64)
 
 
-hp_ratio_040 = np.array([2*Yield / protonAv040[0]], dtype=np.float64)
-hp_ratiostat040 = np.array([hp_ratio_040[0] * hp.myHypot(stat_error / Yield, protonAv040[1] / protonAv040[0])], dtype=np.float64)
-hp_ratiosyst040 = np.array([hp_ratio_040[0] * hp.myHypot(syst_error / Yield, protonAv040[2] / protonAv040[0])], dtype=np.float64)
+hp_ratio_040 = np.array([2*Yield / lambdaAv040[0]], dtype=np.float64)
+hp_ratiostat040 = np.array([hp_ratio_040[0] * hp.myHypot(stat_error / Yield, lambdaAv040[1] / lambdaAv040[0])], dtype=np.float64)
+hp_ratiosyst040 = np.array([hp_ratio_040[0] * hp.myHypot(syst_error / Yield, lambdaAv040[2] / lambdaAv040[0])], dtype=np.float64)
 
 print("-------------------------------------")
-print(f"Hyp/Proton 0-40% = {hp_ratio_040[0]:.2e} +- {hp_ratiostat040[0]:.2e} (stat.) +- {hp_ratiosyst040[0]:.2e} (syst.)")
+print(f"Hyp/Lambda 0-40% = {hp_ratio_040[0]:.2e} +- {hp_ratiostat040[0]:.2e} (stat.) +- {hp_ratiosyst040[0]:.2e} (syst.)")
 
 kBlueC  = ROOT.TColor.GetColor("#2077b4");
 kRedC  = ROOT.TColor.GetColor("#d62827");
@@ -122,8 +129,8 @@ kBrownC  = ROOT.TColor.GetColor("#8c564c");
 kAzureC  = ROOT.TColor.GetColor("#18becf");
 kGreenBC  = ROOT.TColor.GetColor("#bcbd21");
 
-hp_ratio_csm_3 = ROOT.TGraphErrors("../Utils/ProdModels/hyp_p_ratio_155_3.dat","%lg %*s %*s %*s %*s %lg %*s")
-hp_ratio_csm_1 = ROOT.TGraphErrors("../Utils/ProdModels/hyp_p_ratio_155_1.dat","%lg %*s %*s %*s %*s %lg %*s")
+hp_ratio_csm_3 = ROOT.TGraphErrors("../Utils/ProdModels/hyp_p_ratio_155_3.dat","%lg %*s %*s %*s %*s %*s %lg %*s")
+hp_ratio_csm_1 = ROOT.TGraphErrors("../Utils/ProdModels/hyp_p_ratio_155_1.dat","%lg %*s %*s %*s %*s %*s %lg %*s")
 
 fin = ROOT.TFile('../Utils/ProdModels/vanilla_CSM_predictions_H3L_to_P.root')
 hp_ratio_csm_van = fin.Get('gCSM_3HL_over_p')
@@ -131,13 +138,13 @@ hp_ratio_csm_van = fin.Get('gCSM_3HL_over_p')
 
 hp_ratio_csm_1.SetLineColor(16)
 hp_ratio_csm_1.SetLineWidth(2)
-hp_ratio_csm_1.SetTitle("Canonical SHM with T=155MeV, Vc = dV/dy")
+hp_ratio_csm_1.SetTitle("CSM with T=155MeV, Vc = dV/dy")
 
 
 hp_ratio_csm_3.SetLineColor(16)
 hp_ratio_csm_3.SetLineWidth(2)
 hp_ratio_csm_3.SetLineStyle(2)
-hp_ratio_csm_3.SetTitle("Canonical SHM with T=155MeV, Vc = 3dV/dy")
+hp_ratio_csm_3.SetTitle("CSM with T=155MeV, Vc = 3dV/dy")
 
 n = hp_ratio_csm_1.GetN()
 grshade = ROOT.TGraph(2*n)
@@ -163,13 +170,13 @@ hp_3body.SetLineColor(kAzureC)
 hp_3body.SetMarkerColor(kAzureC)
 hp_3body.SetTitle("3-body coalescence")
 
-for i in range(hp_2body.GetN()):
-    hp_2body.GetY()[i] /= 1.5
-    hp_2body.GetEY()[i] /= 1.5
+# for i in range(hp_2body.GetN()):
+#     hp_2body.GetY()[i] /= 1.5
+#     hp_2body.GetEY()[i] /= 1.5
 
-for i in range(hp_3body.GetN()):
-    hp_3body.GetY()[i] /= 1.5
-    hp_3body.GetEY()[i] /= 1.5
+# for i in range(hp_3body.GetN()):
+#     hp_3body.GetY()[i] /= 1.5
+#     hp_3body.GetEY()[i] /= 1.5
 
 hp_3body.SetFillColorAlpha(kAzureC, 0.571)
 hp_2body.SetFillColorAlpha(kBlueC, 0.571)
@@ -191,10 +198,10 @@ mg.Draw("4al same")
 grshade.Draw("f same")
 hp_ratio_csm_1.Draw("L same")
 hp_ratio_csm_3.Draw("L same")
-hp_ratio_csm_van.Draw("L same")
-mg.GetYaxis().SetRangeUser(2e-8, 6e-6)
+# hp_ratio_csm_van.Draw("L same")
+mg.GetYaxis().SetRangeUser(1e-8, 1e-5)
 mg.GetXaxis().SetTitle('#LTd#it{N}_{ch}/d#it{#eta}#GT_{|#it{#eta}|<0.5}')
-mg.GetYaxis().SetTitle('{}_{#Lambda}^{3}H/p')
+mg.GetYaxis().SetTitle('{}_{#Lambda}^{3}H/#Lambda')
 
 
 
@@ -239,7 +246,7 @@ legT.AddEntry(hp_3body)
 legT.AddEntry(hp_2body)
 legT.AddEntry(hp_ratio_csm_1)
 legT.AddEntry(hp_ratio_csm_3)
-legT.AddEntry(hp_ratio_csm_van)
+# legT.AddEntry(hp_ratio_csm_van)
 leg.SetFillStyle(0)
 legT.SetFillStyle(0)
 leg.Draw()

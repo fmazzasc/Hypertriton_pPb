@@ -4,8 +4,8 @@ using namespace RooFit;
 void p0Plot()
 {
 
-  const char *infile = "../../Utils/Workspace.root";
-  const char *workspaceName = "Workspace";
+  const char *infile = "../../Utils/Workspaces/ws_pol1_72.root";
+  const char *workspaceName = "ws_pol1_72";
   const char *modelConfigName = "ModelConfig";
   const char *dataName = "data";
 
@@ -53,18 +53,20 @@ void p0Plot()
          << endl
          << "Running for mass: " << mass << endl
          << endl;
-    w->var("m")->setVal(mass);
+    w->var("hyp_mass")->setVal(mass);
+    w->var("hyp_mass")->setConstant(true);
+    w->var("hyp_mass")->Print();
 
     AsymptoticCalculator *ac = new AsymptoticCalculator(*data, *sbModel, *bModel);
     ac->SetOneSidedDiscovery(true); // for one-side discovery test
-    AsymptoticCalculator::SetPrintLevel(1);
+    AsymptoticCalculator::SetPrintLevel(-1);
 
     HypoTestResult *asymCalcResult = ac->GetHypoTest();
 
     asymCalcResult->Print();
-
+    w->var("hyp_mass")->Print();
     masses.push_back(mass);
-    p0values.push_back(asymCalcResult->NullPValue());
+    p0values.push_back(asymCalcResult->Significance());
 
     double expectedP0 = AsymptoticCalculator::GetExpectedPValues(asymCalcResult->NullPValue(), asymCalcResult->AlternatePValue(), 0, false);
     p0valuesExpected.push_back(expectedP0);
@@ -74,17 +76,17 @@ void p0Plot()
   TGraph *graph2 = new TGraph(masses.size(), &masses[0], &p0valuesExpected[0]);
   graph1->SetMarkerStyle(20);
   TCanvas *c = new TCanvas();
-  TFile *ofile = new TFile("p0.root", "recreate");
+  TFile *ofile = new TFile("../../Results/significance.root", "recreate");
   c->cd();
   graph1->Draw("APC");
   graph2->SetLineStyle(2);
-  graph2->Draw("C");
-  graph1->GetXaxis()->SetTitle("mass");
-  graph1->GetYaxis()->SetTitle("p0 value");
+  // graph2->Draw("C");
+  graph1->GetXaxis()->SetTitle("{}_{#Lambda}^{3}H mass (Gev/#it{c}^{2})");
+  graph1->GetYaxis()->SetTitle("Significance");
   graph1->SetTitle("Significance vs Mass");
   graph1->SetMinimum(graph2->GetMinimum());
-  graph1->SetLineColor(kBlue);
+  graph1->SetLineColor(kBlue); // graph2->Draw("C");
   graph2->SetLineColor(kRed);
   c->Draw();
-  c->SaveAs("p0.png");
+  c->SaveAs("../../Results/significance.png");
 }
