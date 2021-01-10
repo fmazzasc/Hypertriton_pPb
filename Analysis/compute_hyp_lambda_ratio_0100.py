@@ -102,6 +102,7 @@ lambdaVals = [{"bin": [0.0, 5.0], "measure": [1.630610e+00, 7.069538e-03, 1.4482
 
 
 lambdaAv0100 = hp.computeAverage(lambdaVals,100)
+print(lambdaAv0100)
 
 
 
@@ -199,6 +200,7 @@ hp_ratio_csm_1.Draw("L same")
 hp_ratio_csm_3.Draw("L same")
 # hp_ratio_csm_van.Draw("L same")
 mg.GetYaxis().SetRangeUser(1e-8, 1e-5)
+mg.GetXaxis().SetRangeUser(5, 3e3)
 mg.GetXaxis().SetTitle('#LTd#it{N}_{ch}/d#it{#eta}#GT_{|#it{#eta}|<0.5}')
 mg.GetYaxis().SetTitle('{}_{#Lambda}^{3}H/#Lambda')
 
@@ -224,12 +226,38 @@ ppb_syst0100.SetMarkerStyle(20)
 ppb_syst0100.SetMarkerSize(0.5)
 
 
+x = np.array([1447], dtype=np.float64)
+ex = np.array([39], dtype=np.float64)
+y = np.array([4*1.64e-6], dtype=np.float64)
+ey = np.array([4*3.28e-7], dtype=np.float64)
+eys = np.array([4*1.69e-7], dtype=np.float64)
+zero = np.array([0], dtype=np.float64)
+pbpb_stat = ROOT.TGraphErrors(1,x,y,zero,ey)
+pbpb_stat.SetLineColor(ROOT.kBlack)
+pbpb_stat.SetMarkerColor(ROOT.kBlack)
+pbpb_stat.SetMarkerStyle(20)
+pbpb_stat.SetMarkerSize(0.5)
+pbpb_stat.Draw("Pz")
+
+
+pbpb_syst = ROOT.TGraphErrors(1,x,y,ex,eys)
+pbpb_syst.SetTitle("ALICE Pb-Pb #sqrt{#it{s}_{NN}}=2.76 TeV")
+pbpb_syst.SetLineColor(ROOT.kBlack)
+pbpb_syst.SetMarkerColor(ROOT.kBlack)
+pbpb_syst.SetFillStyle(0)
+pbpb_syst.SetMarkerStyle(20)
+pbpb_syst.SetMarkerSize(0.5)
+pbpb_syst.Draw("P2")
+
+
 leg = ROOT.TLegend(0.55,0.4,0.88,0.5)
 leg.SetMargin(0.14)
 
 ppb_stat0100.Draw("Pz")
 ppb_syst0100.Draw("P2")
 leg.AddEntry(ppb_syst0100,"","pf")
+leg.AddEntry(pbpb_syst,"","pf")
+
 
 
 

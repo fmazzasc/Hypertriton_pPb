@@ -46,7 +46,7 @@ ff.cd()
 for eff,cut in zip(bdt_eff_array, score_cuts_array):
     cut_string = f"model_output>{cut}"
     data0100 = np.array(df.query(cut_string + " and 2.96<m<3.04 and centrality<=100 and abs(fZ)<10")["m"])
-    res0100 = hp.unbinned_mass_fit(data0100, eff, 'pol1', ff, bkg_dir, [0,100], [0,10], [0,35], split="", cent_string='0100', bins = 34)
+    res0100 = hp.unbinned_mass_fit(data0100, eff, 'pol1', ff, bkg_dir, [0,100], [0,10], [0,35], split="", cent_string='0100', bins = 34, ws_name=f"ws_pol1_{eff*100:.0f}")
 
     mc_data = np.array(df_mc.query(cut_string + " and 2.96<m<3.04")["m"])
     mean_mass = np.mean(mc_data)
@@ -64,16 +64,18 @@ for eff,cut in zip(bdt_eff_array, score_cuts_array):
 signal_array0100 = np.array(signal_list0100)
 error_array0100 = np.array(error_list0100)
 
+###COMPUTE YIELD############################
+print("Raw signal: ", signal_array0100[bdt_eff_array==selected_bdt_eff])
+print("Raw signal error: ", error_array0100[bdt_eff_array==selected_bdt_eff])
+print("N ev: ", n_events0100)
+
 
 np.save('../Utils/pdf_fraction_0100', n1_list0100)
-
-
 
 ###COMPUTE YIELD############################
 
 
 corrected_counts = signal_array0100/n_events0100/branching_ratio/presel_eff/bdt_eff_array
-print(corrected_counts/2)
 corrected_error = error_array0100/n_events0100/branching_ratio/presel_eff/bdt_eff_array
 Yield = np.float64(corrected_counts[bdt_eff_array==selected_bdt_eff]  / 2)
 Yield = Yield/0.98   #absorption correction
@@ -140,18 +142,24 @@ kBrownC  = ROOT.TColor.GetColor("#8c564c");
 kAzureC  = ROOT.TColor.GetColor("#18becf");
 kGreenBC  = ROOT.TColor.GetColor("#bcbd21");
 
-s3_csm = ROOT.TGraphErrors("../Utils/ProdModels/FullCSM-S3.dat","%lg %*s %*s %*s %*s %*s %*s %*s %*s %*s %lg")
-fin = ROOT.TFile('../Utils/ProdModels/CSM_predictions_S3_T155MeV_Vc3dNdy.root')
-s3_csm_std = fin.Get('gCSM_S3_vs_dNchdEta')
+s3_csm_1 = ROOT.TGraphErrors("../Utils/ProdModels/s3_VC1.csv","%lg %*s %*s %lg")
+s3_csm_1.SetLineColor(16)
+s3_csm_1.SetLineWidth(2)
+s3_csm_1.SetTitle("CSM with T=155MeV, Vc = dV/dy")
 
+s3_csm_3 = ROOT.TGraphErrors("../Utils/ProdModels/s3_VC3.csv","%lg %*s %*s %lg")
+s3_csm_3.SetLineColor(16)
+s3_csm_3.SetLineWidth(2)
+s3_csm_3.SetLineStyle(2)
+s3_csm_3.SetTitle("CSM with T=155MeV, Vc = 3dV/dy")
 
-s3_csm.SetLineColor(kOrangeC)
-s3_csm.SetLineWidth(1)
-s3_csm.SetTitle("Full canonical SHM")
-
-s3_csm_std.SetLineColor(kGreenC)
-s3_csm_std.SetLineWidth(1)
-s3_csm_std.SetTitle("CSM with T=155MeV, Vc = 3dV/dy")
+n = s3_csm_1.GetN()
+grshade = ROOT.TGraph(2*n)
+for i in range(n) : 
+   grshade.SetPoint(i, s3_csm_3.GetPointX(i), s3_csm_3.GetPointY(i))
+   grshade.SetPoint(n + i, s3_csm_1.GetPointX(n - i -1), s3_csm_1.GetPointY(n - i - 1))
+   
+grshade.SetFillColorAlpha(16, 0.571)
 
 
 
@@ -178,12 +186,10 @@ cv.SetBottomMargin(0.14)
 frame=cv.DrawFrame(9,0.01, 3e3,1.0,";#LTd#it{N}_{ch}/d#it{#eta}#GT_{|#it{#eta}|<0.5};S_{3}")
 frame.GetXaxis().SetTitleOffset(1.25)
 cv.SetLogx()
-# cv.SetLogy()
 mg.Draw("4al same")
-# s3_csm.Draw("L")
-s3_csm_std.Draw('L')
-# s3_2body.Draw("L")
-# s3_3body.Draw("L")
+grshade.Draw("f same")
+s3_csm_1.Draw("L same")
+s3_csm_3.Draw("L same")
 mg.GetYaxis().SetRangeUser(0.01, 1)
 mg.GetXaxis().SetTitle('#LTd#it{N}_{ch}/d#it{#eta}#GT_{|#it{#eta}|<0.5}')
 mg.GetYaxis().SetTitle('S_{3}')
@@ -195,16 +201,16 @@ ey = np.array([0.13], dtype=np.float64)
 eys = np.array([0.21], dtype=np.float64)
 zero = np.array([0], dtype=np.float64)
 pbpb_stat = ROOT.TGraphErrors(1,x,y,zero,ey)
-pbpb_stat.SetLineColor(kGreyC)
-pbpb_stat.SetMarkerColor(kGreyC)
+pbpb_stat.SetLineColor(ROOT.kBlack)
+pbpb_stat.SetMarkerColor(ROOT.kBlack)
 pbpb_stat.SetMarkerStyle(20)
 pbpb_stat.Draw("Pz")
 
 
 pbpb_syst = ROOT.TGraphErrors(1,x,y,ex,eys)
 pbpb_syst.SetTitle("ALICE Pb-Pb #sqrt{#it{s}_{NN}}=2.76 TeV")
-pbpb_syst.SetLineColor(kGreyC)
-pbpb_syst.SetMarkerColor(kGreyC)
+pbpb_syst.SetLineColor(ROOT.kBlack)
+pbpb_syst.SetMarkerColor(ROOT.kBlack)
 pbpb_syst.SetFillStyle(0)
 pbpb_syst.SetMarkerStyle(20)
 pbpb_syst.Draw("P2")
@@ -213,19 +219,19 @@ pbpb_syst.Draw("P2")
 
 
 ppb_stat0100 = ROOT.TGraphErrors(1,x_pPb0100,s3_0100,zero,s3stat0100)
-ppb_stat0100.SetLineColor(kRedC)
-ppb_stat0100.SetMarkerColor(kRedC)
+ppb_stat0100.SetLineColor(ROOT.kRed)
+ppb_stat0100.SetMarkerColor(ROOT.kRed)
 ppb_stat0100.SetMarkerStyle(20)
 
 ppb_syst0100 = ROOT.TGraphErrors(1,x_pPb0100, s3_0100, xe_pPb0100, s3syst0100)
 ppb_syst0100.SetTitle("ALICE Internal p-Pb, 0-100%, #sqrt{#it{s}_{NN}}=5.02 TeV")
-ppb_syst0100.SetLineColor(kRedC)
-ppb_syst0100.SetMarkerColor(kRedC)
+ppb_syst0100.SetLineColor(ROOT.kRed)
+ppb_syst0100.SetMarkerColor(ROOT.kRed)
 ppb_syst0100.SetFillStyle(0)
 ppb_syst0100.SetMarkerStyle(20)
 
 
-leg = ROOT.TLegend(0.15,0.7,0.7,0.8)
+leg = ROOT.TLegend(0.25,0.7,0.8,0.8)
 leg.SetMargin(0.14)
 
 
@@ -253,7 +259,8 @@ legT.SetMargin(0.14)
 
 legT.AddEntry(s3_2body)
 legT.AddEntry(s3_3body)
-legT.AddEntry(s3_csm_std)
+legT.AddEntry(s3_csm_1)
+legT.AddEntry(s3_csm_3)
 leg.SetFillStyle(0)
 legT.SetFillStyle(0)
 leg.Draw()

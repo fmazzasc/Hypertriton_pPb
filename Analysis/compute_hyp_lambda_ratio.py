@@ -170,13 +170,6 @@ hp_3body.SetLineColor(kAzureC)
 hp_3body.SetMarkerColor(kAzureC)
 hp_3body.SetTitle("3-body coalescence")
 
-# for i in range(hp_2body.GetN()):
-#     hp_2body.GetY()[i] /= 1.5
-#     hp_2body.GetEY()[i] /= 1.5
-
-# for i in range(hp_3body.GetN()):
-#     hp_3body.GetY()[i] /= 1.5
-#     hp_3body.GetEY()[i] /= 1.5
 
 hp_3body.SetFillColorAlpha(kAzureC, 0.571)
 hp_2body.SetFillColorAlpha(kBlueC, 0.571)
@@ -200,6 +193,7 @@ hp_ratio_csm_1.Draw("L same")
 hp_ratio_csm_3.Draw("L same")
 # hp_ratio_csm_van.Draw("L same")
 mg.GetYaxis().SetRangeUser(1e-8, 1e-5)
+mg.GetXaxis().SetRangeUser(5, 3e3)
 mg.GetXaxis().SetTitle('#LTd#it{N}_{ch}/d#it{#eta}#GT_{|#it{#eta}|<0.5}')
 mg.GetYaxis().SetTitle('{}_{#Lambda}^{3}H/#Lambda')
 
@@ -215,18 +209,41 @@ zero = np.array([0], dtype=np.float64)
 
 
 ppb_stat040 = ROOT.TGraphErrors(1,x_pPb040,hp_ratio_040,zero,hp_ratiostat040)
-ppb_stat040.SetLineColor(kVioletC)
-ppb_stat040.SetMarkerColor(kVioletC)
+ppb_stat040.SetLineColor(ROOT.kRed)
+ppb_stat040.SetMarkerColor(ROOT.kRed)
 ppb_stat040.SetMarkerStyle(20)
 ppb_stat040.SetMarkerSize(0.5)
 
 ppb_syst040 = ROOT.TGraphErrors(1,x_pPb040, hp_ratio_040, xe_pPb040, hp_ratiosyst040)
 ppb_syst040.SetTitle("ALICE Internal p-Pb, 0-40%, #sqrt{#it{s}_{NN}}=5.02 TeV")
-ppb_syst040.SetLineColor(kVioletC)
-ppb_syst040.SetMarkerColor(kVioletC)
+ppb_syst040.SetLineColor(ROOT.kRed)
+ppb_syst040.SetMarkerColor(ROOT.kRed)
 ppb_syst040.SetFillStyle(0)
 ppb_syst040.SetMarkerStyle(20)
 ppb_syst040.SetMarkerSize(0.5)
+
+x = np.array([1447], dtype=np.float64)
+ex = np.array([39], dtype=np.float64)
+y = np.array([4*1.64e-6], dtype=np.float64)
+ey = np.array([4*3.28e-7], dtype=np.float64)
+eys = np.array([4*1.69e-7], dtype=np.float64)
+zero = np.array([0], dtype=np.float64)
+pbpb_stat = ROOT.TGraphErrors(1,x,y,zero,ey)
+pbpb_stat.SetLineColor(kGreyC)
+pbpb_stat.SetMarkerColor(kGreyC)
+pbpb_stat.SetMarkerStyle(20)
+pbpb_stat.SetMarkerSize(0.5)
+pbpb_stat.Draw("Pz")
+
+
+pbpb_syst = ROOT.TGraphErrors(1,x,y,ex,eys)
+pbpb_syst.SetTitle("ALICE Pb-Pb #sqrt{#it{s}_{NN}}=2.76 TeV")
+pbpb_syst.SetLineColor(ROOT.kBlack)
+pbpb_syst.SetMarkerColor(ROOT.kBlack)
+pbpb_syst.SetFillStyle(0)
+pbpb_syst.SetMarkerStyle(20)
+pbpb_syst.SetMarkerSize(0.5)
+pbpb_syst.Draw("P2")
 
 
 leg = ROOT.TLegend(0.55,0.4,0.88,0.5)
@@ -235,6 +252,7 @@ leg.SetMargin(0.14)
 ppb_stat040.Draw("Pz")
 ppb_syst040.Draw("P2")
 leg.AddEntry(ppb_syst040,"","pf")
+leg.AddEntry(pbpb_syst,"","pf")
 
 
 

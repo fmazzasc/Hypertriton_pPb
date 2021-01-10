@@ -5,6 +5,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle
 
+kBlueC  = ROOT.TColor.GetColor("#2077b4");
+kRedC  = ROOT.TColor.GetColor("#d62827");
+kGreenC  = ROOT.TColor.GetColor("#2ba02b");
+kOrangeC  = ROOT.TColor.GetColor("#ff7f00");
+kVioletC  = ROOT.TColor.GetColor("#9467bd");
+kPinkC  = ROOT.TColor.GetColor("#e377c1");
+kGreyC  = ROOT.TColor.GetColor("#7f7f7f");
+kBrownC  = ROOT.TColor.GetColor("#8c564c");
+kAzureC  = ROOT.TColor.GetColor("#18becf");
+kGreenBC  = ROOT.TColor.GetColor("#1f78b4");
+kBlueC  = ROOT.TColor.GetColor("#1f78b4");
 
 
 def array2hist(counts, hist):
@@ -112,12 +123,13 @@ def unbinned_mass_fit(data, eff, bkg_model, output_dir, bkg_dir, cent_class, pt_
     # plot the fit
     frame = mass.frame(bins)
     frame.SetTitle("")
+    frame.GetXaxis().SetNdivisions(510)
 
     roo_data.plotOn(frame)
-    fit_function.plotOn(frame, rf.LineColor(ROOT.kBlue))
+    fit_function.plotOn(frame, rf.LineColor(kBlueC))
     #fit_function.plotOn(frame, rf.Components('signal'), rf.LineStyle(ROOT.kDotted), rf.LineColor(ROOT.kRed))
     fit_function.plotOn(frame, rf.Components(
-        'bkg'), rf.LineStyle(ROOT.kDashed), rf.LineColor(ROOT.kRed))
+        'bkg'), rf.LineStyle(ROOT.kDashed), rf.LineColor(kOrangeC))
 
     # add info to plot
     nsigma = 3
@@ -153,7 +165,7 @@ def unbinned_mass_fit(data, eff, bkg_model, output_dir, bkg_dir, cent_class, pt_
     signif = signal_counts / np.sqrt(signal_counts + background_counts + 1e-10)
     signif_error = significance_error(signal_counts, background_counts, signal_error, background_error)
 
-    pinfo = ROOT.TPaveText(0.537, 0.474, 0.937, 0.875, 'NDC')
+    pinfo = ROOT.TPaveText(0.537, 0.674, 0.837, 0.775, 'NDC')
     pinfo.SetBorderSize(0)
     pinfo.SetFillStyle(0)
     pinfo.SetTextAlign(30+3)
@@ -279,12 +291,15 @@ def unbinned_mass_fit_mc(data, eff, bkg_model, signal_hist, output_dir, bkg_dir,
     # plot the fit
     frame = mass.frame(bins)
     frame.SetTitle("")
+    frame.GetYaxis().SetTitleOffset(0.5);
+    frame.GetYaxis().SetTitleSize(0.07);
+    
 
     roo_data.plotOn(frame)
-    fit_function.plotOn(frame, rf.LineColor(ROOT.kBlue))
+    fit_function.plotOn(frame, rf.LineColor(kBlueC))
     #fit_function.plotOn(frame, rf.Components('signal'), rf.LineStyle(ROOT.kDotted), rf.LineColor(ROOT.kRed))
     fit_function.plotOn(frame, rf.Components(
-        'bkg'), rf.LineStyle(ROOT.kDashed), rf.LineColor(ROOT.kRed))
+        'bkg'), rf.LineStyle(ROOT.kDashed), rf.LineColor(kOrangeC))
 
     # add info to plot
     
@@ -317,7 +332,7 @@ def unbinned_mass_fit_mc(data, eff, bkg_model, signal_hist, output_dir, bkg_dir,
     signif = signal_counts / np.sqrt(signal_counts + background_counts + 1e-10)
     signif_error = significance_error(signal_counts, background_counts, signal_error, background_error)
 
-    pinfo = ROOT.TPaveText(0.537, 0.474, 0.937, 0.875, 'NDC')
+    pinfo = ROOT.TPaveText(0.537, 0.574, 0.8, 0.875, 'NDC')
     pinfo.SetBorderSize(0)
     pinfo.SetFillStyle(0)
     pinfo.SetTextAlign(30+3)
@@ -332,7 +347,7 @@ def unbinned_mass_fit_mc(data, eff, bkg_model, signal_hist, output_dir, bkg_dir,
 
     string_list = []
     string_list.append(f'Signal = {n_sig:.1f} #pm {n_sig_err:.1f}')    
-    string_list.append(f'Significance ({3:.0f}#sigma) = {signif:.1f} #pm {signif_error:.1f}')
+    # string_list.append(f'Significance ({3:.0f}#sigma) = {signif:.1f} #pm {signif_error:.1f}')
 
     if roo_data.sumEntries() > 0:
         string_list.append('#chi^{2} / NDF = ' + f'{frame.chiSquare(4):.2f}')
@@ -340,7 +355,7 @@ def unbinned_mass_fit_mc(data, eff, bkg_model, signal_hist, output_dir, bkg_dir,
     if background_counts > 0:
 
         ratio = signal_counts / background_counts
-        string_list.append(f'S/B ({3:.0f}#sigma) = {ratio:.2f}')
+        # string_list.append(f'S/B ({3:.0f}#sigma) = {ratio:.2f}')
 
     for s in string_list:
         pinfo.AddText(s)
@@ -353,6 +368,8 @@ def unbinned_mass_fit_mc(data, eff, bkg_model, signal_hist, output_dir, bkg_dir,
     stry += "MeV/#it{c}^{2})"
     frame.SetYTitle(stry)
     cv = ROOT.TCanvas(f"cv_templ_{round(eff,2)}_{bkg_model}_{cent_string}")
+    if eff==0.72:
+        frame.GetYaxis().SetRangeUser(0.001, 14.3)
     frame.Draw()
 
     if output_dir != '':
@@ -362,7 +379,6 @@ def unbinned_mass_fit_mc(data, eff, bkg_model, signal_hist, output_dir, bkg_dir,
         background.SetName(f"bkg_pdf_{round(eff,2)}_{cent_string}")
         background.SetTitle(f"bkg_pdf_{round(eff,2)}_{cent_string}")
         background.Write()
-
     return n_sig, n_sig_err, n1
 
 
