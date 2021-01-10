@@ -8,6 +8,7 @@ import pandas as pd
 import uproot
 import helpers as hp
 import mplhep
+import math
 import ROOT
 ROOT.gROOT.SetBatch()
 
@@ -283,6 +284,90 @@ cv.Draw()
 cv.SaveAs("../Results/hp_ratio.pdf")
 cv.SaveAs("../Results/hp_ratio.png")
 
+# Branching ratio plot
+cvBR = ROOT.TCanvas("brPlot","BR Plot",700,800)
+cvBR.SetTopMargin(0.15)
+cvBR.SetLeftMargin(0.15)
+cvBR.SetRightMargin(0.04)
+frame = cvBR.DrawFrame(0.14,7.e-8, 0.36, 1.4e-6, ";B.R.;{}_{#Lambda}^{3}H/#Lambda #times B.R.")
+frame.GetYaxis().SetTitleOffset(1.3)
+cvBR.SetLogy()
+
+npoints = 50
+xBR = np.linspace(0.14,0.36,npoints)
+C2 = 6.57e-7
+C2e = 1.39e-7
+C3 = 3.15e-7
+C3e = 8.57e-8
+
+CSM1 = 2.7026086005800812e-06
+CSM3 = 4.667110436005044e-06
+CSM = 0.5 * (CSM3 + CSM1)
+CSMe = 0.5 * (CSM3 - CSM1)
+
+grData = ROOT.TGraphErrors(2)
+grData.SetPoint(0, 0., hp_ratio_040[0] * 0.25)
+grData.SetPointError(0, 0., math.hypot(hp_ratiostat040[0], hp_ratiosyst040[0]) * 0.25)
+grData.SetPoint(1, 1., hp_ratio_040[0] * 0.25)
+grData.SetPointError(1, 0., math.hypot(hp_ratiostat040[0], hp_ratiosyst040[0]) * 0.25)
+grData.SetLineColor(kRedC)
+grData.SetLineWidth(2)
+grData.SetFillColorAlpha(kRedC,0.571)
+grData.SetTitle("ALICE p-Pb 0-40%")
+
+grCSM = ROOT.TGraphErrors(npoints)
+grCSM1 = ROOT.TGraph(npoints)
+grCSM3 = ROOT.TGraph(npoints)
+grC2 = ROOT.TGraphErrors(npoints)
+grC3 = ROOT.TGraphErrors(npoints)
+for i,j in enumerate(xBR) : 
+  grC2.SetPoint(i, j, C2 * j)
+  grC2.SetPointError(i, 0, C2e * j)
+  grC3.SetPoint(i, j, C3 * j)
+  grC3.SetPointError(i, 0, C3e * j)
+  grCSM1.SetPoint(i, j, CSM1 * j)
+  grCSM3.SetPoint(i, j, CSM3 * j)
+  grCSM.SetPoint(i, j, CSM * j)
+  grCSM.SetPointError(i, 0, CSMe * j)
+
+grC2.SetLineColor(kBlueC)
+grC2.SetMarkerColor(kBlueC)
+grC2.SetFillColorAlpha(kBlueC, 0.571)
+grC2.SetTitle("2-body coalescence")
+grC3.SetLineColor(kAzureC)
+grC3.SetMarkerColor(kAzureC)
+grC3.SetFillColorAlpha(kAzureC, 0.571)
+grC3.SetTitle("3-body coalescence")
+grCSM.SetLineColor(kGreyC)
+grCSM.SetFillColorAlpha(kGreyC, 0.571)
+grCSM.SetMarkerColor(kGreyC)
+grCSM1.SetLineWidth(2)
+grCSM1.SetTitle("CSM with T = 155MeV, Vc = dV/dy")
+grCSM3.SetLineWidth(2)
+grCSM3.SetLineStyle(ROOT.kDashed)
+grCSM3.SetTitle("CSM with T = 155MeV, Vc = 3dV/dy")
+
+grC2.Draw("PL3")
+grC3.Draw("PL3")
+# grCSM.Draw("P3")
+grCSM3.Draw("L")
+grCSM1.Draw("L")
+grData.Draw("L3")
+
+legBR = ROOT.TLegend(0.15,0.851 ,0.96,0.99)
+legBR.SetNColumns(2)
+legBR.SetMargin(0.2)
+legBR.SetFillStyle(0)
+legBR.AddEntry(grC2)
+legBR.AddEntry(grCSM1)
+legBR.AddEntry(grC3)
+legBR.AddEntry(grCSM3)
+legBR.AddEntry(grData)
+legBR.Draw()
+
+cvBR.SaveAs("plotBR.pdf")
+
 file = ROOT.TFile('hp_ratio.root', 'recreate')
 cv.Write()
+cvBR.Write()
 file.Close()
