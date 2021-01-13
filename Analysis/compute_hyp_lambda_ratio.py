@@ -15,8 +15,8 @@ ROOT.gROOT.SetBatch()
 
 
 ##COMPUTE PRESELECTION-EFFICIENCY
-df_rec = uproot.open("../Tables/SignalTable_17d_mtexp.root")["SignalTable"].pandas.df()
-df_sim = uproot.open("../Tables/SignalTable_17d_mtexp.root")["GenTable"].pandas.df()
+df_rec = uproot.open("../Tables/SignalTable_20l2_mtexp.root")["SignalTable"].pandas.df()
+df_sim = uproot.open("../Tables/SignalTable_20l2_mtexp.root")["GenTable"].pandas.df()
 
 presel_eff = len(df_rec)/len(df_sim.query("abs(rapidity)<0.5"))
 print("-------------------------------------")
@@ -48,7 +48,7 @@ for eff,cut in zip(bdt_eff_array, score_cuts_array):
 
     mc_data = np.array(df_mc.query(cut_string + " and 2.96<m<3.04")["m"])
     mean_mass = np.mean(mc_data)
-    hist = ROOT.TH1D(f'histo_mc_{eff}', f'histo_mc_{eff}', 500, 2.96, 3.04)
+    hist = ROOT.TH1D(f'histo_mc_{eff}', f'histo_mc_{eff}', 2000, 2.96, 3.04)
     for mc_entry in mc_data:
         hist.Fill(mc_entry - mean_mass + res040[4])
     
@@ -367,7 +367,7 @@ legBR.Draw()
 
 cvBR.SaveAs("plotBR.pdf")
 
-file = ROOT.TFile('hp_ratio.root', 'recreate')
+file = ROOT.TFile('../Results/hp_ratio.root', 'recreate')
 cv.Write()
 cvBR.Write()
 file.Close()

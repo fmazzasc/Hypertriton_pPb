@@ -296,10 +296,11 @@ def unbinned_mass_fit_mc(data, eff, bkg_model, signal_hist, output_dir, bkg_dir,
     
 
     roo_data.plotOn(frame)
-    fit_function.plotOn(frame, rf.LineColor(kBlueC))
-    #fit_function.plotOn(frame, rf.Components('signal'), rf.LineStyle(ROOT.kDotted), rf.LineColor(ROOT.kRed))
     fit_function.plotOn(frame, rf.Components(
         'bkg'), rf.LineStyle(ROOT.kDashed), rf.LineColor(kOrangeC))
+    fit_function.plotOn(frame, rf.LineColor(kBlueC))
+    #fit_function.plotOn(frame, rf.Components('signal'), rf.LineStyle(ROOT.kDotted), rf.LineColor(ROOT.kRed))
+
 
     # add info to plot
     
@@ -346,11 +347,10 @@ def unbinned_mass_fit_mc(data, eff, bkg_model, signal_hist, output_dir, bkg_dir,
     }
 
     string_list = []
+    string_list.append("ALICE Internal p-Pb, 0-40%, #sqrt{#it{s}_{NN}}=5.02 TeV")   
     string_list.append(f'Signal = {n_sig:.1f} #pm {n_sig_err:.1f}')    
     # string_list.append(f'Significance ({3:.0f}#sigma) = {signif:.1f} #pm {signif_error:.1f}')
 
-    if roo_data.sumEntries() > 0:
-        string_list.append('#chi^{2} / NDF = ' + f'{frame.chiSquare(4):.2f}')
 
     if background_counts > 0:
 
@@ -360,7 +360,7 @@ def unbinned_mass_fit_mc(data, eff, bkg_model, signal_hist, output_dir, bkg_dir,
     for s in string_list:
         pinfo.AddText(s)
 
-    frame.addObject(pinfo)
+    # frame.addObject(pinfo)
     if output_dir != '':
         output_dir.cd()
     binning = 1000*((3.04-2.96)/bins)
@@ -369,7 +369,8 @@ def unbinned_mass_fit_mc(data, eff, bkg_model, signal_hist, output_dir, bkg_dir,
     frame.SetYTitle(stry)
     cv = ROOT.TCanvas(f"cv_templ_{round(eff,2)}_{bkg_model}_{cent_string}")
     if eff==0.72:
-        frame.GetYaxis().SetRangeUser(0.001, 14.3)
+        frame.SetName("frame_0.72")
+        frame.Write()
     frame.Draw()
 
     if output_dir != '':
