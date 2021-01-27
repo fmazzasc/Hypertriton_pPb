@@ -240,16 +240,21 @@ def unbinned_mass_fit(data, eff, bkg_model, output_dir, bkg_dir, cent_class, pt_
     return signal_counts, signal_error, signif, signif_error, mu, mu_error, sigma, sigma_error, range_lower, range_upper
 
 
-def unbinned_mass_fit_mc(data, eff, bkg_model, signal_hist, output_dir, bkg_dir, cent_class, pt_range, ct_range, split, cent_string = '', bins=38, sign_range = [2.96,3.04]):
+def unbinned_mass_fit_mc(data, eff, bkg_model, mc_data, output_dir, bkg_dir, cent_class, pt_range, ct_range, split, cent_string = '', bins=38, ws_name=''):
 
     # define working variable
     mass = ROOT.RooRealVar('m', 'm_{^{3}He+#pi}', 2.96, 3.04, 'GeV/c^{2}')
+    # mass.setVal(3.1)
 
+    deltaMass = ROOT.RooRealVar("deltaM", '#Deltam', -0.06, 0.06, 'GeV/c^{2}')
+    shiftedMass = ROOT.RooAddition("mPrime", "m + #Deltam", ROOT.RooArgList(mass, deltaMass))
 
     # define signal component
-    hist_signal = ROOT.RooDataHist('signal_hist', 'signal_hist', ROOT.RooArgList(mass), signal_hist)
-    signal = ROOT.RooHistPdf("histpdf1", "histpdf1", ROOT.RooArgSet(mass), hist_signal, 0)
+    #hist_signal = ROOT.RooDataHist('signal_hist', 'signal_hist', ROOT.RooArgList(mass), signal_hist)
+    # signal = ROOT.RooHistPdf("histpdf1", "histpdf1", ROOT.RooArgList(shiftedMass), ROOT.RooArgList(mass), hist_signal, 0)
+    mc_data = ndarray2roo(mc_data, mass)
 
+    signal = ROOT.RooKeysPdf('signal', 'signal', shiftedMass, mass, mc_data, ROOT.RooKeysPdf.MirrorBoth, 2)
 
     slope = ROOT.RooRealVar('slope', 'exponential slope', -100., 100.)
     c0 = ROOT.RooRealVar('c0', 'constant c0', -2,2)
@@ -273,19 +278,19 @@ def unbinned_mass_fit_mc(data, eff, bkg_model, signal_hist, output_dir, bkg_dir,
         background = ROOT.RooExponential('bkg', 'expo for bkg', mass, slope)
 
 
-    # define signal and background normalization
-    n1 = ROOT.RooRealVar('n1', 'n1 const', 0., 1, 'GeV')
+    n_sig = ROOT.RooRealVar('n_sig', 'n_sig', 0., 1000, 'GeV')
+    n_bkg = ROOT.RooRealVar('n_bkg', 'n_bkg', 0., 1000, 'GeV')
 
 
 
     # define the fit funciton -> signal component + background component
-    fit_function = ROOT.RooAddPdf('model', 'signal + background', ROOT.RooArgList(signal, background), ROOT.RooArgList(n1))
+    fit_function = ROOT.RooAddPdf('model', 'signal + background', ROOT.RooArgList(signal, background), ROOT.RooArgList(n_sig, n_bkg))    
 
     # convert data to RooData
     roo_data = ndarray2roo(data, mass)
 
     # fit data
-    fit_function.fitTo(roo_data, rf.Range(
+    fit_function.fitTo(mc_data, rf.Range(
         2.96, 3.04))
 
     # plot the fit
@@ -304,34 +309,11 @@ def unbinned_mass_fit_mc(data, eff, bkg_model, signal_hist, output_dir, bkg_dir,
 
     # add info to plot
     
-    signal_counts = len(data)*n1.getVal()
-    signal_error = signal_counts*(n1.getError()/n1.getVal())
-    background_counts = len(data) - signal_counts
-    background_error = background_counts*(n1.getError()/n1.getVal())
+    signal_counts = n_sig.getVal()
+    signal_error = n_sig.getError()
+    background_counts = n_bkg.getVal()
+    background_error = n_bkg.getError()
 
-    mass.setRange('signal region',  sign_range[0], sign_range[1])
-    
-    
-    n_sig = signal_counts
-    n_bkg = background_counts
-
-    rel_err = n1.getError()/n1.getVal()
-    n_sig_err = n_sig*rel_err
-    n_bkg_err = n_bkg*rel_err
-
-    signal_counts = signal.createIntegral(ROOT.RooArgSet(
-        mass), ROOT.RooArgSet(mass), 'signal region').getVal() * n_sig
-    signal_error = signal.createIntegral(ROOT.RooArgSet(
-        mass), ROOT.RooArgSet(mass), 'signal region').getVal() * n_sig *rel_err
-    
-
-    background_counts = background.createIntegral(ROOT.RooArgSet(
-        mass), ROOT.RooArgSet(mass), 'signal region').getVal() * n_bkg
-    background_error = background.createIntegral(ROOT.RooArgSet(
-        mass), ROOT.RooArgSet(mass), 'signal region').getVal() * n_bkg *rel_err
-
-    signif = signal_counts / np.sqrt(signal_counts + background_counts + 1e-10)
-    signif_error = significance_error(signal_counts, background_counts, signal_error, background_error)
 
     pinfo = ROOT.TPaveText(0.537, 0.574, 0.8, 0.875, 'NDC')
     pinfo.SetBorderSize(0)
@@ -348,7 +330,7 @@ def unbinned_mass_fit_mc(data, eff, bkg_model, signal_hist, output_dir, bkg_dir,
 
     string_list = []
     string_list.append("ALICE Internal p-Pb, 0-40%, #sqrt{#it{s}_{NN}}=5.02 TeV")   
-    string_list.append(f'Signal = {n_sig:.1f} #pm {n_sig_err:.1f}')    
+    string_list.append(f'Signal = {signal_counts:.1f} #pm {signal_error:.1f}')   
     # string_list.append(f'Significance ({3:.0f}#sigma) = {signif:.1f} #pm {signif_error:.1f}')
 
 
@@ -368,9 +350,6 @@ def unbinned_mass_fit_mc(data, eff, bkg_model, signal_hist, output_dir, bkg_dir,
     stry += "MeV/#it{c}^{2})"
     frame.SetYTitle(stry)
     cv = ROOT.TCanvas(f"cv_templ_{round(eff,2)}_{bkg_model}_{cent_string}")
-    if eff==0.72:
-        frame.SetName("frame_0.72")
-        frame.Write()
     frame.Draw()
 
     if output_dir != '':
@@ -380,7 +359,31 @@ def unbinned_mass_fit_mc(data, eff, bkg_model, signal_hist, output_dir, bkg_dir,
         background.SetName(f"bkg_pdf_{round(eff,2)}_{cent_string}")
         background.SetTitle(f"bkg_pdf_{round(eff,2)}_{cent_string}")
         background.Write()
-    return n_sig, n_sig_err, n1
+
+    if ws_name != '':
+        w = ROOT.RooWorkspace(ws_name)
+        mc = ROOT.RooStats.ModelConfig("ModelConfig",w)
+        mc.SetPdf(fit_function)
+        mc.SetParametersOfInterest(ROOT.RooArgSet(n_sig))
+        mc.SetObservables(ROOT.RooArgSet(mass))
+        if bkg_model=='pol1':
+            w.defineSet("nuisParams","n_bkg,c0,c1")
+            mc.SetNuisanceParameters(w.set('nuisParams'))
+        if bkg_model=='expo':
+            w.defineSet("nuisParams","slope")
+            mc.SetNuisanceParameters(w.set('nuisParams'))
+        getattr(w,'import')(mc)
+        getattr(w,'import')(roo_data)
+        if not os.path.exists('../Utils/Workspaces'):
+            os.makedirs('../Utils/Workspaces')
+        w.writeToFile(f'../Utils/Workspaces/{ws_name}.root', True)
+    
+    print("mass:", mass.getVal())
+    print("shifted_mass:", shiftedMass.getVal())
+    print("delta_mass:", deltaMass.getVal())
+
+
+    return signal_counts, signal_error, deltaMass.getVal(), deltaMass.getError()
 
 
 

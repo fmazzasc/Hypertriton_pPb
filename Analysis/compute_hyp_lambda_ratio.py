@@ -33,7 +33,9 @@ branching_ratio = 0.25
 
 signal_list040 = []
 error_list040 = []
-n1_list040 = []
+delta_mass_list = []
+delta_mass_error_list = []
+mean_mass_list = []
 
 
 ff = ROOT.TFile("../Results/inv_mass_fits.root", "recreate")
@@ -44,26 +46,27 @@ ff.cd()
 for eff,cut in zip(bdt_eff_array, score_cuts_array):
     cut_string = f"model_output>{cut}"
     data040 = np.array(df.query(cut_string + " and 2.96<m<3.04 and centrality<=40 and abs(fZ) < 10")["m"])
-    res040 = hp.unbinned_mass_fit(data040, eff, 'pol1', ff, bkg_dir, [0,40], [0,10], [0,35], split="", cent_string='040', bins = 34)
-
     mc_data = np.array(df_mc.query(cut_string + " and 2.96<m<3.04")["m"])
-    mean_mass = np.mean(mc_data)
-    hist = ROOT.TH1D(f'histo_mc_{eff}', f'histo_mc_{eff}', 2000, 2.96, 3.04)
-    for mc_entry in mc_data:
-        hist.Fill(mc_entry - mean_mass + res040[4])
-    
-    ws_name = '' if eff != selected_bdt_eff else 'Workspace' 
-    res_template = hp.unbinned_mass_fit_mc(data040, eff, 'pol1', hist, ff, bkg_dir, [0,40], [0,10], [0,35], split="", cent_string='040', bins = 34, sign_range = [res040[-2], res040[-1]])
+    mean_mass_list.append(np.mean(mc_data))
+    mc_data = mc_data[0:1000]
+    res_template = hp.unbinned_mass_fit_mc(data040, eff, 'pol0', mc_data, ff, bkg_dir, [0,40], [0,10], [0,35], split="", cent_string='040', bins = 34, ws_name = f'ws_eff_{eff}')
 
     signal_list040.append(res_template[0])
     error_list040.append(res_template[1])
-    n1_list040.append(res_template[2])
+    delta_mass_list.append(res_template[-2])
+    delta_mass_error_list.append(res_template[-1])
+
 
 
 signal_array040 = np.array(signal_list040)
 error_array040 = np.array(error_list040)
-
-
+mean_mass_array040 = np.array(mean_mass_list)
+delta_mass_array = np.array(delta_mass_list)
+delta_mass_error_array = np.array(delta_mass_error_list)
+# print(delta_mass_array)
+# B_lam = 1.115683 + 1.87561294257 - (2.99131 - 1000*delta_mass_array[bdt_eff_array==selected_bdt_eff])
+# B_lam_error = 1000*delta_mass_error_array[bdt_eff_array==selected_bdt_eff]
+# print(f"BLam: {B_lam*1000} +- {B_lam_error*1000}" )
 
 
 ###COMPUTE YIELD############################
@@ -72,7 +75,7 @@ error_array040 = np.array(error_list040)
 corrected_counts = signal_array040/n_events040/branching_ratio/presel_eff/bdt_eff_array
 corrected_error = error_array040/n_events040/branching_ratio/presel_eff/bdt_eff_array
 Yield = np.float64(corrected_counts[bdt_eff_array==selected_bdt_eff]  / 2)
-Yield = Yield/0.98   #absorption correction
+Yield = Yield/0.97   #absorption correction
 
 stat_error = np.float64(corrected_error[bdt_eff_array==selected_bdt_eff] / 2)
 # syst_error = float(np.std(corrected_counts) / corrected_counts[bdt_eff_array==selected_bdt_eff])
@@ -365,7 +368,7 @@ legBR.AddEntry(grCSM3)
 legBR.AddEntry(grData)
 legBR.Draw()
 
-cvBR.SaveAs("plotBR.pdf")
+cvBR.SaveAs("../Results/plotBR.pdf")
 
 file = ROOT.TFile('../Results/hp_ratio.root', 'recreate')
 cv.Write()

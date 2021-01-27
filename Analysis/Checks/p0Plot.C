@@ -23,8 +23,8 @@ const int kYellowC  = TColor::GetColor("#ffe119");
 const int kYellowCT = TColor::GetColorTransparent(kYellowC, 0.5);
 const int kBrownC  = TColor::GetColor("#b15928");
 
-  const char *infile = "../../Utils/Workspaces/ws_pol1_72.root";
-  const char *workspaceName = "ws_pol1_72";
+  const char *infile = "../../Utils/Workspaces/ws_eff_0.72.root";
+  const char *workspaceName = "ws_eff_0.72";
   const char *modelConfigName = "ModelConfig";
   const char *dataName = "data";
 
@@ -61,20 +61,21 @@ const int kBrownC  = TColor::GetColor("#b15928");
   vector<double> p0values;
   vector<double> p0valuesExpected;
 
-  double massMin = 2.96;
-  double massMax = 3.04;
+  double massMin = -0.06;
+  double massMax = 0.06;
 
   // loop on the mass values
+  
 
-  for (double mass = massMin; mass <= massMax; mass += (massMax - massMin) / 200)
+  for (double mass = massMin; mass <= massMax; mass += (massMax - massMin) / 400)
   {
     cout << endl
          << endl
-         << "Running for mass: " << mass << endl
+         << "Running for mass: " << 2.9901052 + mass << endl
          << endl;
-    w->var("hyp_mass")->setVal(mass);
-    w->var("hyp_mass")->setConstant(true);
-    w->var("hyp_mass")->Print();
+    w->var("deltaM")->setVal(mass);
+    w->var("deltaM")->setConstant(true);
+    w->var("deltaM")->Print();
 
     AsymptoticCalculator *ac = new AsymptoticCalculator(*data, *sbModel, *bModel);
     ac->SetOneSidedDiscovery(true); // for one-side discovery test
@@ -83,8 +84,8 @@ const int kBrownC  = TColor::GetColor("#b15928");
     HypoTestResult *asymCalcResult = ac->GetHypoTest();
 
     asymCalcResult->Print();
-    w->var("hyp_mass")->Print();
-    masses.push_back(mass);
+    w->var("deltaM")->Print();
+    masses.push_back(2.9901052 - mass);
     p0values.push_back(asymCalcResult->NullPValue());
 
     double expectedP0 = AsymptoticCalculator::GetExpectedPValues(asymCalcResult->NullPValue(), asymCalcResult->AlternatePValue(), 0, false);
