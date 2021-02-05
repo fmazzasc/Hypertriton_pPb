@@ -290,7 +290,7 @@ def unbinned_mass_fit_mc(data, eff, bkg_model, mc_data, output_dir, bkg_dir, cen
     roo_data = ndarray2roo(data, mass)
 
     # fit data
-    fit_function.fitTo(mc_data, rf.Range(
+    fit_function.fitTo(roo_data, rf.Range(
         2.96, 3.04))
 
     # plot the fit

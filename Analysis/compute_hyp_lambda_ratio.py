@@ -48,8 +48,8 @@ for eff,cut in zip(bdt_eff_array, score_cuts_array):
     data040 = np.array(df.query(cut_string + " and 2.96<m<3.04 and centrality<=40 and abs(fZ) < 10")["m"])
     mc_data = np.array(df_mc.query(cut_string + " and 2.96<m<3.04")["m"])
     mean_mass_list.append(np.mean(mc_data))
-    mc_data = mc_data[0:1000]
-    res_template = hp.unbinned_mass_fit_mc(data040, eff, 'pol0', mc_data, ff, bkg_dir, [0,40], [0,10], [0,35], split="", cent_string='040', bins = 34, ws_name = f'ws_eff_{eff}')
+    mc_data = mc_data[0:20000]
+    res_template = hp.unbinned_mass_fit_mc(data040, eff, 'pol1', mc_data, ff, bkg_dir, [0,40], [0,10], [0,35], split="", cent_string='040', bins = 34, ws_name = f'ws_eff_{eff}')
 
     signal_list040.append(res_template[0])
     error_list040.append(res_template[1])

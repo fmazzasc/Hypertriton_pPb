@@ -13,8 +13,9 @@ using namespace std;
 
 #include "helpers/Common.h"
 #include "helpers/Table2.h"
+#include "helpers/O2Table.h"
 
-void GenerateTableFromData(bool likeSign = false)
+void GenerateTableFromData(bool likeSign = false, bool pp = false)
 {
 
   string dataDir = "../Trees/";
@@ -22,37 +23,52 @@ void GenerateTableFromData(bool likeSign = false)
 
   string lsString = likeSign ? "_LS.root" : ".root";
 
-  string inFileName16 = "HyperTritonTree_16qt";
+  string inFileName16 = pp ? "HyperTritonTree_pp13TeV" : "HyperTritonTree_16qt";
+
+  
   string inFileArg16 = dataDir + inFileName16 + lsString;
 
   string inFileName13 = "HyperTritonTree_13bc";
   string inFileArg13 = dataDir  + inFileName13 + lsString;
 
-  string outFileName = "DataTable_pPb";
+  string outFileName = pp ? "DataTable_pp" : "DataTable_pPb";
   string outFileArg = tableDir  + outFileName + lsString;
 
-  TChain inputChain("_default/fTreeV0");
+  string treeName = pp ? "Hyp3O2" : "_default/fTreeV0";
+
+  TChain inputChain(treeName.data());
   inputChain.AddFile(inFileArg16.data());
-  if (!likeSign)
+  if (!likeSign && !pp)
     inputChain.AddFile(inFileArg13.data());
 
   TTreeReader fReader(&inputChain);
-  TTreeReaderArray<RHyperTritonHe3pi> RHyperVec = {fReader, "RHyperTriton"};
-  TTreeReaderValue<RCollision> RColl = {fReader, "RCollision"};
-
   TFile outFile(outFileArg.data(), "RECREATE");
-  Table2 tree("DataTable", "Data Table");
 
+  if(!pp){
+  TTreeReaderArray<RHyperTritonHe3pi> RHyperVec = {fReader, "RHyperTriton"};
+  TTreeReaderValue<RCollision> RColl = {fReader, "RCollision"}; 
+  Table2 tree("DataTable", "Data Table");
   while (fReader.Next())
   {
     for (auto &RHyper : RHyperVec)
       tree.Fill(RHyper, *RColl);
   }
-
   outFile.cd();
   tree.Write();
-  outFile.Close();
+  }
 
-  std::cout << "\nDerived tree from Data generated!\n"
-            << std::endl;
+  if(pp){
+  TTreeReaderValue<RHyperTriton3O2> RHyper = {fReader, "RHyperTriton"};
+  TableO2 tree(false);
+    while (fReader.Next()) {
+      tree.Fill(*RHyper);
+  }
+  outFile.cd();
+  tree.Write();
+  }
+
+
+  outFile.Close();
+  std::cout << "\nDerived tree from Data generated!\n" << std::endl;
+
 }
