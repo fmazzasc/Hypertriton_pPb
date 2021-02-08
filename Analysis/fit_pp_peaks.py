@@ -6,6 +6,7 @@ import pandas as pd
 import uproot
 import helpers as hp
 import mplhep
+import aghast
 import ROOT
 ROOT.gROOT.SetBatch()
 
@@ -13,51 +14,58 @@ matplotlib.use("pdf")
 matplotlib.style.use(mplhep.style.ALICE)
 
 
+def normalize_ls(data_counts, ls_counts, bins):
+    bin_centers = 0.5 * (bins[1:] + bins[:-1])
+    side_region = np.logical_or(bin_centers<2.992-4*0.0025, bin_centers>2.992+4*0.0025)
+    
+    side_data_counts = np.sum(data_counts[side_region])
+    side_ls_counts = np.sum(ls_counts[side_region])
+    scaling_factor = side_data_counts/side_ls_counts
+    return scaling_factor
+
+def h1_invmass(counts, bins=34, name=''):
+    th1 = ROOT.TH1D(f'{name}', f'{name}_x', int(bins), 2.96, 3.04)
+
+    for index in range(0, len(counts)):
+        th1.SetBinContent(index+1, counts[index])
+        th1.SetBinError(index + 1, np.sqrt(counts[index]))
+
+    th1.SetDirectory(0)
+
+    return th1
 
 
 ##COMPUTE PRESELECTION-EFFICIENCY
-df_rec = uproot.open("../Tables/SignalTable_pp13TeV_mtexp.root")["SignalTable"].pandas.df().query("pt>0 and bw_accept>0")
+df_rec = uproot.open("../Tables/SignalTable_pp13TeV_mtexp.root")["SignalTable"].pandas.df().query("pt>0 and rej_accept>0")
 df_sim = uproot.open("../Tables/SignalTable_pp13TeV_mtexp.root")["SignalTable"].pandas.df()
 
-presel_eff = len(df_rec)/len(df_sim.query("abs(gY)<0.5 and bw_accept>0"))
+presel_eff = len(df_rec)/len(df_sim.query("abs(gY)<0.5 and rej_accept>0"))
 print("-------------------------------------")
 print("Pre-selection efficiency: ", presel_eff)
 
 ## FIT INVARIANT MASS SPECTRA
 df = pd.read_parquet("../Utils/ReducedDataFrames/selected_df_data.parquet.gzip")
-df_mc = pd.read_parquet("../Utils/ReducedDataFrames/selected_df_mc_pp.parquet.gzip")
+df_ls = pd.read_parquet("../Utils/ReducedDataFrames/selected_df_ls.parquet.gzip")
 score_cuts_array = np.load("../Utils/Efficiencies/score_eff_syst_arr.npy")
 bdt_eff_array = np.load("../Utils/Efficiencies/bdt_eff_syst_arr.npy")
-selected_bdt_eff = 0.72
-branching_ratio = 0.25
 
-signal_list040 = []
-error_list040 = []
-delta_mass_list = []
-delta_mass_error_list = []
-mean_mass_list = []
 
-ff = ROOT.TFile("../Results/inv_mass_fits_pp.root", "recreate")
-bkg_dir = ff.mkdir('bkg_pdf')
+
+ff = ROOT.TFile("../Results/inv_mass_fits_pp_bkg_sub.root", "recreate")
 ff.cd()
 
+n_bins = 34
 
 for eff,cut in zip(bdt_eff_array, score_cuts_array):
     cut_string = f"model_output>{cut}"
-    data040 = np.array(df.query(cut_string + " and 2.96<m<3.04 and centrality<=40")["m"])
-    mc_data = np.array(df_mc.query(cut_string + " and 2.96<m<3.04")["m"])
-    mean_mass_list.append(np.mean(mc_data))
-    mc_data = mc_data[0:20000]
-    res_template = hp.unbinned_mass_fit(data040, eff, 'pol1', ff, bkg_dir, [0,40], [0,10], [0,35], split="", cent_string='040', bins = 34)
+    data = np.array(df.query(cut_string + " and 2.96<m<3.04")["m"])
+    ls_data = np.array(df_ls.query(cut_string + " and 2.96<m<3.04")["m"])
 
-    signal_list040.append(res_template[0])
-    error_list040.append(res_template[1])
-    delta_mass_list.append(res_template[-2])
-    delta_mass_error_list.append(res_template[-1])
+    counts_hist_data, bins = np.histogram(data, bins=n_bins)
+    counts_hist_ls, _ = np.histogram(ls_data, bins=n_bins)
+    counts_hist_ls = counts_hist_ls*normalize_ls(counts_hist_data, counts_hist_ls, bins)
+    subtracted_counts = counts_hist_data - counts_hist_ls
+    root_hist = h1_invmass(subtracted_counts, n_bins, f"histo_{eff}")
 
+    res_template = hp.fit_hist(root_hist, [0,100], [0,9], [0,35], nsigma=3, model="expo", fixsigma=-1, sigma_limits=None, mode=2, split='')
 
-signal_array040 = np.array(signal_list040)
-error_array040 = np.array(error_list040)
-mean_mass_array040 = np.array(mean_mass_list)
-delta_mass_array = np.array(delta_mass_list)
-delta_mass_error_array = np.array(delta_mass_error_list)

@@ -1,4 +1,5 @@
 import os
+import argparse
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
@@ -15,7 +16,15 @@ matplotlib.use('pdf')
 plt.style.use(mpl.style.ALICE)
 
 
-with open("Config.yaml", 'r') as stream:
+###############################################################################
+parser = argparse.ArgumentParser()
+parser.add_argument('-pp', '--pp_mode', help='Do the training', action='store_true')
+args = parser.parse_args()
+pp_mode = args.pp_mode
+
+config_file = "Config_pp.yaml" if pp_mode==True else "Config.yaml"
+
+with open(config_file, 'r') as stream:
     try:
         params = yaml.full_load(stream)
     except yaml.YAMLError as exc:
@@ -48,16 +57,18 @@ print("Data loading...")
 if training:
 
         signalH = TreeHandler(path_to_data + signal_table_name, "SignalTable")
-        bkgH = TreeHandler(path_to_data + bkg_table_name, "DataTable")
-        bkgH.get_data_frame().drop_duplicates(inplace=True)        
+        bkgH = TreeHandler(path_to_data + bkg_table_name, "DataTable")     
 
         if bkg_fraction!=None:
                 bkgH.shuffle_data_frame(size=bkg_fraction*len(signalH), inplace=True, random_state=52)
 
         train_test_data = au.train_test_generator([signalH, bkgH], [1,0], test_size=0.5, random_state=42)
 
-
-        training_columns = ['TPCnSigmaHe3','ct','V0CosPA','ProngsDCA','He3ProngPvDCA','PiProngPvDCA','He3ProngPvDCAXY','PiProngPvDCAXY','NpidClustersHe3','TPCnSigmaPi']
+        if pp_mode:
+                signalH.apply_preselections("pt>0 and rej_accept==True")
+                training_columns = ["pt","cos_pa", "tpc_ncls_de", "tpc_ncls_pr", "tpc_ncls_pi", "tpc_nsig_de", "tpc_nsig_pr", "tpc_nsig_pi", "dca_de_pr", "dca_de_pi", "dca_pr_pi", "dca_de_sv", "dca_pr_sv", "dca_pi_sv", "chi2"]
+        else:
+                training_columns = ['TPCnSigmaHe3','ct','V0CosPA','ProngsDCA','He3ProngPvDCA','PiProngPvDCA','He3ProngPvDCAXY','PiProngPvDCAXY','NpidClustersHe3','TPCnSigmaPi']
 
         if not os.path.exists(results_ml_path):
                 os.makedirs(results_ml_path)
@@ -116,9 +127,14 @@ if application:
         lsH = TreeHandler(path_to_data + bkg_table_name, "DataTable")
         lsH.get_data_frame().drop_duplicates(inplace=True)
 
-        simH = TreeHandler(path_to_data + signal_table_name, "GenTable")
+        if pp_mode==True:
+                signalH.apply_preselections("rej_accept==True")
+                presel_eff = len(signalH.apply_preselections("pt>0", inplace=False))/len(signalH)
+        else:
+                simH = TreeHandler(path_to_data + signal_table_name, "GenTable")
+                presel_eff = len(signalH)/len(simH)
+        print("Presel Eff: ", presel_eff)
 
-        presel_eff = len(signalH)/len(simH)
         bdt_eff_arr = np.load(efficiencies_path + "/efficiency_arr.npy")
         score_eff_arr = np.load(efficiencies_path + "/score_efficiency_arr.npy")
 
@@ -128,9 +144,10 @@ if application:
         dataH.apply_model_handler(model_hdl)
         lsH.apply_model_handler(model_hdl)
 
-        sign_plot = hp.significance_scan(bdt_eff_arr, score_eff_arr, dataH, presel_eff, working_point, variation_range)
+
 
         if significance_scan:
+                sign_plot = hp.significance_scan(bdt_eff_arr, score_eff_arr, dataH, presel_eff, working_point, variation_range)
                 plt.ylim((-0.3,5))
                 sign_plot.savefig(results_ml_path + "/significance_scan.png")
                 
