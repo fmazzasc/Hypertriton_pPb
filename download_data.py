@@ -24,7 +24,10 @@ if not os.path.exists("Trees/HyperTritonTree_16qt_LS.root"):
     os.system("scp lxplus.cern.ch:/eos/user/h/hypertriton/trees/2Body/HyperTritonTree_16qt_LS.root  Trees/.")
 
 if not os.path.exists("Trees/HyperTritonTree_17d.root"):
-    os.system("scp lxplus.cern.ch:/eos/user/h/hypertriton/trees/2Body/HyperTritonTree_17d.root  Trees/.")
+    os.system("scp lxplus.cern.ch:/eos/user/h/hypertriton/trees/2Body/HyperTritonTree_17d.root  Trees/.")    ##G3 based MC
+
+if not os.path.exists("Trees/HyperTritonTree_20l2.root"):
+    os.system("scp lxplus.cern.ch:/eos/user/h/hypertriton/trees/2Body/HyperTritonTree_20l2.root  Trees/.")   #G4 based MC
 
 if not os.path.exists("Utils/AnalysisResults_pPb.root"):
     os.system("scp lxplus.cern.ch:/eos/user/h/hypertriton/trees/2Body/AnalysisResults_pPb.root  Utils/.")

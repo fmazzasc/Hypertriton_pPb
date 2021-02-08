@@ -142,12 +142,12 @@ kGreenBC  = ROOT.TColor.GetColor("#bcbd21");
 
 
 s3_csm_1 = ROOT.TGraphErrors("../Utils/ProdModels/s3_VC1.csv","%lg %*s %*s %lg")
-s3_csm_1.SetLineColor(16)
+s3_csm_1.SetLineColor(922)
 s3_csm_1.SetLineWidth(2)
 s3_csm_1.SetTitle("CSM with T=155MeV, Vc = dV/dy")
 
 s3_csm_3 = ROOT.TGraphErrors("../Utils/ProdModels/s3_VC3.csv","%lg %*s %*s %lg")
-s3_csm_3.SetLineColor(16)
+s3_csm_3.SetLineColor(922)
 s3_csm_3.SetLineWidth(2)
 s3_csm_3.SetLineStyle(2)
 s3_csm_3.SetTitle("CSM with T=155MeV, Vc = 3dV/dy")
