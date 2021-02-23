@@ -21,7 +21,7 @@ void GenerateTableFromData(bool likeSign = false, bool pp = false)
   string dataDir = "../Trees/";
   string tableDir = "../Tables/";
 
-  string lsString = likeSign ? "_LS.root" : ".root";
+  string lsString = likeSign ? "_mixDeu.root" : ".root";
 
   string inFileName16 = pp ? "HyperTritonTree_pp13TeV" : "HyperTritonTree_16qt";
 

@@ -117,19 +117,21 @@ if training:
 
         print("---------------------------------------------")
         print("Training done")
+        del signalH, bkgH
 
 if application:
 
         print("---------------------------------------------")
         print("Starting application: ..")
-        dataH = TreeHandler(path_to_data + data_table_name, "DataTable")
         signalH = TreeHandler(path_to_data + signal_table_name, "SignalTable")
-        lsH = TreeHandler(path_to_data + bkg_table_name, "DataTable")
-        lsH.get_data_frame().drop_duplicates(inplace=True)
+        selected_dataH = TreeHandler()
+        selected_lsH = TreeHandler()
+        pp_string = ""
 
         if pp_mode==True:
                 signalH.apply_preselections("rej_accept==True")
                 presel_eff = len(signalH.apply_preselections("pt>0", inplace=False))/len(signalH)
+                pp_string = "_pp"
         else:
                 simH = TreeHandler(path_to_data + signal_table_name, "GenTable")
                 presel_eff = len(signalH)/len(simH)
@@ -138,34 +140,41 @@ if application:
         bdt_eff_arr = np.load(efficiencies_path + "/efficiency_arr.npy")
         score_eff_arr = np.load(efficiencies_path + "/score_efficiency_arr.npy")
 
-        model_hdl = ModelHandler()
-        model_hdl.load_model_handler(ml_model_path + "/model_hndl.pkl")
-
-        dataH.apply_model_handler(model_hdl)
-        lsH.apply_model_handler(model_hdl)
-
-
-
-        if significance_scan:
-                sign_plot = hp.significance_scan(bdt_eff_arr, score_eff_arr, dataH, presel_eff, working_point, variation_range)
-                plt.ylim((-0.3,5))
-                sign_plot.savefig(results_ml_path + "/significance_scan.png")
-                
         syst_mask = np.logical_and(bdt_eff_arr >= working_point - variation_range, bdt_eff_arr <= working_point + variation_range)
         bdt_eff_syst_arr = bdt_eff_arr[syst_mask]
         score_eff_syst_arr = score_eff_arr[syst_mask]
 
-        selected_dataH = dataH.get_subset(f"model_output>{score_eff_syst_arr[-1]}")
-        selected_lsH = lsH.get_subset(f"model_output>{score_eff_syst_arr[-1]}")
 
+        model_hdl = ModelHandler()
+        model_hdl.load_model_handler(ml_model_path + "/model_hndl.pkl")
+
+        selected_dataH.get_handler_from_large_file(path_to_data + data_table_name, "DataTable", model_hdl, f"model_output>{score_eff_syst_arr[-1]}")
+        selected_lsH.get_handler_from_large_file(path_to_data + bkg_table_name, "DataTable", model_hdl, f"model_output>{score_eff_syst_arr[-1]}")
+        if pp_mode:
+                selected_emH = TreeHandler()   
+                selected_emH.get_handler_from_large_file(path_to_data + "DataTable_pp_mixDeu.root", "DataTable", model_hdl, f"model_output>{score_eff_syst_arr[-1]}")
+             
+        print("Selected data len: ", len(selected_dataH))
+        print("Selected ls len: ", len(selected_lsH))
+        print("Selected ls len: ", len(selected_emH))
+
+
+
+        if significance_scan:
+                sign_plot = hp.significance_scan(bdt_eff_arr, score_eff_arr, selected_dataH, presel_eff, working_point, variation_range)
+                plt.ylim((-0.3,5))
+                sign_plot.savefig(results_ml_path + "/significance_scan.png")
+                
 
         np.save(efficiencies_path + "/bdt_eff_syst_arr.npy", bdt_eff_syst_arr)
         np.save(efficiencies_path + "/score_eff_syst_arr.npy", score_eff_syst_arr)
 
         if not os.path.exists(selected_df_path):
                 os.makedirs(selected_df_path)
-        selected_dataH.write_df_to_parquet_files(selected_df_path + "/selected_df_data")
-        selected_lsH.write_df_to_parquet_files(selected_df_path + "/selected_df_ls")
+        selected_dataH.write_df_to_parquet_files(selected_df_path + f"/selected_df_data{pp_string}")
+        selected_lsH.write_df_to_parquet_files(selected_df_path + f"/selected_df_ls{pp_string}")
+        selected_emH.write_df_to_parquet_files(selected_df_path + f"/selected_df_em{pp_string}")
+
   
         print("---------------------------------------------")
         print("Application done.")

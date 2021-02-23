@@ -394,19 +394,30 @@ def fit_hist(
     cv = ROOT.TCanvas(f'cv_{histo.GetName()}')
 
     # define the number of parameters depending on the bkg model
-    if 'pol' in str(model):
-        n_bkgpars = int(model[3]) + 1
-    elif 'expo' in str(model):
-        n_bkgpars = 2
-    else:
-        print(f'Unsupported model {model}')
+    if isinstance(model, list):
+        n_bkgpars = len(model)
+        fit_tpl = ROOT.TF1('fitTpl', f'pol2(0) + gausn(3) + gausn({n_bkgpars})', 0, 5)
+        bkg_tpl = ROOT.TF1('bkgTpl', f'pol2(0) + gausn(3)', 0, 5)
+        for i in range(n_bkgpars):
+            fit_tpl.SetParName(i, f'B_{i}')
+            fit_tpl.FixParameter(i, model[i])
+        
 
-    # define the fit function bkg_model + gauss
-    fit_tpl = ROOT.TF1('fitTpl', f'{model}(0)+gausn({n_bkgpars})', 0, 5)
+    
+    else:
+        if 'pol' in str(model):
+            n_bkgpars = int(model[3]) + 1
+        elif 'expo' in str(model):
+            n_bkgpars = 2
+        else:
+            print(f'Unsupported model {model}')
+
+        fit_tpl = ROOT.TF1('fitTpl', f'{model}(0)+gausn({n_bkgpars})', 0, 5)
+        bkg_tpl = ROOT.TF1('fitTpl', f'{model}(0)', 0, 5)
 
     # redefine parameter names for the bkg_model
-    for i in range(n_bkgpars):
-        fit_tpl.SetParName(i, f'B_{i}')
+        for i in range(n_bkgpars):
+            fit_tpl.SetParName(i, f'B_{i}')
 
     # define parameter names for the signal fit
     fit_tpl.SetParName(n_bkgpars, 'N_{sig}')
@@ -420,7 +431,7 @@ def fit_hist(
 
     # define signal and bkg_model TF1 separately
     sigTpl = ROOT.TF1('fitTpl', 'gausn(0)', 0, 5)
-    bkg_tpl = ROOT.TF1('fitTpl', f'{model}(0)', 0, 5)
+    
 
     # plotting stuff for fit_tpl
     fit_tpl.SetNpx(300)
@@ -531,8 +542,11 @@ def fit_hist(
     if bkg > 0:
         ratio = signal/bkg
         string = f'S/B ({nsigma:.0f}#sigma) {ratio:.4f}'
+        pinfo2.AddText(string)
 
+    string = f'#mu {mu:.4f} #pm {muErr:.4f}'
     pinfo2.AddText(string)
+
     pinfo2.Draw()
     ROOT.gStyle.SetOptStat(0)
 
@@ -547,6 +561,84 @@ def fit_hist(
     cv.Write()
     
     return (signal, errsignal, signif, errsignif, mu, muErr, sigma, sigmaErr)
+
+
+def fit_hist_ls(histo, model="pol0", mode=2, split=''):
+    # canvas for plotting the invariant mass distribution
+    cv = ROOT.TCanvas(f'cv_{histo.GetName()}')
+
+    # define the number of parameters depending on the bkg model
+    if 'pol' in str(model):
+        n_bkgpars = int(model[3]) + 1
+    elif 'expo' in str(model):
+        n_bkgpars = 2
+    else:
+        print(f'Unsupported model {model}')
+
+    # define the fit function bkg_model + gauss
+    fit_tpl = ROOT.TF1('fitTpl', f'{model}(0)+gausn({n_bkgpars})', 0, 5)
+
+    # redefine parameter names for the bkg_model
+    for i in range(n_bkgpars):
+        fit_tpl.SetParName(i, f'B_{i}')
+
+    # define parameter names for the signal fit
+    fit_tpl.SetParName(n_bkgpars, 'N_{sig}')
+    fit_tpl.SetParName(n_bkgpars + 1, '#mu')
+    fit_tpl.SetParName(n_bkgpars + 2, '#sigma')
+    # define parameter values and limits
+    fit_tpl.SetParameter(n_bkgpars, 40)
+    fit_tpl.SetParLimits(n_bkgpars, -10, 10000)  # modificato
+    fit_tpl.SetParameter(n_bkgpars + 1, 2.991)
+    fit_tpl.SetParLimits(n_bkgpars + 1, 2.986, 3)
+
+
+
+    # plotting stuff for fit_tpl
+    fit_tpl.SetNpx(300)
+    fit_tpl.SetLineWidth(2)
+    fit_tpl.SetLineColor(2)
+    # plotting stuff for bkg model
+
+    fit_tpl.SetParameter(n_bkgpars + 2, 0.002)
+    fit_tpl.SetParLimits(n_bkgpars + 2, 0.001, 0.006)
+
+    ########################################
+    # plotting the fits
+    if mode == 2:
+        ax_titles = ';m (^{3}He + #pi) (GeV/#it{c}^{2});Counts' + f' / {round(1000 * histo.GetBinWidth(1), 2)} MeV'
+    if mode == 3:
+        ax_titles = ';m (d + p + #pi) (GeV/#it{c}^{2});Counts' + f' / {round(1000 * histo.GetBinWidth(1), 2)} MeV'
+
+    # invariant mass distribution histo and fit
+    histo.UseCurrentStyle()
+    histo.SetLineColor(1)
+    histo.SetMarkerStyle(20)
+    histo.SetMarkerColor(1)
+    histo.SetTitle(ax_titles)
+    histo.SetMaximum(1.5 * histo.GetMaximum())
+    histo.Fit(fit_tpl, "QRL", "", 2.96, 3.04)
+    histo.Fit(fit_tpl, "QRL", "", 2.96, 3.04)
+    histo.SetDrawOption("e")
+    histo.GetXaxis().SetRangeUser(2.96, 3.04)
+    # represent the bkg_model separately
+
+    # get the fit parameters
+    mu = fit_tpl.GetParameter(n_bkgpars+1)
+    muErr = fit_tpl.GetParError(n_bkgpars+1)
+    sigma = fit_tpl.GetParameter(n_bkgpars+2)
+    sigmaErr = fit_tpl.GetParError(n_bkgpars+2)
+    signal = fit_tpl.GetParameter(n_bkgpars) / histo.GetBinWidth(1)
+    errsignal = fit_tpl.GetParError(n_bkgpars) / histo.GetBinWidth(1)
+    
+    cv.Write()
+
+    params = []
+    for i in range(n_bkgpars + 3):
+        params.append(fit_tpl.GetParameter(i))
+
+    
+    return params
 
 def computeAverage(Vals, breakVal = 100):
   Mean = 0
