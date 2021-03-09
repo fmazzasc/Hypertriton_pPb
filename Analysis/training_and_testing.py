@@ -150,13 +150,12 @@ if application:
 
         selected_dataH.get_handler_from_large_file(path_to_data + data_table_name, "DataTable", model_hdl, f"model_output>{score_eff_syst_arr[-1]}")
         selected_lsH.get_handler_from_large_file(path_to_data + bkg_table_name, "DataTable", model_hdl, f"model_output>{score_eff_syst_arr[-1]}")
-        if pp_mode:
-                selected_emH = TreeHandler()   
-                selected_emH.get_handler_from_large_file(path_to_data + "DataTable_pp_mixDeu.root", "DataTable", model_hdl, f"model_output>{score_eff_syst_arr[-1]}")
+        # if pp_mode:
+        #         selected_emH = TreeHandler()   
+        #         selected_emH.get_handler_from_large_file(path_to_data + "DataTable_pp_mixDeu.root", "DataTable", model_hdl, f"model_output>{score_eff_syst_arr[-1]}")
              
         print("Selected data len: ", len(selected_dataH))
         print("Selected ls len: ", len(selected_lsH))
-        print("Selected ls len: ", len(selected_emH))
 
 
 
@@ -173,7 +172,6 @@ if application:
                 os.makedirs(selected_df_path)
         selected_dataH.write_df_to_parquet_files(selected_df_path + f"/selected_df_data{pp_string}")
         selected_lsH.write_df_to_parquet_files(selected_df_path + f"/selected_df_ls{pp_string}")
-        selected_emH.write_df_to_parquet_files(selected_df_path + f"/selected_df_em{pp_string}")
 
   
         print("---------------------------------------------")

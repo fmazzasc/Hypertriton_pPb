@@ -16,8 +16,8 @@ matplotlib.style.use(mplhep.style.ALICE)
 
 
 ##COMPUTE PRESELECTION-EFFICIENCY
-df_rec = uproot.open("../Tables/SignalTable_20l2_mtexp.root")["SignalTable"].pandas.df()
-df_sim = uproot.open("../Tables/SignalTable_20l2_mtexp.root")["GenTable"].pandas.df()
+df_rec = uproot.open("../Tables/SignalTable_20l2_mtexp.root")["SignalTable"].arrays(library="pd")
+df_sim = uproot.open("../Tables/SignalTable_20l2_mtexp.root")["GenTable"].arrays(library="pd")
 
 presel_eff = len(df_rec)/len(df_sim.query("abs(rapidity)<0.5"))
 print("-------------------------------------")
@@ -29,7 +29,7 @@ df_mc = pd.read_parquet("../Utils/ReducedDataFrames/selected_df_mc.parquet.gzip"
 score_cuts_array = np.load("../Utils/Efficiencies/score_eff_syst_arr.npy")
 bdt_eff_array = np.load("../Utils/Efficiencies/bdt_eff_syst_arr.npy")
 selected_bdt_eff = 0.72
-n_events040 = np.sum(uproot.open('../Utils/AnalysisResults_pPb.root')['AliAnalysisTaskHyperTriton2He3piML_default_summary;1'][11].values[:40-1])
+n_events040 = np.sum(uproot.open('../Utils/AnalysisResults_pPb.root')['AliAnalysisTaskHyperTriton2He3piML_default_summary;1'][11].counts()[:40-1])
 branching_ratio = 0.25
 
 signal_list040 = []
