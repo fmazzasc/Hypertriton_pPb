@@ -29,64 +29,55 @@ df_mc = pd.read_parquet("../Utils/ReducedDataFrames/selected_df_mc.parquet.gzip"
 score_cuts_array = np.load("../Utils/Efficiencies/score_eff_syst_arr.npy")
 bdt_eff_array = np.load("../Utils/Efficiencies/bdt_eff_syst_arr.npy")
 selected_bdt_eff = 0.72
-n_events040 = np.sum(uproot.open('../Utils/AnalysisResults_pPb.root')['AliAnalysisTaskHyperTriton2He3piML_default_summary;1'][11].values[:40-1])
+n_events0100 = np.sum(uproot.open('../Utils/AnalysisResults_pPb.root')['AliAnalysisTaskHyperTriton2He3piML_default_summary;1'][11].values[:100-1])
 branching_ratio = 0.25
 
-signal_list040 = []
-error_list040 = []
+signal_list0100 = []
+error_list0100 = []
 delta_mass_list = []
 delta_mass_error_list = []
 mean_mass_list = []
 
-ff = ROOT.TFile("../Results/inv_mass_fits.root", "recreate")
+ff = ROOT.TFile("../Results/inv_mass_fits_0100.root", "recreate")
 bkg_dir = ff.mkdir('bkg_pdf')
 ff.cd()
 
 
 for eff,cut in zip(bdt_eff_array, score_cuts_array):
     cut_string = f"model_output>{cut}"
-    data040 = np.array(df.query(cut_string + " and 2.96<m<3.04 and centrality<=40 and abs(fZ)<10")["m"])
+    data0100 = np.array(df.query(cut_string + " and 2.96<m<3.04 and centrality<=100 and abs(fZ)<10")["m"])
     mc_data = np.array(df_mc.query(cut_string + " and 2.96<m<3.04")["m"])
     mean_mass_list.append(np.mean(mc_data))
     mc_data = mc_data[0:20000]
-    res_template = hp.unbinned_mass_fit_mc(data040, eff, 'pol1', mc_data, ff, bkg_dir, [0,40], [0,10], [0,35], split="", cent_string='040', bins = 34, ws_name = f'ws_eff_{eff}')
+    res_template = hp.unbinned_mass_fit_mc(data0100, eff, 'pol1', mc_data, ff, bkg_dir, [0,100], [0,10], [0,35], split="", cent_string='0100', bins = 34, ws_name = f'ws_eff_{eff}')
 
-    signal_list040.append(res_template[0])
-    error_list040.append(res_template[1])
+    signal_list0100.append(res_template[0])
+    error_list0100.append(res_template[1])
     delta_mass_list.append(res_template[-2])
     delta_mass_error_list.append(res_template[-1])
 
 
-signal_array040 = np.array(signal_list040)
-error_array040 = np.array(error_list040)
-mean_mass_array040 = np.array(mean_mass_list)
-delta_mass_array = np.array(delta_mass_list)
-delta_mass_error_array = np.array(delta_mass_error_list)
-# print(delta_mass_array)
-# B_lam = 1.115683 + 1.87561294257 - (2.99131 - 1000*delta_mass_array[bdt_eff_array==selected_bdt_eff])
-# B_lam_error = 1000*delta_mass_error_array[bdt_eff_array==selected_bdt_eff]
-# print(f"BLam: {B_lam*1000} +- {B_lam_error*1000}" )
+signal_array0100 = np.array(signal_list0100)
+error_array0100 = np.array(error_list0100)
 
 
 ###COMPUTE YIELD############################
 
 
-corrected_counts = signal_array040/n_events040/branching_ratio/presel_eff/bdt_eff_array
-corrected_error = error_array040/n_events040/branching_ratio/presel_eff/bdt_eff_array
+corrected_counts = signal_array0100/n_events0100/branching_ratio/presel_eff/bdt_eff_array
+corrected_error = error_array0100/n_events0100/branching_ratio/presel_eff/bdt_eff_array
 Yield = np.float64(corrected_counts[bdt_eff_array==selected_bdt_eff]  / 2)
 Yield = Yield/0.97   #absorption correction
-
 
 stat_error = np.float64(corrected_error[bdt_eff_array==selected_bdt_eff] / 2)
 
 syst_error = 0.14*Yield
 pt_shape_syst = 0.07*Yield
 abs_syst = 0.041*Yield
-# fit_syst = 0.055*Yield
 syst_error = np.sqrt(syst_error**2 + pt_shape_syst**2 + abs_syst**2)
 
 print("-------------------------------------")
-print(f"Yield [(matter + antimatter) / 2] 0-40% = {Yield:.3e} +- {stat_error:.3e} (stat.) +- {syst_error:.3e} (syst.)")
+print(f"Yield [(matter + antimatter) / 2] 0-100% = {Yield:.3e} +- {stat_error:.3e} (stat.) +- {syst_error:.3e} (syst.)")
 #############################################
 
 ###COMPUTE S3
@@ -107,27 +98,27 @@ lambdaVals = [{"bin": [0.0, 5.0], "measure": [1.630610e+00, 7.069538e-03, 1.4482
 
 
 
-protonAv040 = hp.computeAverage(protonVals,40)
-lambdaAv040 = hp.computeAverage(lambdaVals,40)
+protonAv0100 = hp.computeAverage(protonVals,100)
+lambdaAv0100 = hp.computeAverage(lambdaVals,100)
+He3Av0100 = [1.04e-06, 5.0e-08, 1.1e-07]
 
 
-He3Av040 = [2.07e-6, 1.05e-7, 1.95e-7]
-print("s---------------------------------------")
-print('Proton: ', np.array(protonAv040)/2)
-print('Lambda: ', np.array(lambdaAv040)/2)
-print('He3: ', He3Av040)
+print('Proton: ', np.array(protonAv0100)/2)
+print('Lambda: ', np.array(lambdaAv0100)/2)
+print('He3: ', He3Av0100)
+
 # d$N$/d$\eta$ obtained by simple weighted average of the values published in https://arxiv.org/pdf/1910.14401.pdf
 
-x_pPb040=np.array([29.4], dtype=np.float64)
-xe_pPb040=np.array([0.6], dtype=np.float64)
+x_pPb0100=np.array([17.8], dtype=np.float64)
+xe_pPb0100=np.array([0.4], dtype=np.float64)
 
 
-s3_040 = np.array([Yield * protonAv040[0] / (He3Av040[0] * lambdaAv040[0])], dtype=np.float64)
-s3stat040 = np.array([s3_040[0] * hp.myHypot(stat_error / Yield, He3Av040[1] / He3Av040[0], protonAv040[1] / protonAv040[0], lambdaAv040[1] / lambdaAv040[0])], dtype=np.float64)
-s3syst040 = np.array([s3_040[0] * hp.myHypot(syst_error / Yield, He3Av040[2] / He3Av040[0], protonAv040[2] / protonAv040[0], lambdaAv040[2] / lambdaAv040[0])], dtype=np.float64)
+s3_0100 = np.array([Yield * protonAv0100[0] / (He3Av0100[0] * lambdaAv0100[0])], dtype=np.float64)
+s3stat0100 = np.array([s3_0100[0] * hp.myHypot(stat_error / Yield, He3Av0100[1] / He3Av0100[0], protonAv0100[1] / protonAv0100[0], lambdaAv0100[1] / lambdaAv0100[0])], dtype=np.float64)
+s3syst0100 = np.array([s3_0100[0] * hp.myHypot(syst_error / Yield, He3Av0100[2] / He3Av0100[0], protonAv0100[2] / protonAv0100[0], lambdaAv0100[2] / lambdaAv0100[0])], dtype=np.float64)
 
 print("-------------------------------------")
-print(f"S3 0-40% = {s3_040[0]:.2e} +- {s3stat040[0]:.2e} (stat.) +- {s3syst040[0]:.2e} (syst.)")
+print(f"S3 0-100% = {s3_0100[0]:.2e} +- {s3stat0100[0]:.2e} (stat.) +- {s3syst0100[0]:.2e} (syst.)")
 
 kBlueC  = ROOT.TColor.GetColor("#2077b4");
 kRedC  = ROOT.TColor.GetColor("#d62827");
@@ -140,14 +131,13 @@ kBrownC  = ROOT.TColor.GetColor("#8c564c");
 kAzureC  = ROOT.TColor.GetColor("#18becf");
 kGreenBC  = ROOT.TColor.GetColor("#bcbd21");
 
-
 s3_csm_1 = ROOT.TGraphErrors("../Utils/ProdModels/s3_VC1.csv","%lg %*s %*s %lg")
-s3_csm_1.SetLineColor(922)
+s3_csm_1.SetLineColor(16)
 s3_csm_1.SetLineWidth(2)
 s3_csm_1.SetTitle("CSM with T=155MeV, Vc = dV/dy")
 
 s3_csm_3 = ROOT.TGraphErrors("../Utils/ProdModels/s3_VC3.csv","%lg %*s %*s %lg")
-s3_csm_3.SetLineColor(922)
+s3_csm_3.SetLineColor(16)
 s3_csm_3.SetLineWidth(2)
 s3_csm_3.SetLineStyle(2)
 s3_csm_3.SetTitle("CSM with T=155MeV, Vc = 3dV/dy")
@@ -159,8 +149,6 @@ for i in range(n) :
    grshade.SetPoint(n + i, s3_csm_1.GetPointX(n - i -1), s3_csm_1.GetPointY(n - i - 1))
    
 grshade.SetFillColorAlpha(16, 0.571)
-
-
 
 
 
@@ -184,6 +172,7 @@ mg.Add(s3_3body)
 cv = ROOT.TCanvas("cv")
 cv.SetBottomMargin(0.14)
 frame=cv.DrawFrame(9,0.01, 3e3,1.0,";#LTd#it{N}_{ch}/d#it{#eta}#GT_{|#it{#eta}|<0.5};S_{3}")
+frame.GetXaxis().SetTitleOffset(1.3)
 cv.SetLogx()
 mg.Draw("4al same")
 grshade.Draw("f same")
@@ -192,8 +181,6 @@ s3_csm_3.Draw("L same")
 mg.GetYaxis().SetRangeUser(0.01, 1)
 mg.GetXaxis().SetTitle('#LTd#it{N}_{ch}/d#it{#eta}#GT_{|#it{#eta}|<0.5}')
 mg.GetYaxis().SetTitle('S_{3}')
-mg.GetXaxis().SetTitleOffset(1.25)
-
 
 x = np.array([1447], dtype=np.float64)
 ex = np.array([39], dtype=np.float64)
@@ -219,35 +206,34 @@ pbpb_syst.Draw("P2")
 
 
 
-ppb_stat040 = ROOT.TGraphErrors(1,x_pPb040,s3_040,zero,s3stat040)
-ppb_stat040.SetLineColor(ROOT.kRed)
-ppb_stat040.SetMarkerColor(ROOT.kRed)
-ppb_stat040.SetMarkerStyle(20)
+ppb_stat0100 = ROOT.TGraphErrors(1,x_pPb0100,s3_0100,zero,s3stat0100)
+ppb_stat0100.SetLineColor(ROOT.kRed)
+ppb_stat0100.SetMarkerColor(ROOT.kRed)
+ppb_stat0100.SetMarkerStyle(20)
 
-ppb_syst040 = ROOT.TGraphErrors(1,x_pPb040, s3_040, xe_pPb040, s3syst040)
-ppb_syst040.SetTitle("ALICE Internal p-Pb, 0-40%, #sqrt{#it{s}_{NN}}=5.02 TeV")
-ppb_syst040.SetLineColor(ROOT.kRed)
-ppb_syst040.SetMarkerColor(ROOT.kRed)
-ppb_syst040.SetFillStyle(0)
-ppb_syst040.SetMarkerStyle(20)
+ppb_syst0100 = ROOT.TGraphErrors(1,x_pPb0100, s3_0100, xe_pPb0100, s3syst0100)
+ppb_syst0100.SetTitle("ALICE Internal p-Pb, 0-100%, #sqrt{#it{s}_{NN}}=5.02 TeV")
+ppb_syst0100.SetLineColor(ROOT.kRed)
+ppb_syst0100.SetMarkerColor(ROOT.kRed)
+ppb_syst0100.SetFillStyle(0)
+ppb_syst0100.SetMarkerStyle(20)
 
 
 leg = ROOT.TLegend(0.25,0.7,0.8,0.8)
 leg.SetMargin(0.14)
 
 
-ppb_stat040.Draw("Pz")
-ppb_syst040.Draw("P2")
-leg.AddEntry(ppb_syst040,"","pf")
+ppb_stat0100.Draw("Pz")
+ppb_syst0100.Draw("P2")
+leg.AddEntry(ppb_syst0100,"","pf")
 
-pinfo = ROOT.TPaveText(0.19,0.84,0.34,0.89, 'NDC')
+pinfo = ROOT.TPaveText(0.72,0.25,0.87,0.35, 'NDC')
 pinfo.SetBorderSize(0)
 pinfo.SetFillStyle(0)
 pinfo.SetTextAlign(30+3)
 pinfo.SetTextFont(42)
 pinfo.AddText('B.R. = 0.25')
 pinfo.Draw()
-
 
 
 leg.AddEntry(pbpb_syst,"","pf")
@@ -257,6 +243,7 @@ legT.SetNColumns(2)
 
 legT.SetEntrySeparation(0.2)
 legT.SetMargin(0.14)
+# legT.AddEntry(s3_csm)
 
 legT.AddEntry(s3_2body)
 legT.AddEntry(s3_3body)
@@ -269,5 +256,5 @@ legT.SetFillStyle(0)
 
 cv.Draw()
 
-cv.SaveAs("../Results/s3.pdf")
-cv.SaveAs("../Results/s3.png")
+cv.SaveAs("../Results/s3_0100.pdf")
+cv.SaveAs("../Results/s3_0100.png")

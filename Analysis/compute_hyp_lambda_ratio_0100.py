@@ -8,7 +8,6 @@ import pandas as pd
 import uproot
 import helpers as hp
 import mplhep
-import math
 import ROOT
 ROOT.gROOT.SetBatch()
 
@@ -28,66 +27,53 @@ df_mc = pd.read_parquet("../Utils/ReducedDataFrames/selected_df_mc.parquet.gzip"
 score_cuts_array = np.load("../Utils/Efficiencies/score_eff_syst_arr.npy")
 bdt_eff_array = np.load("../Utils/Efficiencies/bdt_eff_syst_arr.npy")
 selected_bdt_eff = 0.72
-n_events040 = np.sum(uproot.open('../Utils/AnalysisResults_pPb.root')['AliAnalysisTaskHyperTriton2He3piML_default_summary;1'][11].values[:40-1])
+n_events0100 = np.sum(uproot.open('../Utils/AnalysisResults_pPb.root')['AliAnalysisTaskHyperTriton2He3piML_default_summary;1'][11].values[:100-1])
 branching_ratio = 0.25
 
-signal_list040 = []
-error_list040 = []
+signal_list0100 = []
+error_list0100 = []
 delta_mass_list = []
 delta_mass_error_list = []
 mean_mass_list = []
 
 
-ff = ROOT.TFile("../Results/inv_mass_fits.root", "recreate")
+ff = ROOT.TFile("../Results/inv_mass_fits_0100.root", "recreate")
 bkg_dir = ff.mkdir('bkg_pdf')
 ff.cd()
 
 
 for eff,cut in zip(bdt_eff_array, score_cuts_array):
     cut_string = f"model_output>{cut}"
-    data040 = np.array(df.query(cut_string + " and 2.96<m<3.04 and centrality<=40 and abs(fZ) < 10")["m"])
+    data0100 = np.array(df.query(cut_string + " and 2.96<m<3.04 and centrality<=100 and abs(fZ) < 10")["m"])
     mc_data = np.array(df_mc.query(cut_string + " and 2.96<m<3.04")["m"])
     mean_mass_list.append(np.mean(mc_data))
-    mc_data = mc_data[0:20000]
-    res_template = hp.unbinned_mass_fit_mc(data040, eff, 'pol1', mc_data, ff, bkg_dir, [0,40], [0,10], [0,35], split="", cent_string='040', bins = 34, ws_name = f'ws_eff_{eff}')
+    mc_data = mc_data[0:1000]
+    res_template = hp.unbinned_mass_fit_mc(data0100, eff, 'pol1', mc_data, ff, bkg_dir, [0,40], [0,10], [0,35], split="", cent_string='0100', bins = 34, ws_name = f'ws_eff_{eff}')
 
-    signal_list040.append(res_template[0])
-    error_list040.append(res_template[1])
+    signal_list0100.append(res_template[0])
+    error_list0100.append(res_template[1])
     delta_mass_list.append(res_template[-2])
     delta_mass_error_list.append(res_template[-1])
 
 
-
-signal_array040 = np.array(signal_list040)
-error_array040 = np.array(error_list040)
-mean_mass_array040 = np.array(mean_mass_list)
-delta_mass_array = np.array(delta_mass_list)
-delta_mass_error_array = np.array(delta_mass_error_list)
-# print(delta_mass_array)
-# B_lam = 1.115683 + 1.87561294257 - (2.99131 - 1000*delta_mass_array[bdt_eff_array==selected_bdt_eff])
-# B_lam_error = 1000*delta_mass_error_array[bdt_eff_array==selected_bdt_eff]
-# print(f"BLam: {B_lam*1000} +- {B_lam_error*1000}" )
-
+signal_array0100 = np.array(signal_list0100)
+error_array0100 = np.array(error_list0100)
 
 ###COMPUTE YIELD############################
 
-
-corrected_counts = signal_array040/n_events040/branching_ratio/presel_eff/bdt_eff_array
-corrected_error = error_array040/n_events040/branching_ratio/presel_eff/bdt_eff_array
+corrected_counts = signal_array0100/n_events0100/branching_ratio/presel_eff/bdt_eff_array
+corrected_error = error_array0100/n_events0100/branching_ratio/presel_eff/bdt_eff_array
 Yield = np.float64(corrected_counts[bdt_eff_array==selected_bdt_eff]  / 2)
 Yield = Yield/0.97   #absorption correction
 
-stat_error = np.float64(corrected_error[bdt_eff_array==selected_bdt_eff] / 2 / 0.97)
+stat_error = np.float64(corrected_error[bdt_eff_array==selected_bdt_eff] / 2)
 # syst_error = float(np.std(corrected_counts) / corrected_counts[bdt_eff_array==selected_bdt_eff])
 syst_error = 0.14*Yield
 pt_shape_syst = 0.07*Yield
 abs_syst = 0.041*Yield
 syst_error = np.sqrt(syst_error**2 + pt_shape_syst**2 + abs_syst**2)
 print("-------------------------------------")
-sig = signal_array040[bdt_eff_array==selected_bdt_eff][0]
-err_sig = error_array040[bdt_eff_array==selected_bdt_eff][0]
-print(f"Signal = {sig:.3e} +- {err_sig:.3e} (stat.)")
-print(f"Yield [(matter + antimatter) / 2] 0-40% = {Yield:.3e} +- {stat_error:.3e} (stat.) +- {syst_error:.3e} (syst.)")
+print(f"Yield [(matter + antimatter) / 2] 0-100% = {Yield:.3e} +- {stat_error:.3e} (stat.) +- {syst_error:.3e} (syst.)")
 #############################################
 
 ###COMPUTE S3
@@ -99,7 +85,6 @@ protonVals = [{"bin":[0.0, 5.0], "measure": [2.280446e+00, 4.394273e-03, 1.58596
 {"bin":[60.0, 80.0], "measure": [5.341445e-01, 1.034190e-03, 3.408551e-02, 1.377331e-02]},
 {"bin":[80.0, 100.0], "measure": [2.307767e-01, 6.969543e-04, 1.450569e-02, 6.911692e-03]}]
 
-
 lambdaVals = [{"bin": [0.0, 5.0], "measure": [1.630610e+00, 7.069538e-03, 1.448270e-01, 7.144051e-02]},
 {"bin": [5.0, 10.0], "measure": [1.303508e+00, 6.313141e-03, 1.122199e-01, 5.217514e-02]},
 {"bin": [10.0, 20.0], "measure": [1.093400e+00, 4.432728e-03, 9.410049e-02, 4.447422e-02]},
@@ -110,20 +95,22 @@ lambdaVals = [{"bin": [0.0, 5.0], "measure": [1.630610e+00, 7.069538e-03, 1.4482
 
 
 
-lambdaAv040 = hp.computeAverage(lambdaVals,40)
+lambdaAv0100 = hp.computeAverage(lambdaVals,100)
+print(lambdaAv0100)
+
 
 
 # d$N$/d$\eta$ obtained by simple weighted average of the values published in https://arxiv.org/pdf/1910.14401.pdf
-x_pPb040=np.array([29.4], dtype=np.float64)
-xe_pPb040=np.array([0.6], dtype=np.float64)
+x_pPb0100=np.array([17.8], dtype=np.float64)
+xe_pPb0100=np.array([0.4], dtype=np.float64)
 
 
-hp_ratio_040 = np.array([2*Yield / lambdaAv040[0]], dtype=np.float64)
-hp_ratiostat040 = np.array([hp_ratio_040[0] * hp.myHypot(stat_error / Yield, lambdaAv040[1] / lambdaAv040[0])], dtype=np.float64)
-hp_ratiosyst040 = np.array([hp_ratio_040[0] * hp.myHypot(syst_error / Yield, lambdaAv040[2] / lambdaAv040[0])], dtype=np.float64)
+hp_ratio_0100 = np.array([2*Yield / lambdaAv0100[0]], dtype=np.float64)
+hp_ratiostat0100 = np.array([hp_ratio_0100[0] * hp.myHypot(stat_error / Yield, lambdaAv0100[1] / lambdaAv0100[0])], dtype=np.float64)
+hp_ratiosyst0100 = np.array([hp_ratio_0100[0] * hp.myHypot(syst_error / Yield, lambdaAv0100[2] / lambdaAv0100[0])], dtype=np.float64)
 
 print("-------------------------------------")
-print(f"Hyp/Lambda 0-40% = {hp_ratio_040[0]:.2e} +- {hp_ratiostat040[0]:.2e} (stat.) +- {hp_ratiosyst040[0]:.2e} (syst.)")
+print(f"Hyp/Lambda 0-100% = {hp_ratio_0100[0]:.2e} +- {hp_ratiostat0100[0]:.2e} (stat.) +- {hp_ratiosyst0100[0]:.2e} (syst.)")
 
 kBlueC  = ROOT.TColor.GetColor("#2077b4");
 kRedC  = ROOT.TColor.GetColor("#d62827");
@@ -145,13 +132,13 @@ hp_ratio_csm_van = fin.Get('gCSM_3HL_over_p')
 
 hp_ratio_csm_1.SetLineColor(922)
 hp_ratio_csm_1.SetLineWidth(2)
-hp_ratio_csm_1.SetTitle("SHM with T=155MeV, Vc = dV/dy")
+hp_ratio_csm_1.SetTitle("CSM with T=155MeV, Vc = dV/dy")
 
 
 hp_ratio_csm_3.SetLineColor(922)
 hp_ratio_csm_3.SetLineWidth(2)
 hp_ratio_csm_3.SetLineStyle(2)
-hp_ratio_csm_3.SetTitle("SHM with T=155MeV, Vc = 3dV/dy")
+hp_ratio_csm_3.SetTitle("CSM with T=155MeV, Vc = 3dV/dy")
 
 n = hp_ratio_csm_1.GetN()
 grshade = ROOT.TGraph(2*n)
@@ -191,7 +178,7 @@ mg.Add(hp_3body)
 cv = ROOT.TCanvas("cv")
 cv.SetBottomMargin(0.14)
 frame=cv.DrawFrame(5., 1e-7, 200, 6e-6,";#LTd#it{N}_{ch}/d#it{#eta}#GT_{|#it{#eta}|<0.5}; {}_{#Lambda}^{3}H/p")
-frame.GetXaxis().SetTitleOffset(1.25)
+frame.GetXaxis().SetTitleOffset(1.4)
 cv.SetLogx()
 cv.SetLogy()
 mg.Draw("4al same")
@@ -212,19 +199,20 @@ zero = np.array([0], dtype=np.float64)
 
 
 
-ppb_stat040 = ROOT.TGraphErrors(1,x_pPb040,hp_ratio_040,zero,hp_ratiostat040)
-ppb_stat040.SetLineColor(ROOT.kRed)
-ppb_stat040.SetMarkerColor(ROOT.kRed)
-ppb_stat040.SetMarkerStyle(20)
-ppb_stat040.SetMarkerSize(0.5)
+ppb_stat0100 = ROOT.TGraphErrors(1,x_pPb0100,hp_ratio_0100,zero,hp_ratiostat0100)
+ppb_stat0100.SetLineColor(ROOT.kRed)
+ppb_stat0100.SetMarkerColor(ROOT.kRed)
+ppb_stat0100.SetMarkerStyle(20)
+ppb_stat0100.SetMarkerSize(0.5)
 
-ppb_syst040 = ROOT.TGraphErrors(1,x_pPb040, hp_ratio_040, xe_pPb040, hp_ratiosyst040)
-ppb_syst040.SetTitle("ALICE Internal p-Pb, 0-40%, #sqrt{#it{s}_{NN}}=5.02 TeV")
-ppb_syst040.SetLineColor(ROOT.kRed)
-ppb_syst040.SetMarkerColor(ROOT.kRed)
-ppb_syst040.SetFillStyle(0)
-ppb_syst040.SetMarkerStyle(20)
-ppb_syst040.SetMarkerSize(0.5)
+ppb_syst0100 = ROOT.TGraphErrors(1,x_pPb0100, hp_ratio_0100, xe_pPb0100, hp_ratiosyst0100)
+ppb_syst0100.SetTitle("ALICE Internal p-Pb, 0-100%, #sqrt{#it{s}_{NN}}=5.02 TeV")
+ppb_syst0100.SetLineColor(ROOT.kRed)
+ppb_syst0100.SetMarkerColor(ROOT.kRed)
+ppb_syst0100.SetFillStyle(0)
+ppb_syst0100.SetMarkerStyle(20)
+ppb_syst0100.SetMarkerSize(0.5)
+
 
 x = np.array([1447], dtype=np.float64)
 ex = np.array([39], dtype=np.float64)
@@ -253,10 +241,12 @@ pbpb_syst.Draw("P2")
 leg = ROOT.TLegend(0.45,0.46,0.91,0.6)
 leg.SetMargin(0.14)
 
-ppb_stat040.Draw("Pz")
-ppb_syst040.Draw("P2")
-leg.AddEntry(ppb_syst040,"","pf")
+ppb_stat0100.Draw("Pz")
+ppb_syst0100.Draw("P2")
+leg.AddEntry(ppb_syst0100,"","pf")
 leg.AddEntry(pbpb_syst,"","pf")
+
+
 
 
 leg.SetEntrySeparation(0.2)
@@ -281,100 +271,11 @@ pinfo.SetTextFont(42)
 pinfo.AddText('B.R. = 0.25')
 pinfo.Draw()
 
-
 cv.Draw()
 
-cv.SaveAs("../Results/hp_ratio.pdf")
-cv.SaveAs("../Results/hp_ratio.png")
+cv.SaveAs("../Results/hp_ratio_0100.pdf")
+cv.SaveAs("../Results/hp_ratio_0100.png")
 
-# Branching ratio plot
-
-
-# Branching ratio plot
-cvBR = ROOT.TCanvas("brPlot","BR Plot",700,800)
-cvBR.SetTopMargin(0.2)
-cvBR.SetLeftMargin(0.15)
-cvBR.SetRightMargin(0.04)
-frame = cvBR.DrawFrame(0.14,7.e-8, 0.36, 1.4e-6, ";B.R.;{}_{#Lambda}^{3}H/#Lambda #times B.R.")
-frame.GetYaxis().SetTitleOffset(1.4)
-cvBR.SetLogy()
-
-npoints = 50
-xBR = np.linspace(0.14,0.36,npoints)
-C2 = 6.57e-7
-C2e = 1.39e-7
-C3 = 3.15e-7
-C3e = 8.57e-8
-
-CSM1 = 2.7026086005800812e-06
-CSM3 = 4.667110436005044e-06
-CSM = 0.5 * (CSM3 + CSM1)
-CSMe = 0.5 * (CSM3 - CSM1)
-
-grData = ROOT.TGraphErrors(2)
-grData.SetPoint(0, 0., hp_ratio_040[0] * 0.25)
-grData.SetPointError(0, 0., math.hypot(hp_ratiostat040[0], hp_ratiosyst040[0]) * 0.25)
-grData.SetPoint(1, 1., hp_ratio_040[0] * 0.25)
-grData.SetPointError(1, 0., math.hypot(hp_ratiostat040[0], hp_ratiosyst040[0]) * 0.25)
-grData.SetLineColor(kRedC)
-grData.SetLineWidth(2)
-grData.SetFillColorAlpha(kRedC,0.571)
-grData.SetTitle("ALICE p-Pb 0-40%")
-
-grCSM = ROOT.TGraphErrors(npoints)
-grCSM1 = ROOT.TGraph(npoints)
-grCSM3 = ROOT.TGraph(npoints)
-grC2 = ROOT.TGraphErrors(npoints)
-grC3 = ROOT.TGraphErrors(npoints)
-for i,j in enumerate(xBR) : 
-  grC2.SetPoint(i, j, C2 * j)
-  grC2.SetPointError(i, 0, C2e * j)
-  grC3.SetPoint(i, j, C3 * j)
-  grC3.SetPointError(i, 0, C3e * j)
-  grCSM1.SetPoint(i, j, CSM1 * j)
-  grCSM3.SetPoint(i, j, CSM3 * j)
-  grCSM.SetPoint(i, j, CSM * j)
-  grCSM.SetPointError(i, 0, CSMe * j)
-
-grC2.SetLineColor(kBlueC)
-grC2.SetMarkerColor(kBlueC)
-grC2.SetFillColorAlpha(kBlueC, 0.571)
-grC2.SetTitle("2-body coalescence")
-grC3.SetLineColor(kAzureC)
-grC3.SetMarkerColor(kAzureC)
-grC3.SetFillColorAlpha(kAzureC, 0.571)
-grC3.SetTitle("3-body coalescence")
-grCSM.SetLineColor(kGreyC)
-grCSM.SetFillColorAlpha(kGreyC, 0.571)
-grCSM.SetMarkerColor(kGreyC)
-grCSM1.SetLineWidth(2)
-grCSM1.SetTitle("SHM with T = 155MeV, Vc = dV/dy")
-grCSM3.SetLineWidth(2)
-grCSM3.SetLineStyle(ROOT.kDashed)
-grCSM3.SetTitle("SHM with T = 155MeV, Vc = 3dV/dy")
-
-grC2.Draw("PL3")
-grC3.Draw("PL3")
-# grCSM.Draw("P3")
-grCSM3.Draw("L")
-grCSM1.Draw("L")
-grData.Draw("L3")
-
-legBR = ROOT.TLegend(0.07,0.81 ,1.09,0.99)
-legBR.SetNColumns(2)
-legBR.SetMargin(0.2)
-legBR.SetFillStyle(0)
-legBR.AddEntry(grC2)
-legBR.AddEntry(grCSM1)
-legBR.AddEntry(grC3)
-legBR.AddEntry(grCSM3)
-legBR.AddEntry(grData)
-legBR.Draw()
-
-cvBR.SaveAs("../Results/plotBR.pdf")
-cvBR.SaveAs("../Results/plotBR.png")
-
-file = ROOT.TFile('../Results/hp_ratio.root', 'recreate')
+file = ROOT.TFile('hp_ratio_0100.root', 'recreate')
 cv.Write()
-cvBR.Write()
 file.Close()
