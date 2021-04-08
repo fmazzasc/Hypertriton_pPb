@@ -48,7 +48,7 @@ for eff,cut in zip(bdt_eff_array, score_cuts_array):
     data040 = np.array(df.query(cut_string + " and 2.96<m<3.04 and centrality<=40 and abs(fZ) < 10")["m"])
     mc_data = np.array(df_mc.query(cut_string + " and 2.96<m<3.04")["m"])
     mean_mass_list.append(np.mean(mc_data))
-    mc_data = mc_data[0:20000]
+    mc_data = mc_data[0:1000]
     res_template = hp.unbinned_mass_fit_mc(data040, eff, 'pol1', mc_data, ff, bkg_dir, [0,40], [0,10], [0,35], split="", cent_string='040', bins = 34, ws_name = f'ws_eff_{eff}')
 
     signal_list040.append(res_template[0])
@@ -145,13 +145,13 @@ hp_ratio_csm_van = fin.Get('gCSM_3HL_over_p')
 
 hp_ratio_csm_1.SetLineColor(922)
 hp_ratio_csm_1.SetLineWidth(2)
-hp_ratio_csm_1.SetTitle("SHM with T=155MeV, Vc = dV/dy")
+hp_ratio_csm_1.SetTitle("SHM with T = 155MeV, Vc = dV/dy")
 
 
 hp_ratio_csm_3.SetLineColor(922)
 hp_ratio_csm_3.SetLineWidth(2)
 hp_ratio_csm_3.SetLineStyle(2)
-hp_ratio_csm_3.SetTitle("SHM with T=155MeV, Vc = 3dV/dy")
+hp_ratio_csm_3.SetTitle("SHM with T = 155MeV, Vc = 3dV/dy")
 
 n = hp_ratio_csm_1.GetN()
 grshade = ROOT.TGraph(2*n)
@@ -189,7 +189,8 @@ mg.Add(hp_3body)
 
 
 cv = ROOT.TCanvas("cv")
-cv.SetBottomMargin(0.14)
+cv.SetBottomMargin(0.17)
+cv.SetLeftMargin(0.16)
 frame=cv.DrawFrame(5., 1e-7, 200, 6e-6,";#LTd#it{N}_{ch}/d#it{#eta}#GT_{|#it{#eta}|<0.5}; {}_{#Lambda}^{3}H/p")
 frame.GetXaxis().SetTitleOffset(1.25)
 cv.SetLogx()
@@ -202,8 +203,13 @@ hp_ratio_csm_3.Draw("L same")
 mg.GetYaxis().SetRangeUser(1e-8, 1e-5)
 mg.GetXaxis().SetRangeUser(5, 3e3)
 mg.GetXaxis().SetTitle('#LTd#it{N}_{ch}/d#it{#eta}#GT_{|#it{#eta}|<0.5}')
-mg.GetXaxis().SetTitleOffset(1.3)
 mg.GetYaxis().SetTitle('{}_{#Lambda}^{3}H/#Lambda')
+mg.GetXaxis().SetTitleOffset(1.07)
+mg.GetYaxis().SetTitleOffset(1.05)
+mg.GetYaxis().SetTitleSize(0.07)
+mg.GetXaxis().SetTitleSize(0.07)
+mg.GetYaxis().SetLabelSize(0.045)
+mg.GetXaxis().SetLabelSize(0.045)
 
 
 
@@ -219,7 +225,7 @@ ppb_stat040.SetMarkerStyle(20)
 ppb_stat040.SetMarkerSize(0.5)
 
 ppb_syst040 = ROOT.TGraphErrors(1,x_pPb040, hp_ratio_040, xe_pPb040, hp_ratiosyst040)
-ppb_syst040.SetTitle("ALICE Internal p-Pb, 0-40%, #sqrt{#it{s}_{NN}}=5.02 TeV")
+ppb_syst040.SetTitle("ALICE p-Pb, 0-40%, #sqrt{#it{s}_{NN}} = 5.02 TeV")
 ppb_syst040.SetLineColor(ROOT.kRed)
 ppb_syst040.SetMarkerColor(ROOT.kRed)
 ppb_syst040.SetFillStyle(0)
@@ -241,7 +247,7 @@ pbpb_stat.Draw("Pz")
 
 
 pbpb_syst = ROOT.TGraphErrors(1,x,y,ex,eys)
-pbpb_syst.SetTitle("ALICE Pb-Pb #sqrt{#it{s}_{NN}}=2.76 TeV")
+pbpb_syst.SetTitle("ALICE Pb-Pb #sqrt{#it{s}_{NN}} = 2.76 TeV")
 pbpb_syst.SetLineColor(ROOT.kBlack)
 pbpb_syst.SetMarkerColor(ROOT.kBlack)
 pbpb_syst.SetFillStyle(0)
@@ -273,7 +279,7 @@ legT.SetFillStyle(0)
 leg.Draw()
 legT.Draw()
 
-pinfo = ROOT.TPaveText(0.16,0.84,0.31,0.89, 'NDC')
+pinfo = ROOT.TPaveText(0.18,0.84,0.35,0.89, 'NDC')
 pinfo.SetBorderSize(0)
 pinfo.SetFillStyle(0)
 pinfo.SetTextAlign(30+3)
@@ -336,27 +342,40 @@ for i,j in enumerate(xBR) :
   grCSM.SetPoint(i, j, CSM * j)
   grCSM.SetPointError(i, 0, CSMe * j)
 
+grshade = ROOT.TGraph(2*npoints)
+for i in range(npoints) : 
+   grshade.SetPoint(i, grCSM3.GetPointX(i), grCSM3.GetPointY(i))
+   grshade.SetPoint(n + i, grCSM1.GetPointX(n - i -1), grCSM1.GetPointY(n - i - 1))
+ 
+grshade.SetFillColorAlpha(16, 0.571)
+
 grC2.SetLineColor(kBlueC)
 grC2.SetMarkerColor(kBlueC)
 grC2.SetFillColorAlpha(kBlueC, 0.571)
 grC2.SetTitle("2-body coalescence")
+grC2.SetLineStyle(8)
+grC2.SetLineWidth(2)
 grC3.SetLineColor(kAzureC)
 grC3.SetMarkerColor(kAzureC)
 grC3.SetFillColorAlpha(kAzureC, 0.571)
+grC3.SetLineStyle(8)
 grC3.SetTitle("3-body coalescence")
+grC3.SetLineWidth(2)
 grCSM.SetLineColor(kGreyC)
 grCSM.SetFillColorAlpha(kGreyC, 0.571)
 grCSM.SetMarkerColor(kGreyC)
 grCSM1.SetLineWidth(2)
 grCSM1.SetTitle("SHM with T = 155MeV, Vc = dV/dy")
+grCSM1.SetLineStyle(1)
 grCSM3.SetLineWidth(2)
 grCSM3.SetLineStyle(ROOT.kDashed)
 grCSM3.SetTitle("SHM with T = 155MeV, Vc = 3dV/dy")
 
 grC2.Draw("PL3")
 grC3.Draw("PL3")
-# grCSM.Draw("P3")
+grCSM.Draw("P3")
 grCSM3.Draw("L")
+grshade.Draw("f same")
 grCSM1.Draw("L")
 grData.Draw("L3")
 

@@ -18,8 +18,8 @@ matplotlib.style.use(mplhep.style.ALICE)
 
 
 ##COMPUTE PRESELECTION-EFFICIENCY
-df_rec = uproot.open("../../Tables/SignalTable_17d_mtexp.root")["SignalTable"].pandas.df()
-df_sim = uproot.open("../../Tables/SignalTable_17d_mtexp.root")["GenTable"].pandas.df()
+df_rec = uproot.open("../../Tables/SignalTable_20l2_mtexp.root")["SignalTable"].arrays(library="pd")
+df_sim = uproot.open("../../Tables/SignalTable_20l2_mtexp.root")["GenTable"].arrays(library="pd")
 
 presel_eff = len(df_rec)/len(df_sim.query("abs(rapidity)<0.5"))
 print("-------------------------------------")
@@ -31,7 +31,7 @@ df_mc = pd.read_parquet("../../Utils/ReducedDataFrames/selected_df_mc.parquet.gz
 score_cuts_array = np.load("../../Utils/Efficiencies/score_eff_syst_arr.npy")
 bdt_eff_array = np.load("../../Utils/Efficiencies/bdt_eff_syst_arr.npy")
 selected_bdt_eff = 0.72
-n_events040 = np.sum(uproot.open('../../Utils/AnalysisResults_pPb.root')['AliAnalysisTaskHyperTriton2He3piML_default_summary;1'][11].values[:40-1])
+n_events040 = np.sum(uproot.open('../../Utils/AnalysisResults_pPb.root')['AliAnalysisTaskHyperTriton2He3piML_default_summary;1'][11].counts()[:40-1])
 branching_ratio = 0.25
 
 signal_list040 = []
@@ -40,24 +40,19 @@ error_list040 = []
 
 bkg_models = ['pol0', 'pol1', 'expo']
 ff = ROOT.TFile("../../Results/syst_fits.root", "recreate")
+bkg_dir = ff.mkdir('bkg_pdf')
 
 for eff,cut in zip(bdt_eff_array, score_cuts_array):
     for bkg_model in bkg_models:
         cut_string = f"model_output>{cut}"
         data040 = np.array(df.query(cut_string + " and 2.96<m<3.04 and centrality<=40 and abs(fZ) < 10")["m"])
-        res040 = hp.unbinned_mass_fit(data040, eff, bkg_model, '', '', [0,40], [0,10], [0,35], split="", cent_string='040', bins = 34)
-
         mc_data = np.array(df_mc.query(cut_string + " and 2.96<m<3.04")["m"])
-        mean_mass = np.mean(mc_data)
-        hist = ROOT.TH1D(f'histo_mc_{eff}_{bkg_model}', f'histo_mc_{eff}_{bkg_model}', 500, 2.96, 3.04)
-        for mc_entry in mc_data:
-            hist.Fill(mc_entry - mean_mass + res040[4])
-
-        res_template = hp.unbinned_mass_fit_mc(data040, eff, bkg_model, hist, ff, '', [0,40], [0,10], [0,35], split="", cent_string='040', bins = 34, sign_range = [res040[-2], res040[-1]])
-
+        mc_data = mc_data[0:1000]
+        res_template = hp.unbinned_mass_fit_mc(data040, eff, 'pol1', mc_data, ff, bkg_dir, [0,40], [0,10], [0,35], split="", cent_string='040', bins = 36, ws_name = f'ws_eff_{eff}')
         signal_list040.append(res_template[0])
         error_list040.append(res_template[1])
 
+ff.cd()
 
 signal_array040 = np.array(signal_list040)
 error_array040 = np.array(error_list040)
@@ -72,14 +67,14 @@ corrected_error = error_array040/n_events040/branching_ratio/presel_eff/bdt_eff_
 Yield = corrected_counts / 2 / 0.98
 Yield_error = corrected_error / 2 / 0.98
 
-print('Systemtic uncertainty: ', 100*(np.std(Yield) / 5.67e-07), '%')
+print('Systemtic uncertainty: ', 100*(np.std(Yield) / 6.27e-07), '%')
 
 
 numpy_hist = np.histogram(Yield, bins=15)
 ghost_hist = aghast.from_numpy(numpy_hist)
 root_hist = aghast.to_root(ghost_hist, 'multi_trial')
 
-Fcn1 = ROOT.TLine(5.67e-07, root_hist.GetMinimum(), 5.67e-07, root_hist.GetMaximum())
+Fcn1 = ROOT.TLine(6.27e-07, root_hist.GetMinimum(), 6.27e-07, root_hist.GetMaximum())
 Fcn1.SetLineWidth(1)
 Fcn1.SetLineStyle(2)
 Fcn1.SetLineColor(ROOT.kRed - 3)

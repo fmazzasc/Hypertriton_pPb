@@ -94,6 +94,70 @@ const int kBrownC  = TColor::GetColor("#b15928");
   }
 
 
+  TFile fit_file("../../Results/inv_mass_fits.root");
+  RooPlot* frame = static_cast<RooPlot*>(fit_file.Get("frame_0.72"));
+  
+
+  constexpr double kYsize = 0.4;
+
+  gStyle->SetOptStat(1);
+  gStyle->SetOptDate(0);
+  gStyle->SetOptFit(1);
+  gStyle->SetLabelSize(0.04,"xyz"); // size of axis value font
+  gStyle->SetTitleSize(0.05,"xyz"); // size of axis title font
+  gStyle->SetTitleFont(42,"xyz"); // font option
+  gStyle->SetLabelFont(42,"xyz");
+  gStyle->SetTitleOffset(1.05,"x");
+  gStyle->SetTitleOffset(1.1,"y");
+  // default canvas options
+  gStyle->SetCanvasDefW(800);
+  gStyle->SetCanvasDefH(600);
+  gStyle->SetPadBottomMargin(0.12); //margins...
+  gStyle->SetPadTopMargin(0.1);
+  gStyle->SetPadLeftMargin(0.12);
+  gStyle->SetPadRightMargin(0.05);
+  gStyle->SetPadGridX(0); // grids, tickmarks
+  gStyle->SetPadGridY(0);
+  gStyle->SetPadTickX(1);
+  gStyle->SetPadTickY(1);
+  gStyle->SetFrameBorderMode(0);
+  gStyle->SetPaperSize(20,24); // US letter size
+  gStyle->SetLegendBorderSize(0);
+  gStyle->SetLegendFillColor(0);
+
+
+  TPaveText* pinfo_alice = new TPaveText(0.45, 0.75, 0.93, 0.86, "NDC");
+  pinfo_alice->SetBorderSize(0);
+  pinfo_alice->SetFillStyle(0);
+  pinfo_alice->SetTextFont(42);
+  pinfo_alice->AddText("ALICE");
+  pinfo_alice->AddText("p-Pb 0-40%, #sqrt{#it{s}_{NN}}=5.02 TeV");
+
+  TCanvas *cv = new TCanvas("cv1","cv1",1500,1500);
+  cv->cd();
+
+  
+  frame->GetYaxis()->SetTitleSize(0.06);
+  frame->GetYaxis()->SetTitleOffset(0.8);
+  frame->GetXaxis()->SetTitleOffset(1.1);
+  frame->GetYaxis()->SetTitle("Entries / (2.35 MeV/#it{c}^{2})");
+  frame->GetXaxis()->SetTitle("{}_{#Lambda}^{3}H mass (^{3}He + #pi) (GeV/#it{c}^{2})");
+  frame->SetMinimum(0.01);
+  frame->Draw();
+  pinfo_alice->Draw();
+  frame->Print();
+  TLegend *leg1 = new TLegend(0.49,0.56,0.9,0.75);
+  leg1->AddEntry("h_data","{}_{#Lambda}^{3}H + {}_{#bar{#Lambda}}^{3}H", "PE");
+  leg1->AddEntry("model_Norm[m]_Range[fit_nll_model_data]_NormRange[fit_nll_model_data]","Signal + Background", "L");
+
+  leg1->AddEntry("model_Norm[m]_Comp[bkg]_Range[fit_nll_model_data]_NormRange[fit_nll_model_data]","Background", "L");
+  leg1->Draw();
+
+  cv->SaveAs("../../Results/signal_extraction.png");
+  cv->SaveAs("../../Results/signal_extraction.pdf");
+
+
+
 
   TGraph *graph1 = new TGraph(masses.size(), &masses[0], &p0values[0]);
   TGraph *graph2 = new TGraph(masses.size(), &masses[0], &p0valuesExpected[0]);
@@ -111,28 +175,28 @@ const int kBrownC  = TColor::GetColor("#b15928");
   l4->SetLineStyle(2);
   l5->SetLineStyle(2);
 
-  TPaveText* pinfo2 = new TPaveText(0.94, 0.81, 1, 0.9, "NDC");
+  TPaveText* pinfo2 = new TPaveText(0.85, 0.73, 0.91, 0.82, "NDC");
   pinfo2->SetBorderSize(0);
   pinfo2->SetFillStyle(0);
   pinfo2->SetTextAlign(30+3);
   pinfo2->SetTextFont(42);
   pinfo2->AddText("2#sigma");
 
-  TPaveText* pinfo3 = new TPaveText(0.94, 0.67, 1, 0.76, "NDC");
+  TPaveText* pinfo3 = new TPaveText(0.85, 0.6, 0.91, 0.69, "NDC");
   pinfo3->SetBorderSize(0);
   pinfo3->SetFillStyle(0);
   pinfo3->SetTextAlign(30+3);
   pinfo3->SetTextFont(42);
   pinfo3->AddText("3#sigma");
 
-  TPaveText* pinfo4 = new TPaveText(0.94, 0.49,1, 0.58, "NDC");
+  TPaveText* pinfo4 = new TPaveText(0.85, 0.425,0.91, 0.515, "NDC");
   pinfo4->SetBorderSize(0);
   pinfo4->SetFillStyle(0);
   pinfo4->SetTextAlign(30+3);
   pinfo4->SetTextFont(42);
   pinfo4->AddText("4#sigma");
 
-  TPaveText* pinfo5 = new TPaveText(0.94, 0.27,1, 0.36, "NDC");
+  TPaveText* pinfo5 = new TPaveText(0.85, 0.21,0.91, 0.3, "NDC");
   pinfo5->SetBorderSize(0);
   pinfo5->SetFillStyle(0);
   pinfo5->SetTextAlign(30+3);
@@ -140,67 +204,20 @@ const int kBrownC  = TColor::GetColor("#b15928");
   pinfo5->AddText("5#sigma");
 
 
-  TPaveText* pinfo_alice = new TPaveText(0.5, 0.574, 0.92, 0.7, "NDC");
-  pinfo_alice->SetBorderSize(0);
-  pinfo_alice->SetFillStyle(0);
-  pinfo_alice->SetTextFont(42);
-  pinfo_alice->AddText("ALICE Internal");
-  pinfo_alice->AddText("p-Pb 0-40%, #sqrt{#it{s}_{NN}}=5.02 TeV");
+
 
   graph1->SetMarkerStyle(20);
 
-  TFile fit_file("../../Results/inv_mass_fits.root");
-  RooPlot* frame = static_cast<RooPlot*>(fit_file.Get("frame_0.72"));
-  
 
-  constexpr double kYsize = 0.4;
-
-  TCanvas *cv = new TCanvas("cv","cv",1200,1200);
-  TPad *pad0 = new TPad("pad0","",0, kYsize, 1, 1);
-  // auto pads = CreatePads(cv);
-  // pads[0]->cd();
-  cv->cd();
-  pad0->SetBottomMargin(0.02);
-  pad0->Draw();
-  pad0->cd();
-  
-  frame->GetYaxis()->SetTickLength(0.012 / (1. - kYsize));
-  frame->GetYaxis()->SetTitleSize(40);
-  frame->GetYaxis()->SetTitleFont(43);
-  frame->GetYaxis()->SetTitleOffset(1.4);
-  frame->GetYaxis()->SetLabelOffset(0.01);
-  frame->GetYaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
-  frame->GetYaxis()->SetLabelSize(24);
-  frame->GetXaxis()->SetLabelOffset(100);
-  frame->GetXaxis()->SetTitleOffset(100);
-  
-  frame->Draw();
-  pinfo_alice->Draw();
-  
-
-  TPad *pad1 = new TPad("pad1","",0, 0, 1, kYsize);
-  cv->cd();
-  pad1->SetTopMargin(0);
-  pad1->SetBottomMargin(0.2);
-  pad1->Draw();
-  pad1->cd();
+  TCanvas *cv2 = new TCanvas("cv2","cv2",1500,1500);
+  cv2->cd();
 
 
-  pad1->SetLogy();
 
-  graph1->GetYaxis()->SetTickLength(0.012 / kYsize);
-  graph1->GetYaxis()->SetTitleSize(40);
-  graph1->GetYaxis()->SetTitleFont(43);
-  graph1->GetYaxis()->SetTitleOffset(1.4);
-  graph1->GetYaxis()->SetLabelOffset(0.01);
-  graph1->GetYaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
-  graph1->GetYaxis()->SetLabelSize(24);
-  graph1->GetXaxis()->SetTickLength(0.02 / kYsize);
-  graph1->GetXaxis()->SetTitleSize(40);
-  graph1->GetXaxis()->SetTitleFont(43);
-  graph1->GetXaxis()->SetTitleOffset(1.05 / kYsize);
-  graph1->GetXaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
-  graph1->GetXaxis()->SetLabelSize(24);
+  cv2->SetLogy();
+  graph1->GetYaxis()->SetTitleSize(0.06);
+  graph1->GetYaxis()->SetTitleOffset(0.9);
+  graph1->GetXaxis()->SetTitleOffset(1.1);
   graph1->GetXaxis()->SetTitle("{}_{#Lambda}^{3}H mass (^{3}He + #pi) (GeV/#it{c}^{2})");
   graph1->GetYaxis()->SetTitle("Local p_{0}");
   graph1->GetXaxis()->SetLimits(2.96,3.04);
@@ -211,7 +228,7 @@ const int kBrownC  = TColor::GetColor("#b15928");
   graph1->SetMaximum(0.9);
   graph1->SetMinimum(0.5e-7);
   graph1->SetLineColor(kBlueCT);
-  graph1->SetLineWidth(3);
+  graph1->SetLineWidth(4);
 
 
   l2->Draw();
@@ -223,8 +240,12 @@ const int kBrownC  = TColor::GetColor("#b15928");
   pinfo4->Draw();
   pinfo5->Draw();
 
+  cv2->SaveAs("../../Results/significance.png");
+  cv2->SaveAs("../../Results/significance.pdf");
 
-  cv->SaveAs("../../Results/significance.png");
-  cv->SaveAs("../../Results/significance.pdf");
-  cv->SaveAs("../../Results/significance.root");
+  TFile sig_file("signal_extraction.root", "recreate");
+  cv->Write();
+  cv2->Write();
+  sig_file.Close();
+
 }
