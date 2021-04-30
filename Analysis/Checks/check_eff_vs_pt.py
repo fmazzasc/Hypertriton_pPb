@@ -4,14 +4,14 @@ import numpy as np
 import aghast
 import ROOT
 
-df_rec = uproot.open("../../Tables/SignalTable_17d_mtexp.root")["SignalTable"].pandas.df()
-df_sim = uproot.open("../../Tables/SignalTable_17d_mtexp.root")["GenTable"].pandas.df()
+df_rec = uproot.open("../../../merge_trees/SignalTable_pp_MC_mtexp.root")["SignalTable"].arrays(library='pd')
+df_sim = uproot.open("../../../merge_trees/SignalTable_pp_MC_mtexp.root")["GenTable"].arrays(library='pd')
 
-df_rec2 = uproot.open("../../Tables/SignalTable_20l2_mtexp.root")["SignalTable"].pandas.df()
-df_sim2 = uproot.open("../../Tables/SignalTable_20l2_mtexp.root")["GenTable"].pandas.df()
+df_rec2 = uproot.open("../../Tables/SignalTable_20l2_mtexp.root")["SignalTable"].arrays(library='pd')
+df_sim2 = uproot.open("../../Tables/SignalTable_20l2_mtexp.root")["GenTable"].arrays(library='pd')
 
 
-pt_bins = np.linspace(0.5, 10, 50)
+pt_bins = np.linspace(0.5, 9, 40)
 
 rec_hist = np.histogram(df_rec['pt'], pt_bins)
 sim_hist = np.histogram(df_sim['pt'], pt_bins)
@@ -42,10 +42,13 @@ leg.AddEntry(rec_hist2)
 file = ROOT.TFile('eff_vs_pt.root', 'recreate')
 
 cv = ROOT.TCanvas(f"eff")
-rec_hist2.Draw()
-rec_hist.Draw('same')
+rec_hist.Draw()
+rec_hist2.Draw('same')
+
 leg.Draw()
 
 cv.Write()
 
 file.Close()
+
+cv.SaveAs("prova.png")

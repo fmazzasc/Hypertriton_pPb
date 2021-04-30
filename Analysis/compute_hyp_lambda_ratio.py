@@ -18,7 +18,7 @@ ROOT.gROOT.SetBatch()
 df_rec = uproot.open("../Tables/SignalTable_20l2_mtexp.root")["SignalTable"].arrays(library="pd")
 df_sim = uproot.open("../Tables/SignalTable_20l2_mtexp.root")["GenTable"].arrays(library="pd")
 
-presel_eff = len(df_rec)/len(df_sim.query("abs(rapidity)<0.5"))
+presel_eff = len(df_rec)/len(df_sim.query("-0.5<rapidity<0.5"))
 print("-------------------------------------")
 print("Pre-selection efficiency: ", presel_eff)
 
@@ -45,7 +45,7 @@ ff.cd()
 
 for eff,cut in zip(bdt_eff_array, score_cuts_array):
     cut_string = f"model_output>{cut}"
-    data040 = np.array(df.query(cut_string + " and 2.96<m<3.04 and centrality<=40 and abs(fZ) < 10")["m"])
+    data040 = np.array(df.query(cut_string + " and 2.96<m<3.04 and centrality<=100 and abs(fZ) < 10")["m"])
     mc_data = np.array(df_mc.query(cut_string + " and 2.96<m<3.04")["m"])
     mean_mass_list.append(np.mean(mc_data))
     mc_data = mc_data[0:1000]
@@ -63,10 +63,6 @@ error_array040 = np.array(error_list040)
 mean_mass_array040 = np.array(mean_mass_list)
 delta_mass_array = np.array(delta_mass_list)
 delta_mass_error_array = np.array(delta_mass_error_list)
-# print(delta_mass_array)
-# B_lam = 1.115683 + 1.87561294257 - (2.99131 - 1000*delta_mass_array[bdt_eff_array==selected_bdt_eff])
-# B_lam_error = 1000*delta_mass_error_array[bdt_eff_array==selected_bdt_eff]
-# print(f"BLam: {B_lam*1000} +- {B_lam_error*1000}" )
 
 
 ###COMPUTE YIELD############################
@@ -145,13 +141,13 @@ hp_ratio_csm_van = fin.Get('gCSM_3HL_over_p')
 
 hp_ratio_csm_1.SetLineColor(922)
 hp_ratio_csm_1.SetLineWidth(2)
-hp_ratio_csm_1.SetTitle("SHM with T = 155MeV, Vc = dV/dy")
+hp_ratio_csm_1.SetTitle("SHM, T = 155MeV, Vc = dV/dy")
 
 
 hp_ratio_csm_3.SetLineColor(922)
 hp_ratio_csm_3.SetLineWidth(2)
 hp_ratio_csm_3.SetLineStyle(2)
-hp_ratio_csm_3.SetTitle("SHM with T = 155MeV, Vc = 3dV/dy")
+hp_ratio_csm_3.SetTitle("SHM, T = 155MeV, Vc = 3dV/dy")
 
 n = hp_ratio_csm_1.GetN()
 grshade = ROOT.TGraph(2*n)
@@ -184,8 +180,7 @@ hp_2body.SetFillColorAlpha(kBlueC, 0.571)
 mg = ROOT.TMultiGraph()
 mg.Add(hp_2body)
 mg.Add(hp_3body)
-# mg.SetMinimum(1e-7)
-# mg.SetMaximum(6e-6)
+
 
 
 cv = ROOT.TCanvas("cv")
@@ -200,10 +195,10 @@ grshade.Draw("f same")
 hp_ratio_csm_1.Draw("L same")
 hp_ratio_csm_3.Draw("L same")
 # hp_ratio_csm_van.Draw("L same")
-mg.GetYaxis().SetRangeUser(1e-8, 1e-5)
+mg.GetYaxis().SetRangeUser(2e-7, 2e-5)
 mg.GetXaxis().SetRangeUser(5, 3e3)
 mg.GetXaxis().SetTitle('#LTd#it{N}_{ch}/d#it{#eta}#GT_{|#it{#eta}|<0.5}')
-mg.GetYaxis().SetTitle('{}_{#Lambda}^{3}H/#Lambda')
+mg.GetYaxis().SetTitle('({}_{#Lambda}^{3}H + {}_{#bar{#Lambda}}^{3}#bar{H} )/(2#Lambda)')
 mg.GetXaxis().SetTitleOffset(1.07)
 mg.GetYaxis().SetTitleOffset(1.05)
 mg.GetYaxis().SetTitleSize(0.07)
@@ -222,7 +217,8 @@ ppb_stat040 = ROOT.TGraphErrors(1,x_pPb040,hp_ratio_040,zero,hp_ratiostat040)
 ppb_stat040.SetLineColor(ROOT.kRed)
 ppb_stat040.SetMarkerColor(ROOT.kRed)
 ppb_stat040.SetMarkerStyle(20)
-ppb_stat040.SetMarkerSize(0.5)
+ppb_stat040.SetMarkerSize(1)
+ppb_stat040.SetLineWidth(1)
 
 ppb_syst040 = ROOT.TGraphErrors(1,x_pPb040, hp_ratio_040, xe_pPb040, hp_ratiosyst040)
 ppb_syst040.SetTitle("ALICE p-Pb, 0-40%, #sqrt{#it{s}_{NN}} = 5.02 TeV")
@@ -230,7 +226,9 @@ ppb_syst040.SetLineColor(ROOT.kRed)
 ppb_syst040.SetMarkerColor(ROOT.kRed)
 ppb_syst040.SetFillStyle(0)
 ppb_syst040.SetMarkerStyle(20)
-ppb_syst040.SetMarkerSize(0.5)
+ppb_syst040.SetLineWidth(1)
+
+ppb_syst040.SetMarkerSize(1)
 
 x = np.array([1447], dtype=np.float64)
 ex = np.array([39], dtype=np.float64)
@@ -239,25 +237,28 @@ ey = np.array([4*3.28e-7], dtype=np.float64)
 eys = np.array([4*1.69e-7], dtype=np.float64)
 zero = np.array([0], dtype=np.float64)
 pbpb_stat = ROOT.TGraphErrors(1,x,y,zero,ey)
-pbpb_stat.SetLineColor(ROOT.kBlack)
-pbpb_stat.SetMarkerColor(ROOT.kBlack)
+pbpb_stat.SetLineColor(ROOT.kOrange + 8)
+pbpb_stat.SetMarkerColor(ROOT.kOrange + 8)
 pbpb_stat.SetMarkerStyle(20)
-pbpb_stat.SetMarkerSize(0.5)
+pbpb_stat.SetMarkerSize(1)
+pbpb_stat.SetLineWidth(1)
 pbpb_stat.Draw("Pz")
 
 
 pbpb_syst = ROOT.TGraphErrors(1,x,y,ex,eys)
-pbpb_syst.SetTitle("ALICE Pb-Pb #sqrt{#it{s}_{NN}} = 2.76 TeV")
-pbpb_syst.SetLineColor(ROOT.kBlack)
-pbpb_syst.SetMarkerColor(ROOT.kBlack)
+pbpb_syst.SetTitle("ALICE Pb-Pb, 0-10%, #sqrt{#it{s}_{NN}} = 2.76 TeV")
+pbpb_syst.SetLineColor(ROOT.kOrange + 8)
+pbpb_syst.SetMarkerColor(ROOT.kOrange + 8)
 pbpb_syst.SetFillStyle(0)
 pbpb_syst.SetMarkerStyle(20)
-pbpb_syst.SetMarkerSize(0.5)
+pbpb_syst.SetMarkerSize(1)
+pbpb_syst.SetLineWidth(1)
 pbpb_syst.Draw("P2")
 
 
-leg = ROOT.TLegend(0.45,0.46,0.91,0.6)
+leg = ROOT.TLegend(0.18,0.72,0.7,0.87)
 leg.SetMargin(0.14)
+leg.SetNColumns(1)
 
 ppb_stat040.Draw("Pz")
 ppb_syst040.Draw("P2")
@@ -266,7 +267,7 @@ leg.AddEntry(pbpb_syst,"","pf")
 
 
 leg.SetEntrySeparation(0.2)
-legT = ROOT.TLegend(0.45,0.18,0.91,0.45)
+legT = ROOT.TLegend(0.58,0.2,0.96,0.47)
 legT.SetMargin(0.14)
 
 legT.AddEntry(hp_3body)
@@ -279,7 +280,7 @@ legT.SetFillStyle(0)
 leg.Draw()
 legT.Draw()
 
-pinfo = ROOT.TPaveText(0.18,0.84,0.35,0.89, 'NDC')
+pinfo = ROOT.TPaveText(0.78,0.57,0.91,0.67, 'NDC')
 pinfo.SetBorderSize(0)
 pinfo.SetFillStyle(0)
 pinfo.SetTextAlign(30+3)
@@ -290,8 +291,8 @@ pinfo.Draw()
 
 cv.Draw()
 
-cv.SaveAs("../Results/hp_ratio.pdf")
-cv.SaveAs("../Results/hp_ratio.png")
+cv.SaveAs("../Results/hl_ratio.pdf")
+cv.SaveAs("../Results/hl_ratio.png")
 
 # Branching ratio plot
 
@@ -301,12 +302,12 @@ cvBR = ROOT.TCanvas("brPlot","BR Plot",700,800)
 cvBR.SetTopMargin(0.2)
 cvBR.SetLeftMargin(0.15)
 cvBR.SetRightMargin(0.04)
-frame = cvBR.DrawFrame(0.14,7.e-8, 0.36, 1.4e-6, ";B.R.;{}_{#Lambda}^{3}H/#Lambda #times B.R.")
+frame = cvBR.DrawFrame(0.25 - 0.022, 5.e-8, 0.25 + 0.022, 1.4e-6, ";B.R.;({}_{#Lambda}^{3}H + {}_{#bar{#Lambda}}^{3}#bar{H} )/(2#Lambda)  #times B.R.")
 frame.GetYaxis().SetTitleOffset(1.4)
 cvBR.SetLogy()
 
-npoints = 50
-xBR = np.linspace(0.14,0.36,npoints)
+npoints = 1000
+xBR = np.linspace(0.25 - 0.022, 0.25 + 0.022,npoints)
 C2 = 6.57e-7
 C2e = 1.39e-7
 C3 = 3.15e-7
@@ -332,7 +333,7 @@ grCSM1 = ROOT.TGraph(npoints)
 grCSM3 = ROOT.TGraph(npoints)
 grC2 = ROOT.TGraphErrors(npoints)
 grC3 = ROOT.TGraphErrors(npoints)
-for i,j in enumerate(xBR) : 
+for i,j in enumerate(xBR) :
   grC2.SetPoint(i, j, C2 * j)
   grC2.SetPointError(i, 0, C2e * j)
   grC3.SetPoint(i, j, C3 * j)
@@ -345,7 +346,7 @@ for i,j in enumerate(xBR) :
 grshade = ROOT.TGraph(2*npoints)
 for i in range(npoints) : 
    grshade.SetPoint(i, grCSM3.GetPointX(i), grCSM3.GetPointY(i))
-   grshade.SetPoint(n + i, grCSM1.GetPointX(n - i -1), grCSM1.GetPointY(n - i - 1))
+   grshade.SetPoint(npoints + i, grCSM1.GetPointX(npoints - i -1), grCSM1.GetPointY(npoints - i - 1))
  
 grshade.SetFillColorAlpha(16, 0.571)
 
@@ -365,19 +366,21 @@ grCSM.SetLineColor(kGreyC)
 grCSM.SetFillColorAlpha(kGreyC, 0.571)
 grCSM.SetMarkerColor(kGreyC)
 grCSM1.SetLineWidth(2)
-grCSM1.SetTitle("SHM with T = 155MeV, Vc = dV/dy")
+grCSM1.SetTitle("SHM, T = 155MeV, Vc = dV/dy")
 grCSM1.SetLineStyle(1)
 grCSM3.SetLineWidth(2)
 grCSM3.SetLineStyle(ROOT.kDashed)
-grCSM3.SetTitle("SHM with T = 155MeV, Vc = 3dV/dy")
+grCSM3.SetTitle("SHM, T = 155MeV, Vc = 3dV/dy")
 
-grC2.Draw("PL3")
-grC3.Draw("PL3")
-grCSM.Draw("P3")
+frame.GetXaxis().SetDecimals()
+frame.GetXaxis().SetNdivisions(505)
+grC2.Draw("L3")
+grC3.Draw("CL3")
 grCSM3.Draw("L")
 grshade.Draw("f same")
 grCSM1.Draw("L")
 grData.Draw("L3")
+
 
 legBR = ROOT.TLegend(0.07,0.81 ,1.09,0.99)
 legBR.SetNColumns(2)
@@ -393,7 +396,7 @@ legBR.Draw()
 cvBR.SaveAs("../Results/plotBR.pdf")
 cvBR.SaveAs("../Results/plotBR.png")
 
-file = ROOT.TFile('../Results/hp_ratio.root', 'recreate')
+file = ROOT.TFile('../Results/hl_ratio.root', 'recreate')
 cv.Write()
 cvBR.Write()
 file.Close()

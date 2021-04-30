@@ -131,7 +131,7 @@ const int kBrownC  = TColor::GetColor("#b15928");
   pinfo_alice->SetFillStyle(0);
   pinfo_alice->SetTextFont(42);
   pinfo_alice->AddText("ALICE");
-  pinfo_alice->AddText("p-Pb 0-40%, #sqrt{#it{s}_{NN}}=5.02 TeV");
+  pinfo_alice->AddText("p-Pb 0-40%, #sqrt{#it{s}_{NN}} = 5.02 TeV");
 
   TCanvas *cv = new TCanvas("cv1","cv1",1500,1500);
   cv->cd();
@@ -147,7 +147,7 @@ const int kBrownC  = TColor::GetColor("#b15928");
   pinfo_alice->Draw();
   frame->Print();
   TLegend *leg1 = new TLegend(0.49,0.56,0.9,0.75);
-  leg1->AddEntry("h_data","{}_{#Lambda}^{3}H + {}_{#bar{#Lambda}}^{3}H", "PE");
+  leg1->AddEntry("h_data","{}_{#Lambda}^{3}H + {}_{#bar{#Lambda}}^{3}#bar{H}", "PE");
   leg1->AddEntry("model_Norm[m]_Range[fit_nll_model_data]_NormRange[fit_nll_model_data]","Signal + Background", "L");
 
   leg1->AddEntry("model_Norm[m]_Comp[bkg]_Range[fit_nll_model_data]_NormRange[fit_nll_model_data]","Background", "L");

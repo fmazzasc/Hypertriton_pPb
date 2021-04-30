@@ -18,12 +18,12 @@ using namespace std;
 void GenerateTableFromData(bool likeSign = false, bool pp = false)
 {
 
-  string dataDir = "../Trees/";
-  string tableDir = "../Tables/";
+  string dataDir = "../../merge_trees/";
+  string tableDir = "../../merge_trees/";
 
-  string lsString = likeSign ? "_mixDeu.root" : ".root";
+  string lsString = likeSign ? "_LS.root" : ".root";
 
-  string inFileName16 = pp ? "HyperTritonTree_pp13TeV" : "HyperTritonTree_16qt";
+  string inFileName16 = pp ? "HyperTritonTree_pp13TeV" : "HyperTritonTree_pp13TeV";
 
   
   string inFileArg16 = dataDir + inFileName16 + lsString;
@@ -31,15 +31,15 @@ void GenerateTableFromData(bool likeSign = false, bool pp = false)
   string inFileName13 = "HyperTritonTree_13bc";
   string inFileArg13 = dataDir  + inFileName13 + lsString;
 
-  string outFileName = pp ? "DataTable_pp" : "DataTable_pPb";
+  string outFileName = pp ? "DataTable_pp" : "DataTable_pp";
   string outFileArg = tableDir  + outFileName + lsString;
 
-  string treeName = pp ? "Hyp3O2" : "_default/fTreeV0";
+  string treeName = pp ? "Hyp3O2" : "_custom/fTreeV0";
 
   TChain inputChain(treeName.data());
   inputChain.AddFile(inFileArg16.data());
-  if (!likeSign && !pp)
-    inputChain.AddFile(inFileArg13.data());
+  // if (!likeSign && !pp)
+  //   inputChain.AddFile(inFileArg13.data());
 
   TTreeReader fReader(&inputChain);
   TFile outFile(outFileArg.data(), "RECREATE");
@@ -50,6 +50,7 @@ void GenerateTableFromData(bool likeSign = false, bool pp = false)
   Table2 tree("DataTable", "Data Table");
   while (fReader.Next())
   {
+    // std::cout<<"DIOCANe"<<std::endl;
     for (auto &RHyper : RHyperVec)
       tree.Fill(RHyper, *RColl);
   }

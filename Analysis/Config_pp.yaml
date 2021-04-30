@@ -1,15 +1,15 @@
 
-DATA_TABLE: "DataTable_pp.root"
-SIGNAL_TABLE: "SignalTable_pp13TeV_mtexp.root"
-BKG_TABLE: "DataTable_pp_LS.root"
+DATA_TABLE: "../../merge_trees/DataTable_pp.root"
+SIGNAL_TABLE: "../../merge_trees/SignalTable_pp_MC_mtexp.root"
+BKG_TABLE: "../../merge_trees/DataTable_pp_LS.root"
 
 TRAINING: True
-BACKGROUND_OVER_SIGNAL: 5
+BACKGROUND_OVER_SIGNAL: 4
 OPTIMIZE: False
 APPLICATION: True 
 SIGNIFICANCE_SCAN: True
-EFF_WORKING_POINT: 0.82
-SYST_VARIATION_RANGE: 0.15
+EFF_WORKING_POINT: 0.72
+SYST_VARIATION_RANGE: 0.05
 
 
 XGBOOST_PARAMS:
@@ -23,11 +23,11 @@ XGBOOST_PARAMS:
 
 
 HYPERPARAMS:
-  max_depth: 13
-  learning_rate: 0.0982
-  n_estimators: 181
-  gamma: 0.4467
-  min_child_weight: 5.75
-  subsample: 0.74
-  colsample_bytree: 0.57
+  # max_depth: 13
+  # learning_rate: 0.0982
+  # n_estimators: 181
+  # gamma: 0.4467
+  # min_child_weight: 5.75
+  # subsample: 0.74
+  # colsample_bytree: 0.57
   seed: 42

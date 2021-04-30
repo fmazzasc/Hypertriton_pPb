@@ -1,5 +1,5 @@
 import sys
-sys.path.append('../')
+sys.path.append('../../')
 import argparse
 import numpy as np
 import matplotlib
@@ -14,20 +14,20 @@ ROOT.gROOT.SetBatch()
 
 
 ##COMPUTE PRESELECTION-EFFICIENCY
-df_rec = uproot.open("../Tables/SignalTable_20l2_mtexp.root")["SignalTable"].pandas.df()
-df_sim = uproot.open("../Tables/SignalTable_20l2_mtexp.root")["GenTable"].pandas.df()
+df_rec = uproot.open("../../../Tables/SignalTable_20l2_mtexp.root")["SignalTable"].arrays(library="pd")
+df_sim = uproot.open("../../../Tables/SignalTable_20l2_mtexp.root")["GenTable"].arrays(library="pd")
 
 presel_eff = len(df_rec)/len(df_sim.query("abs(rapidity)<0.5"))
 print("-------------------------------------")
 print("Pre-selection efficiency: ", presel_eff)
 
 ## FIT INVARIANT MASS SPECTRA
-df = pd.read_parquet("../Utils/ReducedDataFrames/selected_df_data.parquet.gzip")
-df_mc = pd.read_parquet("../Utils/ReducedDataFrames/selected_df_mc.parquet.gzip")
-score_cuts_array = np.load("../Utils/Efficiencies/score_eff_syst_arr.npy")
-bdt_eff_array = np.load("../Utils/Efficiencies/bdt_eff_syst_arr.npy")
+df = pd.read_parquet("../../../Utils/ReducedDataFrames/selected_df_data.parquet.gzip")
+df_mc = pd.read_parquet("../../../Utils/ReducedDataFrames/selected_df_mc.parquet.gzip")
+score_cuts_array = np.load("../../../Utils/Efficiencies/score_eff_syst_arr.npy")
+bdt_eff_array = np.load("../../../Utils/Efficiencies/bdt_eff_syst_arr.npy")
 selected_bdt_eff = 0.72
-n_events0100 = np.sum(uproot.open('../Utils/AnalysisResults_pPb.root')['AliAnalysisTaskHyperTriton2He3piML_default_summary;1'][11].values[:100-1])
+n_events0100 = np.sum(uproot.open('../../../Utils/AnalysisResults_pPb.root')['AliAnalysisTaskHyperTriton2He3piML_default_summary;1'][11].counts()[:100-1])
 branching_ratio = 0.25
 
 signal_list0100 = []
@@ -37,7 +37,7 @@ delta_mass_error_list = []
 mean_mass_list = []
 
 
-ff = ROOT.TFile("../Results/inv_mass_fits_0100.root", "recreate")
+ff = ROOT.TFile("../../../Results/inv_mass_fits_0100.root", "recreate")
 bkg_dir = ff.mkdir('bkg_pdf')
 ff.cd()
 
@@ -47,7 +47,7 @@ for eff,cut in zip(bdt_eff_array, score_cuts_array):
     data0100 = np.array(df.query(cut_string + " and 2.96<m<3.04 and centrality<=100 and abs(fZ) < 10")["m"])
     mc_data = np.array(df_mc.query(cut_string + " and 2.96<m<3.04")["m"])
     mean_mass_list.append(np.mean(mc_data))
-    mc_data = mc_data[0:1000]
+    mc_data = mc_data[0:20000]
     res_template = hp.unbinned_mass_fit_mc(data0100, eff, 'pol1', mc_data, ff, bkg_dir, [0,40], [0,10], [0,35], split="", cent_string='0100', bins = 34, ws_name = f'ws_eff_{eff}')
 
     signal_list0100.append(res_template[0])
@@ -123,10 +123,10 @@ kBrownC  = ROOT.TColor.GetColor("#8c564c");
 kAzureC  = ROOT.TColor.GetColor("#18becf");
 kGreenBC  = ROOT.TColor.GetColor("#bcbd21");
 
-hp_ratio_csm_3 = ROOT.TGraphErrors("../Utils/ProdModels/hyp_p_ratio_155_3.dat","%lg %*s %*s %*s %*s %*s %lg %*s")
-hp_ratio_csm_1 = ROOT.TGraphErrors("../Utils/ProdModels/hyp_p_ratio_155_1.dat","%lg %*s %*s %*s %*s %*s %lg %*s")
+hp_ratio_csm_3 = ROOT.TGraphErrors("../../../Utils/ProdModels/hyp_p_ratio_155_3.dat","%lg %*s %*s %*s %*s %*s %lg %*s")
+hp_ratio_csm_1 = ROOT.TGraphErrors("../../../Utils/ProdModels/hyp_p_ratio_155_1.dat","%lg %*s %*s %*s %*s %*s %lg %*s")
 
-fin = ROOT.TFile('../Utils/ProdModels/vanilla_CSM_predictions_H3L_to_P.root')
+fin = ROOT.TFile('../../../Utils/ProdModels/vanilla_CSM_predictions_H3L_to_P.root')
 hp_ratio_csm_van = fin.Get('gCSM_3HL_over_p')
 
 
@@ -155,11 +155,11 @@ hp_ratio_csm_van.SetLineWidth(2)
 hp_ratio_csm_van.SetTitle("Full canonical SHM")
 
 
-hp_2body = ROOT.TGraphErrors("../Utils/ProdModels/hp_ratio_2body_coal.csv","%lg %lg %lg")
+hp_2body = ROOT.TGraphErrors("../../../Utils/ProdModels/hp_ratio_2body_coal.csv","%lg %lg %lg")
 hp_2body.SetLineColor(kBlueC)
 hp_2body.SetMarkerColor(kBlueC)
 hp_2body.SetTitle("2-body coalescence")
-hp_3body = ROOT.TGraphErrors("../Utils/ProdModels/hp_ratio_3body_coal.csv","%lg %lg %lg")
+hp_3body = ROOT.TGraphErrors("../../../Utils/ProdModels/hp_ratio_3body_coal.csv","%lg %lg %lg")
 hp_3body.SetLineColor(kAzureC)
 hp_3body.SetMarkerColor(kAzureC)
 hp_3body.SetTitle("3-body coalescence")
@@ -273,8 +273,8 @@ pinfo.Draw()
 
 cv.Draw()
 
-cv.SaveAs("../Results/hp_ratio_0100.pdf")
-cv.SaveAs("../Results/hp_ratio_0100.png")
+cv.SaveAs("../../../Results/hp_ratio_0100.pdf")
+cv.SaveAs("../../../Results/hp_ratio_0100.png")
 
 file = ROOT.TFile('hp_ratio_0100.root', 'recreate')
 cv.Write()

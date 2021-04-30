@@ -201,6 +201,8 @@ mg.GetXaxis().SetTitleSize(0.07)
 mg.GetYaxis().SetLabelSize(0.045)
 mg.GetXaxis().SetLabelSize(0.045)
 
+mg.GetYaxis().SetRangeUser(0.1, 0.9)
+mg.GetXaxis().SetRangeUser(5, 3e3)
 
 x = np.array([1447], dtype=np.float64)
 ex = np.array([39], dtype=np.float64)
@@ -209,16 +211,16 @@ ey = np.array([0.13], dtype=np.float64)
 eys = np.array([0.21], dtype=np.float64)
 zero = np.array([0], dtype=np.float64)
 pbpb_stat = ROOT.TGraphErrors(1,x,y,zero,ey)
-pbpb_stat.SetLineColor(ROOT.kBlack)
-pbpb_stat.SetMarkerColor(ROOT.kBlack)
+pbpb_stat.SetLineColor(ROOT.kOrange + 8)
+pbpb_stat.SetMarkerColor(ROOT.kOrange + 8)
 pbpb_stat.SetMarkerStyle(20)
 pbpb_stat.Draw("Pz")
 
 
 pbpb_syst = ROOT.TGraphErrors(1,x,y,ex,eys)
 pbpb_syst.SetTitle("ALICE Pb-Pb #sqrt{#it{s}_{NN}} = 2.76 TeV")
-pbpb_syst.SetLineColor(ROOT.kBlack)
-pbpb_syst.SetMarkerColor(ROOT.kBlack)
+pbpb_syst.SetLineColor(ROOT.kOrange + 8)
+pbpb_syst.SetMarkerColor(ROOT.kOrange + 8)
 pbpb_syst.SetFillStyle(0)
 pbpb_syst.SetMarkerStyle(20)
 pbpb_syst.Draw("P2")
@@ -247,13 +249,25 @@ ppb_stat040.Draw("Pz")
 ppb_syst040.Draw("P2")
 leg.AddEntry(ppb_syst040,"","pf")
 
-pinfo = ROOT.TPaveText(0.19,0.84,0.36,0.89, 'NDC')
+
+
+pinfo = ROOT.TPaveText(0.36,0.75,0.73, 0.84, 'NDC')
 pinfo.SetBorderSize(0)
 pinfo.SetFillStyle(0)
 pinfo.SetTextAlign(30+3)
 pinfo.SetTextFont(42)
-pinfo.AddText('B.R. = 0.25')
+pinfo.AddText('S_{3} = ({}_{#Lambda}^{3}H/^{3}He ) / ( #Lambda/p )')
 pinfo.Draw()
+
+
+
+pinfo2 = ROOT.TPaveText(0.17,0.57,0.3,0.63, 'NDC')
+pinfo2.SetBorderSize(0)
+pinfo2.SetFillStyle(0)
+pinfo2.SetTextAlign(30+3)
+pinfo2.SetTextFont(42)
+pinfo2.AddText('B.R. = 0.25')
+pinfo2.Draw()
 
 
 

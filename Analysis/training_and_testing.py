@@ -22,7 +22,7 @@ parser.add_argument('-pp', '--pp_mode', help='Do the training', action='store_tr
 args = parser.parse_args()
 pp_mode = args.pp_mode
 
-config_file = "Config_pp.yaml" if pp_mode==True else "Config.yaml"
+config_file = "Config.yaml"
 
 with open(config_file, 'r') as stream:
     try:
@@ -68,7 +68,7 @@ if training:
                 signalH.apply_preselections("pt>0 and rej_accept==True")
                 training_columns = ["pt","cos_pa", "tpc_ncls_de", "tpc_ncls_pr", "tpc_ncls_pi", "tpc_nsig_de", "tpc_nsig_pr", "tpc_nsig_pi", "dca_de_pr", "dca_de_pi", "dca_pr_pi", "dca_de_sv", "dca_pr_sv", "dca_pi_sv", "chi2"]
         else:
-                training_columns = ['TPCnSigmaHe3','ct','V0CosPA','ProngsDCA','He3ProngPvDCA','PiProngPvDCA','He3ProngPvDCAXY','PiProngPvDCAXY','NpidClustersHe3','TPCnSigmaPi']
+                training_columns = ['TPCnSigmaHe3','ct','V0CosPA','ProngsDCA', 'He3ProngPvDCA','PiProngPvDCA','He3ProngPvDCAXY','PiProngPvDCAXY','NpidClustersHe3','TPCnSigmaPi']
 
         if not os.path.exists(results_ml_path):
                 os.makedirs(results_ml_path)
@@ -103,9 +103,15 @@ if training:
         bdt_out_plot = pu.plot_output_train_test(model_hdl, train_test_data, 100, True, ["Signal", "Background"], True, density=True)
         bdt_out_plot.savefig(results_ml_path + "/bdt_output.png")
 
+
         if not os.path.exists(ml_model_path):
                 os.makedirs(ml_model_path)
         model_hdl.dump_model_handler(ml_model_path + "/model_hndl.pkl")
+
+        feature_importance_plot = pu.plot_feature_imp(train_test_data[2], train_test_data[3], model_hdl)
+        feature_importance_plot[0].savefig(results_ml_path + "/feature_importance_1.png")
+        feature_importance_plot[1].savefig(results_ml_path + "/feature_importance_2.png")
+
 
         eff_arr = np.round(np.arange(0.5,0.99,0.01),2)
         score_eff_arr = au.score_from_efficiency_array(train_test_data[3], y_pred_test, eff_arr)

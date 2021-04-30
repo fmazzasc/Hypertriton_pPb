@@ -101,7 +101,6 @@ void Table2::Fill(const RHyperTritonHe3pi &RHyper, const RCollision &RColl)
   he3Vector.SetPxPyPzE(RHyper.fPxHe3, RHyper.fPyHe3, RHyper.fPzHe3, eHe3);
   piVector.SetPxPyPzE(RHyper.fPxPi, RHyper.fPyPi, RHyper.fPzPi, ePi);
   hyperVector = piVector + he3Vector;
-
   TVector3 v(RHyper.fDecayX, RHyper.fDecayY, RHyper.fDecayZ);
   float pointAngle = hyperVector.Angle(v);
   float CosPA = std::cos(pointAngle);

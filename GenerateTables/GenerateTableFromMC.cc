@@ -21,12 +21,12 @@ void GenerateTableFromMC(bool reject = true, string ptShape = "mtexp")
 {
   gRandom->SetSeed(1995);
 
-  string inFileName = "HyperTritonTree_20l2.root";
-  string inFileArg =  "../Trees/" + inFileName;
+  string inFileName = "HyperTritonTree_pp13TeV_MC.root";
+  string inFileArg =  "../../merge_trees/" + inFileName;
 
-  string outFileName = "SignalTable_20l2_" + ptShape + ".root";
+  string outFileName = "SignalTable_pp_MC_" + ptShape + ".root";
   string bwFileName;
-  string outFileArg =  "../Tables/" + outFileName;
+  string outFileArg =  "../../merge_trees/" + outFileName;
   if(ptShape=="bw")
     bwFileName = "output_He3_yieldfits.root";
   else
@@ -57,7 +57,7 @@ void GenerateTableFromMC(bool reject = true, string ptShape = "mtexp")
   float max = hypPtShape->GetMaximum();
 
   TFile *inFile = new TFile(inFileArg.data(), "READ");
-  TTreeReader fReader("_default/fTreeV0", inFile);
+  TTreeReader fReader("_custom/fTreeV0", inFile);
   TTreeReaderArray<RHyperTritonHe3pi> RHyperVec = {fReader, "RHyperTriton"};
   TTreeReaderArray<SHyperTritonHe3pi> SHyperVec = {fReader, "SHyperTriton"};
   TTreeReaderValue<RCollision> RColl = {fReader, "RCollision"};
