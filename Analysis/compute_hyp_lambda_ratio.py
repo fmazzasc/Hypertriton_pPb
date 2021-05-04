@@ -45,7 +45,7 @@ ff.cd()
 
 for eff,cut in zip(bdt_eff_array, score_cuts_array):
     cut_string = f"model_output>{cut}"
-    data040 = np.array(df.query(cut_string + " and 2.96<m<3.04 and centrality<=100 and abs(fZ) < 10")["m"])
+    data040 = np.array(df.query(cut_string + " and 2.96<m<3.04 and centrality<=40 and abs(fZ) < 10")["m"])
     mc_data = np.array(df_mc.query(cut_string + " and 2.96<m<3.04")["m"])
     mean_mass_list.append(np.mean(mc_data))
     mc_data = mc_data[0:1000]
@@ -221,7 +221,7 @@ ppb_stat040.SetMarkerSize(1)
 ppb_stat040.SetLineWidth(1)
 
 ppb_syst040 = ROOT.TGraphErrors(1,x_pPb040, hp_ratio_040, xe_pPb040, hp_ratiosyst040)
-ppb_syst040.SetTitle("ALICE p-Pb, 0-40%, #sqrt{#it{s}_{NN}} = 5.02 TeV")
+ppb_syst040.SetTitle("ALICE Preliminary p-Pb, 0-40%, #sqrt{#it{s}_{NN}} = 5.02 TeV")
 ppb_syst040.SetLineColor(ROOT.kRed)
 ppb_syst040.SetMarkerColor(ROOT.kRed)
 ppb_syst040.SetFillStyle(0)
@@ -246,7 +246,7 @@ pbpb_stat.Draw("Pz")
 
 
 pbpb_syst = ROOT.TGraphErrors(1,x,y,ex,eys)
-pbpb_syst.SetTitle("ALICE Pb-Pb, 0-10%, #sqrt{#it{s}_{NN}} = 2.76 TeV")
+pbpb_syst.SetTitle("ALICE Preliminary Pb-Pb, 0-10%, #sqrt{#it{s}_{NN}} = 2.76 TeV")
 pbpb_syst.SetLineColor(ROOT.kOrange + 8)
 pbpb_syst.SetMarkerColor(ROOT.kOrange + 8)
 pbpb_syst.SetFillStyle(0)
@@ -326,7 +326,7 @@ grData.SetPointError(1, 0., math.hypot(hp_ratiostat040[0], hp_ratiosyst040[0]) *
 grData.SetLineColor(kRedC)
 grData.SetLineWidth(2)
 grData.SetFillColorAlpha(kRedC,0.571)
-grData.SetTitle("ALICE p-Pb 0-40%")
+grData.SetTitle("ALICE Preliminary p-Pb 0-40%")
 
 grCSM = ROOT.TGraphErrors(npoints)
 grCSM1 = ROOT.TGraph(npoints)
