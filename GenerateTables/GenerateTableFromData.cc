@@ -15,19 +15,18 @@ using namespace std;
 #include "helpers/Table2.h"
 #include "helpers/O2Table.h"
 
-void GenerateTableFromData(bool likeSign = false, bool pp = false)
+void GenerateTableFromData(bool likeSign = true, bool pp = true)
 {
 
   string dataDir = "../../merge_trees/";
   string tableDir = "../../merge_trees/";
 
-  string lsString = likeSign ? "_LS.root" : ".root";
+  string lsString = likeSign ? "_LS_rot.root" : ".root";
 
-  string inFileName16 = pp ? "HyperTritonTree_pp13TeV" : "HyperTritonTree_pp13TeV";
+  string inFileName16 = pp ? "HyperTritonTree" : "HyperTritonTree";
 
   
   string inFileArg16 = dataDir + inFileName16 + lsString;
-
   string inFileName13 = "HyperTritonTree_13bc";
   string inFileArg13 = dataDir  + inFileName13 + lsString;
 

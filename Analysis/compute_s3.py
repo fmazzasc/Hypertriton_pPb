@@ -48,7 +48,7 @@ for eff,cut in zip(bdt_eff_array, score_cuts_array):
     data040 = np.array(df.query(cut_string + " and 2.96<m<3.04 and centrality<=40 and abs(fZ)<10")["m"])
     mc_data = np.array(df_mc.query(cut_string + " and 2.96<m<3.04")["m"])
     mean_mass_list.append(np.mean(mc_data))
-    mc_data = mc_data[0:20000]
+    mc_data = mc_data[0:1000]
     res_template = hp.unbinned_mass_fit_mc(data040, eff, 'pol1', mc_data, ff, bkg_dir, [0,40], [0,10], [0,35], split="", cent_string='040', bins = 34, ws_name = f'ws_eff_{eff}')
 
     signal_list040.append(res_template[0])
@@ -168,11 +168,14 @@ grshade.SetFillColorAlpha(16, 0.571)
 s3_2body = ROOT.TGraphErrors("../Utils/ProdModels/coalescence/s3_2body.csv","%lg %lg %lg")
 s3_2body.SetLineColor(kBlueC)
 s3_2body.SetMarkerColor(kBlueC)
+s3_2body.SetFillStyle(3145)
 s3_2body.SetTitle("2-body coalescence")
 s3_3body = ROOT.TGraphErrors("../Utils/ProdModels/coalescence/s3_3body.csv","%lg %lg %lg")
 s3_3body.SetLineColor(kAzureC)
 s3_3body.SetMarkerColor(kAzureC)
 s3_3body.SetTitle("3-body coalescence")
+s3_3body.SetFillStyle(3145)
+
 
 
 s3_3body.SetFillColorAlpha(kAzureC, 0.571)
@@ -185,7 +188,7 @@ mg.Add(s3_3body)
 cv = ROOT.TCanvas("cv")
 cv.SetBottomMargin(0.17)
 cv.SetLeftMargin(0.13)
-frame=cv.DrawFrame(9,0.01, 3e3,1.0,";#LTd#it{N}_{ch}/d#it{#eta}#GT_{|#it{#eta}|<0.5};S_{3}")
+frame=cv.DrawFrame(9,0.01, 3e3,1.0,";#LTd#it{N}_{ch}/d#it{#eta}#GT_{|#it{#eta}|<0.5};#it{S_{3}}")
 cv.SetLogx()
 mg.Draw("4al same")
 # grshade.Draw("f same")
@@ -193,7 +196,7 @@ s3_csm_1.Draw("L same")
 s3_csm_3.Draw("L same")
 mg.GetYaxis().SetRangeUser(0.01, 1)
 mg.GetXaxis().SetTitle('#LTd#it{N}_{ch}/d#it{#eta}#GT_{|#it{#eta}|<0.5}')
-mg.GetYaxis().SetTitle('S_{3}')
+mg.GetYaxis().SetTitle('#it{S}_{3}')
 mg.GetXaxis().SetTitleOffset(1.07)
 mg.GetYaxis().SetTitleOffset(0.9)
 mg.GetYaxis().SetLabelOffset(0.015)
@@ -221,18 +224,18 @@ pp_stat.SetMarkerColor(ROOT.kOrange+7)
 pp_stat.SetMarkerStyle(21)
 pp_stat.SetMarkerSize(1)
 pp_stat.SetLineWidth(1)
-# pp_stat.Draw("Pz")
+pp_stat.Draw("Pz")
 
 
 pp_syst = ROOT.TGraphErrors(1,x,y,ex,eys)
-pp_syst.SetTitle("ALICE Preliminary p#font[122]{-}p, HM trigger, #sqrt{#it{s}_{NN}} = 13 TeV")
-pp_syst.SetLineColor(ROOT.kMagenta)
-pp_syst.SetMarkerColor(ROOT.kMagenta)
+pp_syst.SetTitle("ALICE Preliminary pp, HM trigger, #sqrt{#it{s}} = 13 TeV")
+pp_syst.SetLineColor(ROOT.kOrange + 7)
+pp_syst.SetMarkerColor(ROOT.kOrange + 7)
 pp_syst.SetFillStyle(0)
 pp_syst.SetMarkerStyle(21)
 pp_syst.SetMarkerSize(1)
 pp_syst.SetLineWidth(1)
-# pp_syst.Draw("P2")
+pp_syst.Draw("P2")
 
 
 
@@ -264,14 +267,14 @@ pbpb_syst.Draw("P2")
 
 
 ppb_stat040 = ROOT.TGraphErrors(1,x_pPb040,s3_040,zero,s3stat040)
-ppb_stat040.SetLineColor(ROOT.kRed)
-ppb_stat040.SetMarkerColor(ROOT.kRed)
+ppb_stat040.SetLineColor(kGreenC)
+ppb_stat040.SetMarkerColor(kGreenC)
 ppb_stat040.SetMarkerStyle(20)
 
 ppb_syst040 = ROOT.TGraphErrors(1,x_pPb040, s3_040, xe_pPb040, s3syst040)
-ppb_syst040.SetTitle("ALICE p#minusPb, 0#minus40%, #sqrt{#it{s}_{NN}} = 5.02 TeV")
-ppb_syst040.SetLineColor(ROOT.kRed)
-ppb_syst040.SetMarkerColor(ROOT.kRed)
+ppb_syst040.SetTitle("ALICE Preliminary p#minusPb, 0#minus40%, #sqrt{#it{s}_{NN}} = 5.02 TeV")
+ppb_syst040.SetLineColor(kGreenC)
+ppb_syst040.SetMarkerColor(kGreenC)
 ppb_syst040.SetFillStyle(0)
 ppb_syst040.SetMarkerStyle(20)
 
@@ -284,7 +287,7 @@ pinfo.SetBorderSize(0)
 pinfo.SetFillStyle(0)
 pinfo.SetTextAlign(30+3)
 pinfo.SetTextFont(42)
-pinfo.AddText('S_{3} = ({}_{#Lambda}^{3}H/^{3}He ) / ( #Lambda/p )')
+pinfo.AddText('#it{S_{3}} = ({}_{#Lambda}^{3}H/^{3}He ) / ( #Lambda/p )')
 # pinfo.Draw()
 
 
@@ -305,7 +308,7 @@ leg.SetNColumns(1)
 ppb_stat040.Draw("Pz")
 ppb_syst040.Draw("P2")
 leg.AddEntry(ppb_syst040,"","pf")
-# leg.AddEntry(pp_syst,"","pf")
+leg.AddEntry(pp_syst,"","pf")
 leg.AddEntry(pbpb_syst,"","pf")
 
 
