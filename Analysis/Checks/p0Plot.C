@@ -67,7 +67,7 @@ const int kBrownC  = TColor::GetColor("#b15928");
   // loop on the mass values
   
 
-  for (double mass = massMin; mass <= massMax; mass += (massMax - massMin) / 400)
+  for (double mass = massMin; mass <= massMax; mass += (massMax - massMin) / 40)
   {
     cout << endl
          << endl
@@ -124,14 +124,15 @@ const int kBrownC  = TColor::GetColor("#b15928");
   gStyle->SetPaperSize(20,24); // US letter size
   gStyle->SetLegendBorderSize(0);
   gStyle->SetLegendFillColor(0);
-
+  gStyle->SetEndErrorSize(0.);
+  // gStyle->SetLineWidth(4);
 
   TPaveText* pinfo_alice = new TPaveText(0.45, 0.75, 0.93, 0.86, "NDC");
   pinfo_alice->SetBorderSize(0);
   pinfo_alice->SetFillStyle(0);
   pinfo_alice->SetTextFont(42);
-  pinfo_alice->AddText("ALICE");
-  pinfo_alice->AddText("p-Pb 0-40%, #sqrt{#it{s}_{NN}} = 5.02 TeV");
+  pinfo_alice->AddText("ALICE Performance");
+  pinfo_alice->AddText("p#minusPb 0#minus40%, #sqrt{#it{s}_{NN}} = 5.02 TeV");
 
   TCanvas *cv = new TCanvas("cv1","cv1",1500,1500);
   cv->cd();
@@ -141,8 +142,12 @@ const int kBrownC  = TColor::GetColor("#b15928");
   frame->GetYaxis()->SetTitleOffset(0.8);
   frame->GetXaxis()->SetTitleOffset(1.1);
   frame->GetYaxis()->SetTitle("Entries / (2.35 MeV/#it{c}^{2})");
-  frame->GetXaxis()->SetTitle("{}_{#Lambda}^{3}H mass (^{3}He + #pi) (GeV/#it{c}^{2})");
+  frame->GetXaxis()->SetTitle("#it{M}(^{3}He + #pi) (GeV/#it{c}^{2})");
   frame->SetMinimum(0.01);
+  frame->SetMarkerSize(1.5);
+
+
+  frame->setDrawOptions("h_data","PE0");
   frame->Draw();
   pinfo_alice->Draw();
   frame->Print();
@@ -155,6 +160,8 @@ const int kBrownC  = TColor::GetColor("#b15928");
 
   cv->SaveAs("../../Results/signal_extraction.png");
   cv->SaveAs("../../Results/signal_extraction.pdf");
+  cv->SaveAs("../../Results/signal_extraction.eps");
+
 
 
 
@@ -242,6 +249,8 @@ const int kBrownC  = TColor::GetColor("#b15928");
 
   cv2->SaveAs("../../Results/significance.png");
   cv2->SaveAs("../../Results/significance.pdf");
+  cv2->SaveAs("../../Results/significance.eps");
+
 
   TFile sig_file("signal_extraction.root", "recreate");
   cv->Write();

@@ -48,7 +48,7 @@ for eff,cut in zip(bdt_eff_array, score_cuts_array):
     data040 = np.array(df.query(cut_string + " and 2.96<m<3.04 and centrality<=40 and abs(fZ) < 10")["m"])
     mc_data = np.array(df_mc.query(cut_string + " and 2.96<m<3.04")["m"])
     mean_mass_list.append(np.mean(mc_data))
-    mc_data = mc_data[0:1000]
+    mc_data = mc_data[0:20000]
     res_template = hp.unbinned_mass_fit_mc(data040, eff, 'pol1', mc_data, ff, bkg_dir, [0,40], [0,10], [0,35], split="", cent_string='040', bins = 34, ws_name = f'ws_eff_{eff}')
 
     signal_list040.append(res_template[0])
@@ -78,7 +78,8 @@ stat_error = np.float64(corrected_error[bdt_eff_array==selected_bdt_eff] / 2 / 0
 syst_error = 0.14*Yield
 pt_shape_syst = 0.07*Yield
 abs_syst = 0.041*Yield
-syst_error = np.sqrt(syst_error**2 + pt_shape_syst**2 + abs_syst**2)
+br_syst = 0.09*Yield
+syst_error = np.sqrt(syst_error**2 + pt_shape_syst**2 + abs_syst**2 + br_syst**2)
 print("-------------------------------------")
 sig = signal_array040[bdt_eff_array==selected_bdt_eff][0]
 err_sig = error_array040[bdt_eff_array==selected_bdt_eff][0]
@@ -132,11 +133,8 @@ kBrownC  = ROOT.TColor.GetColor("#8c564c");
 kAzureC  = ROOT.TColor.GetColor("#18becf");
 kGreenBC  = ROOT.TColor.GetColor("#bcbd21");
 
-hp_ratio_csm_3 = ROOT.TGraphErrors("../Utils/ProdModels/hyp_p_ratio_155_3.dat","%lg %*s %*s %*s %*s %*s %lg %*s")
-hp_ratio_csm_1 = ROOT.TGraphErrors("../Utils/ProdModels/hyp_p_ratio_155_1.dat","%lg %*s %*s %*s %*s %*s %lg %*s")
-
-fin = ROOT.TFile('../Utils/ProdModels/vanilla_CSM_predictions_H3L_to_P.root')
-hp_ratio_csm_van = fin.Get('gCSM_3HL_over_p')
+hp_ratio_csm_3 = ROOT.TGraphErrors("../Utils/ProdModels/csm_models/VanillaCSM.S3.Vc.eq.3dVdy.dat","%*s %*s %*s %lg %*s %*s %*s %*s %lg %*s")
+hp_ratio_csm_1 = ROOT.TGraphErrors("../Utils/ProdModels/csm_models/VanillaCSM.S3.Vc.eq.dVdy.dat","%*s %*s %*s %lg %*s %*s %*s %*s %lg %*s")
 
 
 hp_ratio_csm_1.SetLineColor(922)
@@ -159,16 +157,13 @@ grshade.SetFillColorAlpha(16, 0.571)
 # grshade.SetFillStyle(3013)
 
 
-hp_ratio_csm_van.SetLineColor(kOrangeC)
-hp_ratio_csm_van.SetLineWidth(2)
-hp_ratio_csm_van.SetTitle("Full canonical SHM")
 
 
-hp_2body = ROOT.TGraphErrors("../Utils/ProdModels/hp_ratio_2body_coal.csv","%lg %lg %lg")
+hp_2body = ROOT.TGraphErrors("../Utils/ProdModels/coalescence/hp_ratio_2body_coal.csv","%lg %lg %lg")
 hp_2body.SetLineColor(kBlueC)
 hp_2body.SetMarkerColor(kBlueC)
 hp_2body.SetTitle("2-body coalescence")
-hp_3body = ROOT.TGraphErrors("../Utils/ProdModels/hp_ratio_3body_coal.csv","%lg %lg %lg")
+hp_3body = ROOT.TGraphErrors("../Utils/ProdModels/coalescence/hp_ratio_3body_coal.csv","%lg %lg %lg")
 hp_3body.SetLineColor(kAzureC)
 hp_3body.SetMarkerColor(kAzureC)
 hp_3body.SetTitle("3-body coalescence")
@@ -191,7 +186,7 @@ frame.GetXaxis().SetTitleOffset(1.25)
 cv.SetLogx()
 cv.SetLogy()
 mg.Draw("4al same")
-grshade.Draw("f same")
+# grshade.Draw("f same")
 hp_ratio_csm_1.Draw("L same")
 hp_ratio_csm_3.Draw("L same")
 # hp_ratio_csm_van.Draw("L same")
@@ -221,7 +216,7 @@ ppb_stat040.SetMarkerSize(1)
 ppb_stat040.SetLineWidth(1)
 
 ppb_syst040 = ROOT.TGraphErrors(1,x_pPb040, hp_ratio_040, xe_pPb040, hp_ratiosyst040)
-ppb_syst040.SetTitle("ALICE Preliminary p-Pb, 0-40%, #sqrt{#it{s}_{NN}} = 5.02 TeV")
+ppb_syst040.SetTitle("ALICE p#font[122]{-}Pb, 0#font[122]{-}40%, #sqrt{#it{s}_{NN}} = 5.02 TeV")
 ppb_syst040.SetLineColor(ROOT.kRed)
 ppb_syst040.SetMarkerColor(ROOT.kRed)
 ppb_syst040.SetFillStyle(0)
@@ -230,6 +225,39 @@ ppb_syst040.SetLineWidth(1)
 
 ppb_syst040.SetMarkerSize(1)
 
+
+
+x = np.array([30.81], dtype=np.float64)
+ex = np.array([0.44], dtype=np.float64)
+y = np.array([5.49*10**(-7)], dtype=np.float64)
+ey = np.array([1.34*10**(-7)], dtype=np.float64)
+eys = np.array([0.72e-7], dtype=np.float64)
+zero = np.array([0], dtype=np.float64)
+pp_stat = ROOT.TGraphErrors(1,x,y,zero,ey)
+pp_stat.SetLineColor(ROOT.kMagenta)
+pp_stat.SetMarkerColor(ROOT.kMagenta)
+pp_stat.SetMarkerStyle(21)
+pp_stat.SetMarkerSize(1)
+pp_stat.SetLineWidth(1)
+# pp_stat.Draw("Pz")
+
+
+pp_syst = ROOT.TGraphErrors(1,x,y,ex,eys)
+pp_syst.SetTitle("ALICE Preliminary p#font[122]{-}p, HM trigger, #sqrt{#it{s}_{NN}} = 13 TeV")
+pp_syst.SetLineColor(ROOT.kMagenta)
+pp_syst.SetMarkerColor(ROOT.kMagenta)
+pp_syst.SetFillStyle(0)
+pp_syst.SetMarkerStyle(21)
+pp_syst.SetMarkerSize(1)
+pp_syst.SetLineWidth(1)
+# pp_syst.Draw("P2")
+
+
+
+
+
+
+
 x = np.array([1447], dtype=np.float64)
 ex = np.array([39], dtype=np.float64)
 y = np.array([4*1.64e-6], dtype=np.float64)
@@ -237,33 +265,36 @@ ey = np.array([4*3.28e-7], dtype=np.float64)
 eys = np.array([4*1.69e-7], dtype=np.float64)
 zero = np.array([0], dtype=np.float64)
 pbpb_stat = ROOT.TGraphErrors(1,x,y,zero,ey)
-pbpb_stat.SetLineColor(ROOT.kOrange + 8)
-pbpb_stat.SetMarkerColor(ROOT.kOrange + 8)
-pbpb_stat.SetMarkerStyle(20)
+pbpb_stat.SetLineColor(ROOT.kBlack)
+pbpb_stat.SetMarkerColor(ROOT.kBlack)
+pbpb_stat.SetMarkerStyle(27)
 pbpb_stat.SetMarkerSize(1)
 pbpb_stat.SetLineWidth(1)
 pbpb_stat.Draw("Pz")
 
 
 pbpb_syst = ROOT.TGraphErrors(1,x,y,ex,eys)
-pbpb_syst.SetTitle("ALICE Preliminary Pb-Pb, 0-10%, #sqrt{#it{s}_{NN}} = 2.76 TeV")
-pbpb_syst.SetLineColor(ROOT.kOrange + 8)
-pbpb_syst.SetMarkerColor(ROOT.kOrange + 8)
+pbpb_syst.SetTitle("ALICE Pb#font[122]{-}Pb, 0#font[122]{-}10%, #sqrt{#it{s}_{NN}} = 2.76 TeV")
+pbpb_syst.SetLineColor(ROOT.kBlack)
+pbpb_syst.SetMarkerColor(ROOT.kBlack)
 pbpb_syst.SetFillStyle(0)
-pbpb_syst.SetMarkerStyle(20)
+pbpb_syst.SetMarkerStyle(27)
 pbpb_syst.SetMarkerSize(1)
 pbpb_syst.SetLineWidth(1)
 pbpb_syst.Draw("P2")
 
 
-leg = ROOT.TLegend(0.18,0.72,0.7,0.87)
+leg = ROOT.TLegend(0.18,0.72,0.73,0.87)
 leg.SetMargin(0.14)
 leg.SetNColumns(1)
 
 ppb_stat040.Draw("Pz")
 ppb_syst040.Draw("P2")
 leg.AddEntry(ppb_syst040,"","pf")
+# leg.AddEntry(pp_syst,"","pf")
 leg.AddEntry(pbpb_syst,"","pf")
+
+
 
 
 leg.SetEntrySeparation(0.2)
@@ -280,12 +311,12 @@ legT.SetFillStyle(0)
 leg.Draw()
 legT.Draw()
 
-pinfo = ROOT.TPaveText(0.78,0.57,0.91,0.67, 'NDC')
+pinfo = ROOT.TPaveText(0.74,0.54,0.94,0.66, 'NDC')
 pinfo.SetBorderSize(0)
 pinfo.SetFillStyle(0)
 pinfo.SetTextAlign(30+3)
 pinfo.SetTextFont(42)
-pinfo.AddText('B.R. = 0.25')
+pinfo.AddText('B.R. = 0.25 #pm 0.02')
 pinfo.Draw()
 
 
@@ -293,16 +324,17 @@ cv.Draw()
 
 cv.SaveAs("../Results/hl_ratio.pdf")
 cv.SaveAs("../Results/hl_ratio.png")
+cv.SaveAs("../Results/hl_ratio.eps")
 
 # Branching ratio plot
 
 
 # Branching ratio plot
 cvBR = ROOT.TCanvas("brPlot","BR Plot",700,800)
-cvBR.SetTopMargin(0.2)
+cvBR.SetTopMargin(0.13)
 cvBR.SetLeftMargin(0.15)
 cvBR.SetRightMargin(0.04)
-frame = cvBR.DrawFrame(0.25 - 0.022, 5.e-8, 0.25 + 0.022, 1.4e-6, ";B.R.;({}_{#Lambda}^{3}H + {}_{#bar{#Lambda}}^{3}#bar{H} )/(2#Lambda)  #times B.R.")
+frame = cvBR.DrawFrame(0.25 - 0.022, 5.e-8, 0.25 + 0.022, 2e-6, ";B.R.;({}_{#Lambda}^{3}H + {}_{#bar{#Lambda}}^{3}#bar{H} )/(2#Lambda)  #times B.R.")
 frame.GetYaxis().SetTitleOffset(1.4)
 cvBR.SetLogy()
 
@@ -313,8 +345,8 @@ C2e = 1.39e-7
 C3 = 3.15e-7
 C3e = 8.57e-8
 
-CSM1 = 2.7026086005800812e-06
-CSM3 = 4.667110436005044e-06
+CSM1 = 2.58e-06
+CSM3 = 4.59e-06
 CSM = 0.5 * (CSM3 + CSM1)
 CSMe = 0.5 * (CSM3 - CSM1)
 
@@ -326,7 +358,7 @@ grData.SetPointError(1, 0., math.hypot(hp_ratiostat040[0], hp_ratiosyst040[0]) *
 grData.SetLineColor(kRedC)
 grData.SetLineWidth(2)
 grData.SetFillColorAlpha(kRedC,0.571)
-grData.SetTitle("ALICE Preliminary p-Pb 0-40%")
+grData.SetTitle("ALICE p#font[122]{-}Pb, 0#font[122]{-}40%")
 
 grCSM = ROOT.TGraphErrors(npoints)
 grCSM1 = ROOT.TGraph(npoints)
@@ -377,24 +409,32 @@ frame.GetXaxis().SetNdivisions(505)
 grC2.Draw("L3")
 grC3.Draw("CL3")
 grCSM3.Draw("L")
-grshade.Draw("f same")
+# grshade.Draw("f same")
 grCSM1.Draw("L")
 grData.Draw("L3")
 
 
-legBR = ROOT.TLegend(0.07,0.81 ,1.09,0.99)
+legData = ROOT.TLegend(0.2, 0.78 , 0.775, 0.835)
+legData.SetMargin(0.1)
+legData.SetFillStyle(0)
+legData.AddEntry(grData, grData.GetTitle(), "LF")
+legData.Draw()
+
+legBR = ROOT.TLegend(0.12,0.88 ,1.08,0.99)
 legBR.SetNColumns(2)
-legBR.SetMargin(0.2)
+legBR.SetMargin(0.1)
 legBR.SetFillStyle(0)
 legBR.AddEntry(grC2)
 legBR.AddEntry(grCSM1)
 legBR.AddEntry(grC3)
 legBR.AddEntry(grCSM3)
-legBR.AddEntry(grData)
 legBR.Draw()
 
 cvBR.SaveAs("../Results/plotBR.pdf")
 cvBR.SaveAs("../Results/plotBR.png")
+cvBR.SaveAs("../Results/plotBR.eps")
+
+
 
 file = ROOT.TFile('../Results/hl_ratio.root', 'recreate')
 cv.Write()

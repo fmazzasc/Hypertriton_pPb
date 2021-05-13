@@ -302,8 +302,8 @@ def unbinned_mass_fit_mc(data, eff, bkg_model, mc_data, output_dir, bkg_dir, cen
 
     roo_data.plotOn(frame)
     fit_function.plotOn(frame, rf.Components(
-        'bkg'), rf.LineStyle(9), rf.LineColor(kOrangeC), rf.LineWidth(3))
-    fit_function.plotOn(frame, rf.LineColor(kBlueC), rf.LineWidth(3))
+        'bkg'), rf.LineStyle(9), rf.LineColor(kOrangeC), rf.LineWidth(5))
+    fit_function.plotOn(frame, rf.LineColor(kBlueC), rf.LineWidth(5))
     #fit_function.plotOn(frame, rf.Components('signal'), rf.LineStyle(ROOT.kDotted), rf.LineColor(ROOT.kRed))
 
 
