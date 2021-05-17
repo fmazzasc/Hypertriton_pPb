@@ -48,7 +48,7 @@ for eff,cut in zip(bdt_eff_array, score_cuts_array):
     data040 = np.array(df.query(cut_string + " and 2.96<m<3.04 and centrality<=40 and abs(fZ)<10")["m"])
     mc_data = np.array(df_mc.query(cut_string + " and 2.96<m<3.04")["m"])
     mean_mass_list.append(np.mean(mc_data))
-    mc_data = mc_data[0:1000]
+    mc_data = mc_data[0:20000]
     res_template = hp.unbinned_mass_fit_mc(data040, eff, 'pol1', mc_data, ff, bkg_dir, [0,40], [0,10], [0,35], split="", cent_string='040', bins = 34, ws_name = f'ws_eff_{eff}')
 
     signal_list040.append(res_template[0])
@@ -249,18 +249,21 @@ ey = np.array([0.13], dtype=np.float64)
 eys = np.array([0.21], dtype=np.float64)
 zero = np.array([0], dtype=np.float64)
 pbpb_stat = ROOT.TGraphErrors(1,x,y,zero,ey)
-pbpb_stat.SetLineColor(ROOT.kBlack)
-pbpb_stat.SetMarkerColor(ROOT.kBlack)
-pbpb_stat.SetMarkerStyle(27)
+pbpb_stat.SetLineColor(ROOT.kBlue + 3)
+pbpb_stat.SetMarkerColor(ROOT.kBlue + 3)
+pbpb_stat.SetMarkerStyle(ROOT.kFullDiamond)
+pbpb_stat.SetMarkerSize(1.5)
 pbpb_stat.Draw("Pz")
 
 
 pbpb_syst = ROOT.TGraphErrors(1,x,y,ex,eys)
 pbpb_syst.SetTitle("ALICE Pb#minusPb, 0#minus10%, #sqrt{#it{s}_{NN}} = 2.76 TeV")
-pbpb_syst.SetLineColor(ROOT.kBlack)
-pbpb_syst.SetMarkerColor(ROOT.kBlack)
+pbpb_syst.SetLineColor(ROOT.kBlue + 3)
+pbpb_syst.SetMarkerColor(ROOT.kBlue + 3)
 pbpb_syst.SetFillStyle(0)
-pbpb_syst.SetMarkerStyle(27)
+pbpb_syst.SetMarkerStyle(ROOT.kFullDiamond)
+pbpb_syst.SetMarkerSize(1.5)
+
 pbpb_syst.Draw("P2")
 
 
@@ -318,15 +321,15 @@ leg.SetEntrySeparation(0.2)
 legT = ROOT.TLegend(0.65,0.32, 0.93,0.44)
 # legT.SetMargin(0.14)
 
-legT.AddEntry(s3_3body)
-legT.AddEntry(s3_2body)
+legT.AddEntry(s3_3body, s3_3body.GetTitle(), "LF")
+legT.AddEntry(s3_2body, s3_2body.GetTitle(), "LF")
 # legT.AddEntry(hp_ratio_csm_van)
 
 
 legT2 = ROOT.TLegend(0.54,0.2,0.93, 0.31)
 # legT2.SetMargin(0.14)
-legT2.AddEntry(s3_csm_1)
-legT2.AddEntry(s3_csm_3)
+legT2.AddEntry(s3_csm_1, s3_csm_1.GetTitle(), "LF")
+legT2.AddEntry(s3_csm_3, s3_csm_3.GetTitle(), "LF")
 # legT.AddEntry(hp_ratio_csm_van)
 leg.SetFillStyle(0)
 legT.SetFillStyle(0)

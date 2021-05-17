@@ -296,14 +296,15 @@ def unbinned_mass_fit_mc(data, eff, bkg_model, mc_data, output_dir, bkg_dir, cen
     # plot the fit
     frame = mass.frame(bins)
     frame.SetTitle("")
-    frame.GetYaxis().SetTitleOffset(0.5);
-    frame.GetYaxis().SetTitleSize(0.07);
-    
+    frame.GetYaxis().SetTitleOffset(0.5)
+    frame.GetYaxis().SetTitleSize(0.07)
 
-    roo_data.plotOn(frame)
+
+    roo_data.plotOn(frame, rf.MarkerSize(1.5))
     fit_function.plotOn(frame, rf.Components(
-        'bkg'), rf.LineStyle(9), rf.LineColor(kOrangeC), rf.LineWidth(5))
-    fit_function.plotOn(frame, rf.LineColor(kBlueC), rf.LineWidth(5))
+        'bkg'), rf.LineStyle(9), rf.LineColor(kOrangeC), rf.LineWidth(3))
+    fit_function.plotOn(frame, rf.LineColor(kBlueC), rf.LineWidth(3), rf.DrawOption("same"))
+    
     #fit_function.plotOn(frame, rf.Components('signal'), rf.LineStyle(ROOT.kDotted), rf.LineColor(ROOT.kRed))
 
 

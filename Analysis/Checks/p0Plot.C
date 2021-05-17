@@ -125,6 +125,7 @@ const int kBrownC  = TColor::GetColor("#b15928");
   gStyle->SetLegendBorderSize(0);
   gStyle->SetLegendFillColor(0);
   gStyle->SetEndErrorSize(0.);
+  gStyle->SetMarkerSize(10);
   // gStyle->SetLineWidth(4);
 
   TPaveText* pinfo_alice = new TPaveText(0.45, 0.75, 0.93, 0.86, "NDC");
@@ -144,7 +145,7 @@ const int kBrownC  = TColor::GetColor("#b15928");
   frame->GetYaxis()->SetTitle("Entries / (2.35 MeV/#it{c}^{2})");
   frame->GetXaxis()->SetTitle("#it{M}(^{3}He + #pi) (GeV/#it{c}^{2})");
   frame->SetMinimum(0.01);
-  frame->SetMarkerSize(1.5);
+  // frame->SetMarkerSize();
 
 
   frame->setDrawOptions("h_data","PE0");

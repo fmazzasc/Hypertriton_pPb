@@ -48,7 +48,7 @@ for eff,cut in zip(bdt_eff_array, score_cuts_array):
     data040 = np.array(df.query(cut_string + " and 2.96<m<3.04 and centrality<=40 and abs(fZ) < 10")["m"])
     mc_data = np.array(df_mc.query(cut_string + " and 2.96<m<3.04")["m"])
     mean_mass_list.append(np.mean(mc_data))
-    mc_data = mc_data[0:1000]
+    mc_data = mc_data[0:20000]
     res_template = hp.unbinned_mass_fit_mc(data040, eff, 'pol1', mc_data, ff, bkg_dir, [0,40], [0,10], [0,35], split="", cent_string='040', bins = 34, ws_name = f'ws_eff_{eff}')
 
     signal_list040.append(res_template[0])
@@ -140,11 +140,13 @@ hp_ratio_csm_1 = ROOT.TGraphErrors("../Utils/ProdModels/csm_models/VanillaCSM.S3
 hp_ratio_csm_1.SetLineColor(922)
 hp_ratio_csm_1.SetLineWidth(2)
 hp_ratio_csm_1.SetTitle("SHM, T = 155MeV, Vc = dV/dy")
+hp_ratio_csm_1.SetMarkerSize(0)
 
 
 hp_ratio_csm_3.SetLineColor(922)
 hp_ratio_csm_3.SetLineWidth(2)
 hp_ratio_csm_3.SetLineStyle(2)
+hp_ratio_csm_3.SetMarkerSize(0)
 hp_ratio_csm_3.SetTitle("SHM, T = 155MeV, Vc = 3dV/dy")
 
 n = hp_ratio_csm_1.GetN()
@@ -164,11 +166,13 @@ hp_2body.SetLineColor(kBlueC)
 hp_2body.SetMarkerColor(kBlueC)
 hp_2body.SetTitle("2-body coalescence")
 hp_2body.SetFillStyle(3145)
+hp_2body.SetMarkerSize(0)
 hp_3body = ROOT.TGraphErrors("../Utils/ProdModels/coalescence/hp_ratio_3body_coal.csv","%lg %lg %lg")
 hp_3body.SetLineColor(kAzureC)
 hp_3body.SetMarkerColor(kAzureC)
 hp_3body.SetTitle("3-body coalescence")
 hp_3body.SetFillStyle(3145)
+hp_3body.SetMarkerSize(0)
 
 hp_3body.SetFillColorAlpha(kAzureC, 0.571)
 hp_2body.SetFillColorAlpha(kBlueC, 0.571)
@@ -240,7 +244,7 @@ pp_stat.SetMarkerColor(ROOT.kOrange +7)
 pp_stat.SetMarkerStyle(21)
 pp_stat.SetMarkerSize(1)
 pp_stat.SetLineWidth(1)
-pp_stat.Draw("Pz")
+# pp_stat.Draw("Pz")
 
 
 pp_syst = ROOT.TGraphErrors(1,x,y,ex,eys)
@@ -251,7 +255,7 @@ pp_syst.SetFillStyle(0)
 pp_syst.SetMarkerStyle(21)
 pp_syst.SetMarkerSize(1)
 pp_syst.SetLineWidth(1)
-pp_syst.Draw("P2")
+# pp_syst.Draw("P2")
 
 
 
@@ -292,7 +296,7 @@ leg.SetNColumns(1)
 ppb_stat040.Draw("Pz")
 ppb_syst040.Draw("P2")
 leg.AddEntry(ppb_syst040,"","pf")
-leg.AddEntry(pp_syst,"","pf")
+# leg.AddEntry(pp_syst,"","pf")
 leg.AddEntry(pbpb_syst,"","pf")
 
 
@@ -302,10 +306,10 @@ leg.SetEntrySeparation(0.2)
 legT = ROOT.TLegend(0.58,0.2,0.96,0.47)
 legT.SetMargin(0.14)
 
-legT.AddEntry(hp_3body)
-legT.AddEntry(hp_2body)
-legT.AddEntry(hp_ratio_csm_1)
-legT.AddEntry(hp_ratio_csm_3)
+legT.AddEntry(hp_3body, hp_3body.GetTitle(), "LF")
+legT.AddEntry(hp_2body,  hp_2body.GetTitle(), "LF")
+legT.AddEntry(hp_ratio_csm_1,  hp_ratio_csm_1.GetTitle(), "LF")
+legT.AddEntry(hp_ratio_csm_3, hp_ratio_csm_3.GetTitle(), "LF")
 # legT.AddEntry(hp_ratio_csm_van)
 leg.SetFillStyle(0)
 legT.SetFillStyle(0)
@@ -339,7 +343,7 @@ frame = cvBR.DrawFrame(0.25 - 0.022, 5.e-8, 0.25 + 0.022, 2e-6, ";B.R.;({}_{#Lam
 frame.GetYaxis().SetTitleOffset(1.4)
 cvBR.SetLogy()
 
-npoints = 1000
+npoints = 20000
 xBR = np.linspace(0.25 - 0.022, 0.25 + 0.022,npoints)
 C2 = 6.57e-7
 C2e = 1.39e-7
@@ -356,10 +360,10 @@ grData.SetPoint(0, 0., hp_ratio_040[0] * 0.25)
 grData.SetPointError(0, 0., math.hypot(hp_ratiostat040[0], hp_ratiosyst040[0]) * 0.25)
 grData.SetPoint(1, 1., hp_ratio_040[0] * 0.25)
 grData.SetPointError(1, 0., math.hypot(hp_ratiostat040[0], hp_ratiosyst040[0]) * 0.25)
-grData.SetLineColor(kRedC)
+grData.SetLineColor(kGreenC)
 grData.SetLineWidth(2)
-grData.SetFillColorAlpha(kRedC,0.571)
-grData.SetTitle("ALICE Preliminary p#font[122]{-}Pb, 0#font[122]{-}40%")
+grData.SetFillColorAlpha(kGreenC,0.571)
+grData.SetTitle("ALICE Preliminary p#font[122]{-}Pb, 0#font[122]{-}40%, #sqrt{#it{s}_{NN}} = 5.02 TeV")
 
 grCSM = ROOT.TGraphErrors(npoints)
 grCSM1 = ROOT.TGraph(npoints)
@@ -385,7 +389,9 @@ grshade.SetFillColorAlpha(16, 0.571)
 
 grC2.SetLineColor(kBlueC)
 grC2.SetMarkerColor(kBlueC)
+grC2.SetMarkerSize(0)
 grC2.SetFillColorAlpha(kBlueC, 0.571)
+grC2.SetFillStyle(3145)
 grC2.SetTitle("2-body coalescence")
 grC2.SetLineStyle(8)
 grC2.SetLineWidth(2)
@@ -393,8 +399,10 @@ grC3.SetLineColor(kAzureC)
 grC3.SetMarkerColor(kAzureC)
 grC3.SetFillColorAlpha(kAzureC, 0.571)
 grC3.SetLineStyle(8)
+grC3.SetFillStyle(3145)
 grC3.SetTitle("3-body coalescence")
 grC3.SetLineWidth(2)
+grC3.SetMarkerSize(0)
 grCSM.SetLineColor(kGreyC)
 grCSM.SetFillColorAlpha(kGreyC, 0.571)
 grCSM.SetMarkerColor(kGreyC)
@@ -415,7 +423,7 @@ grCSM1.Draw("L")
 grData.Draw("L3")
 
 
-legData = ROOT.TLegend(0.2, 0.78 , 0.775, 0.835)
+legData = ROOT.TLegend(0.2, 0.78 , 0.9, 0.86)
 legData.SetMargin(0.1)
 legData.SetFillStyle(0)
 legData.AddEntry(grData, grData.GetTitle(), "LF")
@@ -426,9 +434,9 @@ legBR.SetNColumns(2)
 legBR.SetMargin(0.1)
 legBR.SetFillStyle(0)
 legBR.AddEntry(grC2)
-legBR.AddEntry(grCSM1)
+legBR.AddEntry(grCSM1, grCSM1.GetTitle(), "LF")
 legBR.AddEntry(grC3)
-legBR.AddEntry(grCSM3)
+legBR.AddEntry(grCSM3, grCSM3.GetTitle(), "LF")
 legBR.Draw()
 
 cvBR.SaveAs("../Results/plotBR.pdf")

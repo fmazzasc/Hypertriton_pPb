@@ -20,12 +20,12 @@ void GenerateTableMCO2(bool reject = true, string ptShape = "mtexp")
 {
 
   gRandom->SetSeed(1995);
-  string inFileName = "HyperTritonTree_pp13TeV_MC.root";
-  string inFileArg =  "../Trees/" + inFileName;
-  string outFileName = "SignalTable_pp13TeV_" + ptShape + ".root";
+  string inFileName = "HyperTritonTree_MC.root";
+  string inFileArg =  "../../merge_trees/" + inFileName;
+  string outFileName = "SignalTable_" + ptShape + ".root";
 
   string bwFileName;
-  string outFileArg =  "../Tables/" + outFileName;
+  string outFileArg =  "../../merge_trees/" + outFileName;
 
   if(ptShape=="bw")
     bwFileName = "output_He3_yieldfits.root";
