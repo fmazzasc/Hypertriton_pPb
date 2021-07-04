@@ -145,13 +145,13 @@ kGreenBC  = ROOT.TColor.GetColor("#bcbd21");
 s3_csm_1 = ROOT.TGraphErrors("../Utils/ProdModels/csm_models/VanillaCSM.S3.Vc.eq.dVdy.dat","%*s %*s %*s %lg %*s %*s %*s %*s %*s %lg")
 s3_csm_1.SetLineColor(922)
 s3_csm_1.SetLineWidth(2)
-s3_csm_1.SetTitle("SHM, T=155MeV, Vc = dV/dy")
+s3_csm_1.SetTitle("SHM, #it{Vc} = d#it{V}/d#it{y}")
 
 s3_csm_3 = ROOT.TGraphErrors("../Utils/ProdModels/csm_models/VanillaCSM.S3.Vc.eq.3dVdy.dat","%*s %*s %*s %lg %*s %*s %*s %*s %*s %lg")
 s3_csm_3.SetLineColor(922)
 s3_csm_3.SetLineWidth(2)
 s3_csm_3.SetLineStyle(2)
-s3_csm_3.SetTitle("SHM, T=155MeV, Vc = 3dV/dy")
+s3_csm_3.SetTitle("SHM, #it{Vc} = 3d#it{V}/d#it{y}")
 
 n = s3_csm_1.GetN()
 grshade = ROOT.TGraph(2*n)
@@ -170,11 +170,15 @@ s3_2body.SetLineColor(kBlueC)
 s3_2body.SetMarkerColor(kBlueC)
 s3_2body.SetFillStyle(3145)
 s3_2body.SetTitle("2-body coalescence")
+s3_2body.SetLineWidth(2)
+
 s3_3body = ROOT.TGraphErrors("../Utils/ProdModels/coalescence/s3_3body.csv","%lg %lg %lg")
 s3_3body.SetLineColor(kAzureC)
 s3_3body.SetMarkerColor(kAzureC)
 s3_3body.SetTitle("3-body coalescence")
-s3_3body.SetFillStyle(3145)
+s3_3body.SetFillStyle(3014)
+s3_3body.SetLineWidth(2)
+
 
 
 
@@ -185,9 +189,11 @@ mg = ROOT.TMultiGraph()
 mg.Add(s3_2body)
 mg.Add(s3_3body)
 
-cv = ROOT.TCanvas("cv")
+cv = ROOT.TCanvas("cv", "cv", 700,700)
 cv.SetBottomMargin(0.17)
-cv.SetLeftMargin(0.13)
+cv.SetLeftMargin(0.14)
+cv.SetTopMargin(0.01)
+cv.SetRightMargin(0.01)
 frame=cv.DrawFrame(9,0.01, 3e3,1.0,";#LTd#it{N}_{ch}/d#it{#eta}#GT_{|#it{#eta}|<0.5};#it{S_{3}}")
 cv.SetLogx()
 mg.Draw("4al same")
@@ -197,13 +203,14 @@ s3_csm_3.Draw("L same")
 mg.GetYaxis().SetRangeUser(0.01, 1)
 mg.GetXaxis().SetTitle('#LTd#it{N}_{ch}/d#it{#eta}#GT_{|#it{#eta}|<0.5}')
 mg.GetYaxis().SetTitle('#it{S}_{3}')
-mg.GetXaxis().SetTitleOffset(1.07)
-mg.GetYaxis().SetTitleOffset(0.9)
-mg.GetYaxis().SetLabelOffset(0.015)
+mg.GetXaxis().SetTitleOffset(1.1)
+mg.GetYaxis().SetTitleOffset(0.95)
 mg.GetYaxis().SetTitleSize(0.07)
 mg.GetXaxis().SetTitleSize(0.07)
 mg.GetYaxis().SetLabelSize(0.045)
 mg.GetXaxis().SetLabelSize(0.045)
+mg.GetYaxis().SetLabelOffset(0.015)
+
 
 mg.GetYaxis().SetRangeUser(0.101, 0.899)
 mg.GetXaxis().SetRangeUser(5, 3e3)
@@ -224,7 +231,7 @@ pp_stat.SetMarkerColor(ROOT.kOrange+7)
 pp_stat.SetMarkerStyle(21)
 pp_stat.SetMarkerSize(1)
 pp_stat.SetLineWidth(1)
-pp_stat.Draw("Pz")
+# pp_stat.Draw("Pz")
 
 
 pp_syst = ROOT.TGraphErrors(1,x,y,ex,eys)
@@ -235,7 +242,7 @@ pp_syst.SetFillStyle(0)
 pp_syst.SetMarkerStyle(21)
 pp_syst.SetMarkerSize(1)
 pp_syst.SetLineWidth(1)
-pp_syst.Draw("P2")
+# pp_syst.Draw("P2")
 
 
 
@@ -270,14 +277,14 @@ pbpb_syst.Draw("P2")
 
 
 ppb_stat040 = ROOT.TGraphErrors(1,x_pPb040,s3_040,zero,s3stat040)
-ppb_stat040.SetLineColor(kGreenC)
-ppb_stat040.SetMarkerColor(kGreenC)
+ppb_stat040.SetLineColor(kRedC)
+ppb_stat040.SetMarkerColor(kRedC)
 ppb_stat040.SetMarkerStyle(20)
 
 ppb_syst040 = ROOT.TGraphErrors(1,x_pPb040, s3_040, xe_pPb040, s3syst040)
-ppb_syst040.SetTitle("ALICE Preliminary p#minusPb, 0#minus40%, #sqrt{#it{s}_{NN}} = 5.02 TeV")
-ppb_syst040.SetLineColor(kGreenC)
-ppb_syst040.SetMarkerColor(kGreenC)
+ppb_syst040.SetTitle("ALICE p#minusPb, 0#minus40%, #sqrt{#it{s}_{NN}} = 5.02 TeV")
+ppb_syst040.SetLineColor(kRedC)
+ppb_syst040.SetMarkerColor(kRedC)
 ppb_syst040.SetFillStyle(0)
 ppb_syst040.SetMarkerStyle(20)
 
@@ -285,17 +292,17 @@ ppb_syst040.SetMarkerStyle(20)
 
 
 
-pinfo = ROOT.TPaveText(0.56,0.25,0.93, 0.34, 'NDC')
+pinfo = ROOT.TPaveText(0.4,0.73, 0.73, 0.78, 'NDC')
 pinfo.SetBorderSize(0)
 pinfo.SetFillStyle(0)
 pinfo.SetTextAlign(30+3)
 pinfo.SetTextFont(42)
-pinfo.AddText('#it{S_{3}} = ({}_{#Lambda}^{3}H/^{3}He ) / ( #Lambda/p )')
-# pinfo.Draw()
+pinfo.AddText('#it{S_{3}} = ({}_{#Lambda}^{3}H / ^{3}He ) / ( #Lambda / p )')
+pinfo.Draw()
 
 
 
-pinfo2 = ROOT.TPaveText(0.39,0.67, 0.59, 0.72, 'NDC')
+pinfo2 = ROOT.TPaveText(0.73,0.43, 0.97, 0.48, 'NDC')
 pinfo2.SetBorderSize(0)
 pinfo2.SetFillStyle(0)
 pinfo2.SetTextAlign(30+3)
@@ -304,25 +311,27 @@ pinfo2.AddText('B.R. = 0.25 #pm 0.02')
 pinfo2.Draw()
 
 
-leg = ROOT.TLegend(0.23,0.72,0.775,0.87)
+leg = ROOT.TLegend(0.25,0.81,0.82,0.94)
 leg.SetMargin(0.14)
 leg.SetNColumns(1)
 
 ppb_stat040.Draw("Pz")
 ppb_syst040.Draw("P2")
 leg.AddEntry(ppb_syst040,"","pf")
-leg.AddEntry(pp_syst,"","pf")
+# leg.AddEntry(pp_syst,"","pf")
 leg.AddEntry(pbpb_syst,"","pf")
 
 
 leg.SetEntrySeparation(0.2)
 
 
-legT = ROOT.TLegend(0.65,0.32, 0.93,0.44)
+legT = ROOT.TLegend(0.63,0.2, 1,0.42)
 # legT.SetMargin(0.14)
 
 legT.AddEntry(s3_3body, s3_3body.GetTitle(), "LF")
 legT.AddEntry(s3_2body, s3_2body.GetTitle(), "LF")
+legT.AddEntry(s3_csm_1, s3_csm_1.GetTitle(), "LF")
+legT.AddEntry(s3_csm_3, s3_csm_3.GetTitle(), "LF")
 # legT.AddEntry(hp_ratio_csm_van)
 
 
@@ -339,7 +348,7 @@ legT2.SetFillStyle(0)
 
 leg.Draw()
 legT.Draw()
-legT2.Draw()
+# legT2.Draw()
 
 
 

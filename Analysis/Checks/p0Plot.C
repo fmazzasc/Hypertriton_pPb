@@ -128,12 +128,14 @@ const int kBrownC  = TColor::GetColor("#b15928");
   gStyle->SetMarkerSize(10);
   // gStyle->SetLineWidth(4);
 
-  TPaveText* pinfo_alice = new TPaveText(0.45, 0.75, 0.93, 0.86, "NDC");
+  TPaveText* pinfo_alice = new TPaveText(0.45, 0.71, 0.93, 0.87, "NDC");
   pinfo_alice->SetBorderSize(0);
   pinfo_alice->SetFillStyle(0);
   pinfo_alice->SetTextFont(42);
-  pinfo_alice->AddText("ALICE Performance");
-  pinfo_alice->AddText("p#minusPb 0#minus40%, #sqrt{#it{s}_{NN}} = 5.02 TeV");
+  pinfo_alice->AddText("ALICE");
+  pinfo_alice->AddText("p#minusPb, 0#minus40%, #sqrt{#it{s}_{NN}} = 5.02 TeV");
+  pinfo_alice->AddText("0 < #it{p}_{T} < 9 GeV/#it{c}");
+
 
   TCanvas *cv = new TCanvas("cv1","cv1",1500,1500);
   cv->cd();
@@ -143,7 +145,7 @@ const int kBrownC  = TColor::GetColor("#b15928");
   frame->GetYaxis()->SetTitleOffset(0.8);
   frame->GetXaxis()->SetTitleOffset(1.1);
   frame->GetYaxis()->SetTitle("Entries / (2.35 MeV/#it{c}^{2})");
-  frame->GetXaxis()->SetTitle("#it{M}(^{3}He + #pi) (GeV/#it{c}^{2})");
+  frame->GetXaxis()->SetTitle("#it{M}(^{3}He + #pi^{-}) + #it{M}(^{3}#bar{He} + #pi^{+})  (GeV/#it{c}^{2})");
   frame->SetMinimum(0.01);
   // frame->SetMarkerSize();
 
@@ -152,7 +154,7 @@ const int kBrownC  = TColor::GetColor("#b15928");
   frame->Draw();
   pinfo_alice->Draw();
   frame->Print();
-  TLegend *leg1 = new TLegend(0.49,0.56,0.9,0.75);
+  TLegend *leg1 = new TLegend(0.49,0.52,0.9,0.71);
   leg1->AddEntry("h_data","{}_{#Lambda}^{3}H + {}_{#bar{#Lambda}}^{3}#bar{H}", "PE");
   leg1->AddEntry("model_Norm[m]_Range[fit_nll_model_data]_NormRange[fit_nll_model_data]","Signal + Background", "L");
 

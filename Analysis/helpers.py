@@ -363,23 +363,23 @@ def unbinned_mass_fit_mc(data, eff, bkg_model, mc_data, output_dir, bkg_dir, cen
         background.SetTitle(f"bkg_pdf_{round(eff,2)}_{cent_string}")
         background.Write()
 
-    if ws_name != '':
-        w = ROOT.RooWorkspace(ws_name)
-        mc = ROOT.RooStats.ModelConfig("ModelConfig",w)
-        mc.SetPdf(fit_function)
-        mc.SetParametersOfInterest(ROOT.RooArgSet(n_sig))
-        mc.SetObservables(ROOT.RooArgSet(mass))
-        if bkg_model=='pol1':
-            w.defineSet("nuisParams","n_bkg,c0,c1")
-            mc.SetNuisanceParameters(w.set('nuisParams'))
-        if bkg_model=='expo':
-            w.defineSet("nuisParams","slope")
-            mc.SetNuisanceParameters(w.set('nuisParams'))
-        getattr(w,'import')(mc)
-        getattr(w,'import')(roo_data)
-        if not os.path.exists('../Utils/Workspaces'):
-            os.makedirs('../Utils/Workspaces')
-        w.writeToFile(f'../Utils/Workspaces/{ws_name}.root', True)
+    # if ws_name != '':
+    #     w = ROOT.RooWorkspace(ws_name)
+    #     mc = ROOT.RooStats.ModelConfig("ModelConfig",w)
+    #     mc.SetPdf(fit_function)
+    #     mc.SetParametersOfInterest(ROOT.RooArgSet(n_sig))
+    #     mc.SetObservables(ROOT.RooArgSet(mass))
+    #     if bkg_model=='pol1':
+    #         w.defineSet("nuisParams","n_bkg,c0,c1")
+    #         mc.SetNuisanceParameters(w.set('nuisParams'))
+    #     if bkg_model=='expo':
+    #         w.defineSet("nuisParams","slope")
+    #         mc.SetNuisanceParameters(w.set('nuisParams'))
+    #     getattr(w,'import')(mc)
+    #     getattr(w,'import')(roo_data)
+    #     if not os.path.exists('../Utils/Workspaces'):
+    #         os.makedirs('../Utils/Workspaces')
+    #     w.writeToFile(f'../Utils/Workspaces/{ws_name}.root', True)
     
     print("mass:", mass.getVal())
     print("shifted_mass:", shiftedMass.getVal())
