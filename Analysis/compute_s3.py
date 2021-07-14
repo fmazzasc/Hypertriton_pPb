@@ -190,11 +190,11 @@ mg.Add(s3_2body)
 mg.Add(s3_3body)
 
 cv = ROOT.TCanvas("cv", "cv", 700,700)
-cv.SetBottomMargin(0.17)
+cv.SetBottomMargin(0.145)
 cv.SetLeftMargin(0.14)
 cv.SetTopMargin(0.01)
 cv.SetRightMargin(0.01)
-frame=cv.DrawFrame(9,0.01, 3e3,1.0,";#LTd#it{N}_{ch}/d#it{#eta}#GT_{|#it{#eta}|<0.5};#it{S_{3}}")
+frame=cv.DrawFrame(9,0, 3e3,1.0,";#LTd#it{N}_{ch}/d#it{#eta}#GT_{|#it{#eta}|<0.5};#it{S_{3}}")
 cv.SetLogx()
 mg.Draw("4al same")
 # grshade.Draw("f same")
@@ -205,14 +205,14 @@ mg.GetXaxis().SetTitle('#LTd#it{N}_{ch}/d#it{#eta}#GT_{|#it{#eta}|<0.5}')
 mg.GetYaxis().SetTitle('#it{S}_{3}')
 mg.GetXaxis().SetTitleOffset(1.1)
 mg.GetYaxis().SetTitleOffset(0.95)
-mg.GetYaxis().SetTitleSize(0.07)
-mg.GetXaxis().SetTitleSize(0.07)
-mg.GetYaxis().SetLabelSize(0.045)
-mg.GetXaxis().SetLabelSize(0.045)
+mg.GetYaxis().SetTitleSize(0.06)
+mg.GetXaxis().SetTitleSize(0.06)
+mg.GetYaxis().SetLabelSize(0.035)
+mg.GetXaxis().SetLabelSize(0.04)
 mg.GetYaxis().SetLabelOffset(0.015)
 
 
-mg.GetYaxis().SetRangeUser(0.101, 0.899)
+mg.GetYaxis().SetRangeUser(0, 0.899)
 mg.GetXaxis().SetRangeUser(5, 3e3)
 
 
@@ -292,7 +292,7 @@ ppb_syst040.SetMarkerStyle(20)
 
 
 
-pinfo = ROOT.TPaveText(0.4,0.73, 0.73, 0.78, 'NDC')
+pinfo = ROOT.TPaveText(0.4,0.74, 0.73, 0.8, 'NDC')
 pinfo.SetBorderSize(0)
 pinfo.SetFillStyle(0)
 pinfo.SetTextAlign(30+3)
@@ -302,17 +302,17 @@ pinfo.Draw()
 
 
 
-pinfo2 = ROOT.TPaveText(0.73,0.43, 0.97, 0.48, 'NDC')
+pinfo2 = ROOT.TPaveText(0.26,0.79, 0.51, 0.84, 'NDC')
 pinfo2.SetBorderSize(0)
 pinfo2.SetFillStyle(0)
-pinfo2.SetTextAlign(30+3)
+# pinfo2.SetTextAlign(30+3)
 pinfo2.SetTextFont(42)
 pinfo2.AddText('B.R. = 0.25 #pm 0.02')
 pinfo2.Draw()
 
 
-leg = ROOT.TLegend(0.25,0.81,0.82,0.94)
-leg.SetMargin(0.14)
+leg = ROOT.TLegend(0.26,0.83,0.84,0.98)
+leg.SetMargin(0.12)
 leg.SetNColumns(1)
 
 ppb_stat040.Draw("Pz")
@@ -325,9 +325,9 @@ leg.AddEntry(pbpb_syst,"","pf")
 leg.SetEntrySeparation(0.2)
 
 
-legT = ROOT.TLegend(0.63,0.2, 1,0.42)
-# legT.SetMargin(0.14)
-
+legT = ROOT.TLegend(0.62,0.17,0.97,0.44)
+legT.SetMargin(0.14)
+legT.SetBorderSize(0)
 legT.AddEntry(s3_3body, s3_3body.GetTitle(), "LF")
 legT.AddEntry(s3_2body, s3_2body.GetTitle(), "LF")
 legT.AddEntry(s3_csm_1, s3_csm_1.GetTitle(), "LF")

@@ -113,7 +113,7 @@ const int kBrownC  = TColor::GetColor("#b15928");
   gStyle->SetCanvasDefW(800);
   gStyle->SetCanvasDefH(600);
   gStyle->SetPadBottomMargin(0.12); //margins...
-  gStyle->SetPadTopMargin(0.1);
+  gStyle->SetPadTopMargin(0.01);
   gStyle->SetPadLeftMargin(0.12);
   gStyle->SetPadRightMargin(0.05);
   gStyle->SetPadGridX(0); // grids, tickmarks

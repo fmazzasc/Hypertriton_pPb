@@ -188,7 +188,7 @@ mg.Add(hp_3body)
 
 
 cv = ROOT.TCanvas("cv", "cv", 700,700)
-cv.SetBottomMargin(0.17)
+cv.SetBottomMargin(0.145)
 cv.SetLeftMargin(0.17)
 cv.SetTopMargin(0.01)
 cv.SetRightMargin(0.01)
@@ -207,10 +207,10 @@ mg.GetXaxis().SetTitle('#LTd#it{N}_{ch}/d#it{#eta}#GT_{|#it{#eta}|<0.5}')
 mg.GetYaxis().SetTitle('{}_{#Lambda}^{3}H/#Lambda')
 mg.GetXaxis().SetTitleOffset(1.1)
 mg.GetYaxis().SetTitleOffset(1.16)
-mg.GetYaxis().SetTitleSize(0.07)
-mg.GetXaxis().SetTitleSize(0.07)
-mg.GetYaxis().SetLabelSize(0.045)
-mg.GetXaxis().SetLabelSize(0.045)
+mg.GetYaxis().SetTitleSize(0.06)
+mg.GetXaxis().SetTitleSize(0.06)
+mg.GetYaxis().SetLabelSize(0.04)
+mg.GetXaxis().SetLabelSize(0.04)
 
 
 
@@ -295,8 +295,8 @@ pbpb_syst.SetLineWidth(1)
 pbpb_syst.Draw("P2")
 
 
-leg = ROOT.TLegend(0.22,0.78,0.8,0.93)
-leg.SetMargin(0.14)
+leg = ROOT.TLegend(0.221,0.81,0.8,0.96)
+leg.SetMargin(0.12)
 leg.SetNColumns(1)
 
 ppb_stat040.Draw("Pz")
@@ -309,9 +309,9 @@ leg.AddEntry(pbpb_syst,"","pf")
 
 
 leg.SetEntrySeparation(0.2)
-legT = ROOT.TLegend(0.58,0.2,0.94,0.47)
+legT = ROOT.TLegend(0.62,0.17,0.97,0.44)
 legT.SetMargin(0.14)
-
+legT.SetBorderSize(0)
 legT.AddEntry(hp_3body, hp_3body.GetTitle(), "LF")
 legT.AddEntry(hp_2body,  hp_2body.GetTitle(), "LF")
 legT.AddEntry(hp_ratio_csm_1,  hp_ratio_csm_1.GetTitle(), "LF")
@@ -322,10 +322,10 @@ legT.SetFillStyle(0)
 leg.Draw()
 legT.Draw()
 
-pinfo = ROOT.TPaveText(0.66,0.48, 0.9, 0.53, 'NDC')
+pinfo = ROOT.TPaveText(0.2208,0.77, 0.47, 0.82, 'NDC')
 pinfo.SetBorderSize(0)
 pinfo.SetFillStyle(0)
-pinfo.SetTextAlign(30+3)
+# pinfo.SetTextAlign(30+3)
 pinfo.SetTextFont(42)
 pinfo.AddText('B.R. = 0.25 #pm 0.02')
 pinfo.Draw()
@@ -342,7 +342,7 @@ cv.SaveAs("../Results/hl_ratio.eps")
 
 # Branching ratio plot
 cvBR = ROOT.TCanvas("brPlot","BR Plot",700,800)
-cvBR.SetTopMargin(0.13)
+cvBR.SetTopMargin(0.06)
 cvBR.SetLeftMargin(0.15)
 cvBR.SetRightMargin(0.04)
 frame = cvBR.DrawFrame(0.25 - 0.022, 5.e-8, 0.25 + 0.022, 2e-6, ";B.R. (^{3}_{#Lambda}H #rightarrow ^{3}He + #pi^{-}) ; {}_{#Lambda}^{3}H/#Lambda #times B.R.")
@@ -431,19 +431,24 @@ frame.GetYaxis().SetTitleSize(0.06)
 frame.GetXaxis().SetTitleOffset(.85)
 frame.GetYaxis().SetTitleOffset(1.16)
 
+
+
 grC2.Draw("CL3")
 grC3.Draw("CL3")
 grData.Draw("L3")
 grCSM1.Draw("L same")
 grCSM3.Draw("L same")
 
-legData = ROOT.TLegend(0.2, 0.78 , 0.85, 0.86)
-legData.SetMargin(0.1)
+frame.GetXaxis().SetTitleSize(0.06)
+frame.GetYaxis().SetTitleSize(0.06)
+
+legData = ROOT.TLegend(0.2, 0.94 , 0.83, 0.99)
+legData.SetMargin(0.064)
 legData.SetFillStyle(0)
 legData.AddEntry(grData, grData.GetTitle(), "LF")
 legData.Draw()
 
-legBR = ROOT.TLegend(0.12,0.88 ,1.08,0.99)
+legBR = ROOT.TLegend(0.2,0.83 , 1, 0.93)
 legBR.SetNColumns(2)
 legBR.SetMargin(0.1)
 legBR.SetFillStyle(0)
