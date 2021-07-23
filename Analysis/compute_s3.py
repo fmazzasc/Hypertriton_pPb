@@ -212,7 +212,7 @@ mg.GetXaxis().SetLabelSize(0.04)
 mg.GetYaxis().SetLabelOffset(0.015)
 
 
-mg.GetYaxis().SetRangeUser(0, 0.899)
+mg.GetYaxis().SetRangeUser(0, 0.99)
 mg.GetXaxis().SetRangeUser(5, 3e3)
 
 
@@ -226,23 +226,23 @@ ey = np.array([0.049], dtype=np.float64)
 eys = np.array([0.044], dtype=np.float64)
 zero = np.array([0], dtype=np.float64)
 pp_stat = ROOT.TGraphErrors(1,x,y,zero,ey)
-pp_stat.SetLineColor(ROOT.kOrange+7)
-pp_stat.SetMarkerColor(ROOT.kOrange+7)
+pp_stat.SetLineColor(kOrangeC)
+pp_stat.SetMarkerColor(kOrangeC)
 pp_stat.SetMarkerStyle(21)
 pp_stat.SetMarkerSize(1)
 pp_stat.SetLineWidth(1)
-# pp_stat.Draw("Pz")
+pp_stat.Draw("Pz")
 
 
 pp_syst = ROOT.TGraphErrors(1,x,y,ex,eys)
 pp_syst.SetTitle("ALICE Preliminary pp, HM trigger, #sqrt{#it{s}} = 13 TeV")
-pp_syst.SetLineColor(ROOT.kOrange + 7)
-pp_syst.SetMarkerColor(ROOT.kOrange + 7)
+pp_syst.SetLineColor(kOrangeC)
+pp_syst.SetMarkerColor(kOrangeC)
 pp_syst.SetFillStyle(0)
 pp_syst.SetMarkerStyle(21)
 pp_syst.SetMarkerSize(1)
 pp_syst.SetLineWidth(1)
-# pp_syst.Draw("P2")
+pp_syst.Draw("P2")
 
 
 
@@ -292,7 +292,7 @@ ppb_syst040.SetMarkerStyle(20)
 
 
 
-pinfo = ROOT.TPaveText(0.4,0.74, 0.73, 0.8, 'NDC')
+pinfo = ROOT.TPaveText(0.4,0.7, 0.73, 0.76, 'NDC')
 pinfo.SetBorderSize(0)
 pinfo.SetFillStyle(0)
 pinfo.SetTextAlign(30+3)
@@ -302,7 +302,7 @@ pinfo.Draw()
 
 
 
-pinfo2 = ROOT.TPaveText(0.26,0.79, 0.51, 0.84, 'NDC')
+pinfo2 = ROOT.TPaveText(0.215,0.765, 0.465, 0.815, 'NDC')
 pinfo2.SetBorderSize(0)
 pinfo2.SetFillStyle(0)
 # pinfo2.SetTextAlign(30+3)
@@ -311,21 +311,21 @@ pinfo2.AddText('B.R. = 0.25 #pm 0.02')
 pinfo2.Draw()
 
 
-leg = ROOT.TLegend(0.26,0.83,0.84,0.98)
-leg.SetMargin(0.12)
+leg = ROOT.TLegend(0.22,0.815,0.87,0.965)
+leg.SetMargin(0.11)
 leg.SetNColumns(1)
 
 ppb_stat040.Draw("Pz")
 ppb_syst040.Draw("P2")
 leg.AddEntry(ppb_syst040,"","pf")
-# leg.AddEntry(pp_syst,"","pf")
+leg.AddEntry(pp_syst,"","pf")
 leg.AddEntry(pbpb_syst,"","pf")
 
 
 leg.SetEntrySeparation(0.2)
 
 
-legT = ROOT.TLegend(0.62,0.17,0.97,0.44)
+legT = ROOT.TLegend(0.64,0.17,0.98,0.42)
 legT.SetMargin(0.14)
 legT.SetBorderSize(0)
 legT.AddEntry(s3_3body, s3_3body.GetTitle(), "LF")

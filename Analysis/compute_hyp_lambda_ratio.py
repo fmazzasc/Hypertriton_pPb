@@ -48,7 +48,7 @@ for eff,cut in zip(bdt_eff_array, score_cuts_array):
     data040 = np.array(df.query(cut_string + " and 2.96<m<3.04 and centrality<=40 and abs(fZ) < 10")["m"])
     mc_data = np.array(df_mc.query(cut_string + " and 2.96<m<3.04")["m"])
     mean_mass_list.append(np.mean(mc_data))
-    mc_data = mc_data[0:20000]
+    mc_data = mc_data[0:1000]
     res_template = hp.unbinned_mass_fit_mc(data040, eff, 'pol1', mc_data, ff, bkg_dir, [0,40], [0,10], [0,35], split="", cent_string='040', bins = 34, ws_name = f'ws_eff_{eff}')
 
     signal_list040.append(res_template[0])
@@ -245,23 +245,23 @@ ey = np.array([1.34*10**(-7)], dtype=np.float64)
 eys = np.array([0.72e-7], dtype=np.float64)
 zero = np.array([0], dtype=np.float64)
 pp_stat = ROOT.TGraphErrors(1,x,y,zero,ey)
-pp_stat.SetLineColor(ROOT.kOrange +7)
-pp_stat.SetMarkerColor(ROOT.kOrange +7)
+pp_stat.SetLineColor(kOrangeC)
+pp_stat.SetMarkerColor(kOrangeC)
 pp_stat.SetMarkerStyle(21)
 pp_stat.SetMarkerSize(1)
 pp_stat.SetLineWidth(1)
-# pp_stat.Draw("Pz")
+pp_stat.Draw("Pz")
 
 
 pp_syst = ROOT.TGraphErrors(1,x,y,ex,eys)
 pp_syst.SetTitle("ALICE Preliminary pp, HM trigger, #sqrt{#it{s}} = 13 TeV")
-pp_syst.SetLineColor(ROOT.kOrange +7)
-pp_syst.SetMarkerColor(ROOT.kOrange +7)
+pp_syst.SetLineColor(kOrangeC)
+pp_syst.SetMarkerColor(kOrangeC)
 pp_syst.SetFillStyle(0)
 pp_syst.SetMarkerStyle(21)
 pp_syst.SetMarkerSize(1)
 pp_syst.SetLineWidth(1)
-# pp_syst.Draw("P2")
+pp_syst.Draw("P2")
 
 
 
@@ -295,14 +295,14 @@ pbpb_syst.SetLineWidth(1)
 pbpb_syst.Draw("P2")
 
 
-leg = ROOT.TLegend(0.221,0.81,0.8,0.96)
+leg = ROOT.TLegend(0.221,0.81,0.87,0.96)
 leg.SetMargin(0.12)
 leg.SetNColumns(1)
 
 ppb_stat040.Draw("Pz")
 ppb_syst040.Draw("P2")
 leg.AddEntry(ppb_syst040,"","pf")
-# leg.AddEntry(pp_syst,"","pf")
+leg.AddEntry(pp_syst,"","pf")
 leg.AddEntry(pbpb_syst,"","pf")
 
 
@@ -322,7 +322,7 @@ legT.SetFillStyle(0)
 leg.Draw()
 legT.Draw()
 
-pinfo = ROOT.TPaveText(0.2208,0.77, 0.47, 0.82, 'NDC')
+pinfo = ROOT.TPaveText(0.2208,0.75, 0.47, 0.8, 'NDC')
 pinfo.SetBorderSize(0)
 pinfo.SetFillStyle(0)
 # pinfo.SetTextAlign(30+3)
