@@ -48,7 +48,7 @@ for eff,cut in zip(bdt_eff_array, score_cuts_array):
     data040 = np.array(df.query(cut_string + " and 2.96<m<3.04 and centrality<=40 and abs(fZ)<10")["m"])
     mc_data = np.array(df_mc.query(cut_string + " and 2.96<m<3.04")["m"])
     mean_mass_list.append(np.mean(mc_data))
-    mc_data = mc_data[0:20000]
+    mc_data = mc_data[0:1000]
     res_template = hp.unbinned_mass_fit_mc(data040, eff, 'pol1', mc_data, ff, bkg_dir, [0,40], [0,10], [0,35], split="", cent_string='040', bins = 34, ws_name = f'ws_eff_{eff}')
 
     signal_list040.append(res_template[0])
@@ -231,7 +231,7 @@ pp_stat.SetMarkerColor(kOrangeC)
 pp_stat.SetMarkerStyle(21)
 pp_stat.SetMarkerSize(1)
 pp_stat.SetLineWidth(1)
-pp_stat.Draw("Pz")
+# pp_stat.Draw("Pz")
 
 
 pp_syst = ROOT.TGraphErrors(1,x,y,ex,eys)
@@ -242,7 +242,7 @@ pp_syst.SetFillStyle(0)
 pp_syst.SetMarkerStyle(21)
 pp_syst.SetMarkerSize(1)
 pp_syst.SetLineWidth(1)
-pp_syst.Draw("P2")
+# pp_syst.Draw("P2")
 
 
 
@@ -302,7 +302,7 @@ pinfo.Draw()
 
 
 
-pinfo2 = ROOT.TPaveText(0.215,0.765, 0.465, 0.815, 'NDC')
+pinfo2 = ROOT.TPaveText(0.215,0.865, 0.465, 0.9, 'NDC')
 pinfo2.SetBorderSize(0)
 pinfo2.SetFillStyle(0)
 # pinfo2.SetTextAlign(30+3)
@@ -311,14 +311,14 @@ pinfo2.AddText('B.R. = 0.25 #pm 0.02')
 pinfo2.Draw()
 
 
-leg = ROOT.TLegend(0.22,0.815,0.87,0.965)
+leg = ROOT.TLegend(0.22,0.9,0.87,0.965)
 leg.SetMargin(0.11)
 leg.SetNColumns(1)
 
-ppb_stat040.Draw("Pz")
-ppb_syst040.Draw("P2")
-leg.AddEntry(ppb_syst040,"","pf")
-leg.AddEntry(pp_syst,"","pf")
+# ppb_stat040.Draw("Pz")
+# ppb_syst040.Draw("P2")
+# leg.AddEntry(ppb_syst040,"","pf")
+# leg.AddEntry(pp_syst,"","pf")
 leg.AddEntry(pbpb_syst,"","pf")
 
 

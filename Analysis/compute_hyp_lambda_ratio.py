@@ -250,7 +250,7 @@ pp_stat.SetMarkerColor(kOrangeC)
 pp_stat.SetMarkerStyle(21)
 pp_stat.SetMarkerSize(1)
 pp_stat.SetLineWidth(1)
-pp_stat.Draw("Pz")
+# pp_stat.Draw("Pz")
 
 
 pp_syst = ROOT.TGraphErrors(1,x,y,ex,eys)
@@ -261,7 +261,7 @@ pp_syst.SetFillStyle(0)
 pp_syst.SetMarkerStyle(21)
 pp_syst.SetMarkerSize(1)
 pp_syst.SetLineWidth(1)
-pp_syst.Draw("P2")
+# pp_syst.Draw("P2")
 
 
 
@@ -295,14 +295,14 @@ pbpb_syst.SetLineWidth(1)
 pbpb_syst.Draw("P2")
 
 
-leg = ROOT.TLegend(0.221,0.81,0.87,0.96)
+leg = ROOT.TLegend(0.221,0.9,0.87,0.96)
 leg.SetMargin(0.12)
 leg.SetNColumns(1)
 
-ppb_stat040.Draw("Pz")
-ppb_syst040.Draw("P2")
-leg.AddEntry(ppb_syst040,"","pf")
-leg.AddEntry(pp_syst,"","pf")
+# ppb_stat040.Draw("Pz")
+# ppb_syst040.Draw("P2")
+# leg.AddEntry(ppb_syst040,"","pf")
+# leg.AddEntry(pp_syst,"","pf")
 leg.AddEntry(pbpb_syst,"","pf")
 
 
@@ -322,7 +322,7 @@ legT.SetFillStyle(0)
 leg.Draw()
 legT.Draw()
 
-pinfo = ROOT.TPaveText(0.2208,0.75, 0.47, 0.8, 'NDC')
+pinfo = ROOT.TPaveText(0.2208,0.84, 0.47, 0.89, 'NDC')
 pinfo.SetBorderSize(0)
 pinfo.SetFillStyle(0)
 # pinfo.SetTextAlign(30+3)
